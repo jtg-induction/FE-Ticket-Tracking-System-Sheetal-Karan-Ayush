@@ -1,7 +1,7 @@
 import { createBrowserRouter, RouteObject } from 'react-router-dom';
 
 import { Layout } from '@containers';
-import { PageNotFound } from '@pages';
+import { Login, PageNotFound, Register } from '@pages';
 
 const routes: RouteObject[] = [
     {
@@ -14,6 +14,16 @@ const routes: RouteObject[] = [
                 element: <PageNotFound />,
             },
         ],
+    },
+
+    {
+        path: '/register',
+        element: <Register />,
+    },
+
+    {
+        path: '/login',
+        element: <Login />,
     },
 ];
 

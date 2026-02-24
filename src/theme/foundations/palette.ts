@@ -30,4 +30,13 @@ export const palette: PaletteOptions = {
     background: {
         default: COLORS.GRAY.BACKGROUND,
     },
+    gradients: {
+        primary: `linear-gradient(
+            to bottom, 
+            ${COLORS.SUCCESS.DARK} 0%, 
+            ${COLORS.PRIMARY.MAIN} 45%, 
+            ${COLORS.PRIMARY.MAIN} 55%, 
+            ${COLORS.SUCCESS.DARK} 100%
+        )`,
+    },
 };

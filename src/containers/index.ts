@@ -1,3 +1,3 @@
 export { Header } from './Header';
-export { Layout } from './Layout';
+export { Layout } from './Layouts';
 export { SideBar } from './Sidebar';
