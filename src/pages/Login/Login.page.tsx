@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 
 import { HeroCard } from '@components';
+import { useLoginMutation } from '@features/auth';
 
 import {
     StyledContent,
@@ -25,7 +26,6 @@ import {
 
 export const Login = () => {
     const theme = useTheme();
-
     const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
     const [email, setEmail] = useState('');
@@ -52,6 +52,8 @@ export const Login = () => {
         !isInvalidEmail &&
         !isInvalidPassword;
 
+    const loginMutation = useLoginMutation();
+
     const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
         e.preventDefault();
 
@@ -59,7 +61,7 @@ export const Login = () => {
             // console.log('Submission blocked: Fix validation errors first.');
             return;
         }
-
+        loginMutation.mutate({email, password})
         //call backend
         // console.log('Form Submitted Data:', { email, password });
     };
@@ -121,6 +123,12 @@ export const Login = () => {
                                     : ''
                             }
                         />
+
+                        {loginMutation.isError && (
+                            <Typography variant='subtitle2' sx={{ color: theme.palette.error.contrastText }}>
+                                {loginMutation.error.message}
+                            </Typography>
+                        )}
 
                         <Button
                             variant="contained"

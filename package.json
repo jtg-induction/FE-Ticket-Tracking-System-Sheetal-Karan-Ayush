@@ -19,9 +19,13 @@
         "@emotion/styled": "11.14.0",
         "@mui/icons-material": "6.4.1",
         "@mui/material": "6.4.1",
+        "@tanstack/react-query": "^5.90.21",
+        "axios": "^1.13.5",
         "react": "19.0.0",
         "react-dom": "19.0.0",
-        "react-router-dom": "^7.13.0"
+        "react-router-dom": "^7.13.0",
+        "zod": "^4.3.6",
+        "zustand": "^5.0.11"
     },
     "devDependencies": {
         "@types/eslint-plugin-jsx-a11y": "6",

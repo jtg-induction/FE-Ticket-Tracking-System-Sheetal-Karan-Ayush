@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 
 import { HeroCard } from '@components';
+import { useSignupMutation } from '@features/auth';
 
 import {
     StyledContent,
@@ -43,7 +44,6 @@ export const Register = () => {
             setIsInvalidEmail(false);
         }
     };
-
     const [password, setPassword] = useState('');
     const passwordRegex =
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -66,15 +66,20 @@ export const Register = () => {
     };
 
     const isFormValid =
-        name.length > 0 &&
-        email.length > 0 &&
-        password.length > 0 &&
-        confirmPassword.length > 0 &&
+        name.length > 2 && name.length < 256 && 
+        email.length > 0 && email.length < 256 && 
+        password.length > 7 && password.length < 256 && 
+        confirmPassword.length > 7 &&
         !isInvalidName &&
         !isInvalidEmail &&
         !isInvalidPassword &&
         password === confirmPassword;
 
+    
+
+    const signupMutation = useSignupMutation();
+
+    
     const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
         e.preventDefault();
 
@@ -82,8 +87,7 @@ export const Register = () => {
             // console.log('Submission blocked: Fix validation errors first.');
             return;
         }
-
-        //call backend
+        signupMutation.mutate({name, email, password, avatarId: 1})
     };
 
     return (
@@ -121,7 +125,7 @@ export const Register = () => {
                             error={isInvalidName}
                             helperText={
                                 isInvalidName
-                                    ? 'Enter a valid name (letters only)'
+                                    ? 'Enter a valid name (letters only) minlength-2 maxlength-255'
                                     : ''
                             }
                         />
@@ -150,7 +154,7 @@ export const Register = () => {
                             error={isInvalidPassword}
                             helperText={
                                 isInvalidPassword
-                                    ? 'Password must contain at least 8 characters(atleast one small letter, one capital letter, one number and atleast one special character)'
+                                    ? 'Password must contain at least 8 characters(atleast one small letter, one capital letter, one number and atleast one special character) and at max 255 characters'
                                     : ''
                             }
                         />
@@ -169,7 +173,11 @@ export const Register = () => {
                                     : ''
                             }
                         />
-
+                        {signupMutation.isError && (
+                            <Typography variant='subtitle2' sx={{ color: theme.palette.error.contrastText }}>
+                                {signupMutation.error.message}
+                            </Typography>
+                        )}
                         <Button
                             variant="contained"
                             color="primary"
