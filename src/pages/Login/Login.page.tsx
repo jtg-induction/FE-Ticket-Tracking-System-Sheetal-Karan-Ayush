@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 
 import { BugReport } from '@mui/icons-material';
 import {
@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 
 import { HeroCard } from '@components';
+import { useLoginMutation } from '@features/auth';
 
 import {
     StyledContent,
@@ -25,7 +26,6 @@ import {
 
 export const Login = () => {
     const theme = useTheme();
-
     const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
     const [email, setEmail] = useState('');
@@ -52,16 +52,24 @@ export const Login = () => {
         !isInvalidEmail &&
         !isInvalidPassword;
 
+    const loginMutation = useLoginMutation();
+     const navigate = useNavigate();
     const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
         e.preventDefault();
 
         if (!isFormValid) {
-            // console.log('Submission blocked: Fix validation errors first.');
             return;
         }
-
-        //call backend
-        // console.log('Form Submitted Data:', { email, password });
+        loginMutation.mutate(
+            { email, password },
+            {
+                onSuccess: (data) => {
+                    localStorage.setItem('access_token', data.access_token);
+                    localStorage.setItem('refresh_token', data.refresh_token);
+                    void navigate('/');
+                }
+            },
+        );
     };
 
     return (
@@ -121,6 +129,12 @@ export const Login = () => {
                                     : ''
                             }
                         />
+
+                        {loginMutation.isError && (
+                            <Typography variant='subtitle2' sx={{ color: theme.palette.error.contrastText }}>
+                                {loginMutation.error.message}
+                            </Typography>
+                        )}
 
                         <Button
                             variant="contained"
