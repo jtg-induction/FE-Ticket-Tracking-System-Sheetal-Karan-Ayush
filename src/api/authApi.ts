@@ -15,18 +15,14 @@ type LoginInput = {
     password: string;
 }
 
-export const signupUser = async (data: SignupInput): Promise<AuthResponse> => {
+type OtpInput = SignupInput & {otp: number;}
+
+export const signupUser = async (data: SignupInput) => {
     try {
         const payload = {
             name: data.name, email: data.email, password: data.password, avatar_id: 1,
         }
-        const response = await api.post("/api/auth/signup", payload);
-        const parsed = authResponseSchema.safeParse(response.data);
-
-        if (!parsed.success) {
-            throw new Error("Invalid server response ");
-        }
-        return parsed.data
+        await api.post("/api/auth/signup", payload);
     } catch (error: unknown) {
         return handleApiError(error);
     }
@@ -38,6 +34,23 @@ export const loginUser = async (data: LoginInput): Promise<AuthResponse> => {
             email: data.email, password: data.password,
         }
         const response = await api.post("/api/auth/login", payload);
+        const parsed = authResponseSchema.safeParse(response.data);
+
+        if (!parsed.success) {
+            throw new Error("Invalid server response ");
+        }
+        return parsed.data
+    } catch (error: unknown) {
+        return handleApiError(error);
+    }
+};
+
+export const VerifyOtp = async (data: OtpInput): Promise<AuthResponse> => {
+    try {
+        const payload = {
+            email: data.email, otp: data.otp,
+        }
+        const response = await api.post("/api/auth/verify-email", payload);
         const parsed = authResponseSchema.safeParse(response.data);
 
         if (!parsed.success) {

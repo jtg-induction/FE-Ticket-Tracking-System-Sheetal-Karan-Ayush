@@ -13,7 +13,9 @@ import {
 } from '@mui/material';
 
 import { HeroCard } from '@components';
-import { useSignupMutation } from '@features/auth';
+import { VerifyOtpDialog } from '@containers/VerifyOtp/VerifyOtp.container';
+import { useSignupMutation, useVerifyMutation } from '@features/auth';
+import { useAuthStore } from '@features/auth/authStore';
 
 import {
     StyledContent,
@@ -76,9 +78,10 @@ export const Register = () => {
         password === confirmPassword;
 
     
-
+    const [otpOpen, setOtpOpen] = useState<boolean>(false);
     const signupMutation = useSignupMutation();
-
+    const verifyMutation = useVerifyMutation();
+    const setAuth = useAuthStore((s) => s.setAuth);
     
     const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
         e.preventDefault();
@@ -87,8 +90,23 @@ export const Register = () => {
             // console.log('Submission blocked: Fix validation errors first.');
             return;
         }
-        signupMutation.mutate({name, email, password, avatarId: 1})
+        signupMutation.mutate({name, email, password, avatarId: 1}, { onSuccess: () => setOtpOpen(true)})
     };
+
+    const handleVerify = (otp: number) => {
+        verifyMutation.mutate({name, email, password, avatarId: 1, otp}, 
+        { 
+            onSuccess: (data) => {
+                setAuth(data)
+                setOtpOpen(false);
+            },
+            onError: () => {
+                <Typography variant='subtitle2' sx={{ color: theme.palette.error.contrastText }}>
+                    {verifyMutation.error?.message}
+                </Typography>
+            }
+        })
+    }
 
     return (
         <StyledWrapper>
@@ -187,7 +205,7 @@ export const Register = () => {
                             Submit
                         </Button>
                     </Stack>
-
+                    <VerifyOtpDialog open={otpOpen} handleVerify={handleVerify} setOpen={setOtpOpen}/>
                     <Typography textAlign={'center'}>
                         Have an account? <NavLink to="/login">Login</NavLink>
                     </Typography>
