@@ -3,11 +3,7 @@ import { useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 
 import {
-    Badge,
-    Box,
     Divider,
-    FormControlLabel,
-    Switch,
     TableCell,
     TableHead,
     TablePagination,
@@ -22,19 +18,13 @@ import {
     ProjectTicketFilters,
     SectionLayout,
 } from '@components';
-import { useDeleteProject, useProjectStore, useUpdateProject } from '@features/project';
 
-import {
-    ROW_PER_PAGE_OPTIONS,
-    TICKET_TABLE_HEADER,
-    ticketData,
-} from './ProjectDashboard.config';
+import { ROW_PER_PAGE_OPTIONS, TICKET_TABLE_HEADER, ticketData } from './ProjectDashboard.config';
 import {
     DeleteIcon,
     DesktopTableCell,
     EditIcon,
     IconBox,
-    StatusBadge,
     StyledButton,
     StyledHeader,
     StyledLeftBox,
@@ -48,15 +38,6 @@ import {
 } from './ProjectDashboardPage.style';
 
 export const ProjectDashboardPage = () => {
-    const {
-        project,
-        setProject,
-        setDeleteTarget,
-        deleteTarget,
-        clearDeleteTarget,
-        setFormData,
-    } = useProjectStore();
-
     const defaultFilters = {
         title: '',
         assignee: '',
@@ -64,15 +45,19 @@ export const ProjectDashboardPage = () => {
         status: '',
         sort: 'latest',
     };
-    const [page, setPage] = useState(0);
+     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
 
-    const { mutate: updateProject } = useUpdateProject();
-    const { mutate: deleteProject } = useDeleteProject();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [deleteTarget, setDeleteTarget] = useState<any>(null);
     const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
+    const [project, setProject] = useState({
+        title: 'Project Title',
+        description:
+        'Lorem, ipsum dolor sit amet consectetur adipisicing elit...',
+    });
+    const [projectForm, setProjectForm] = useState(project);
     const [filters, setFilters] = useState(defaultFilters);
-
     const handleFilterChange = (field: string, value: string) => {
         setFilters((prev) => ({ ...prev, [field]: value }));
     };
@@ -86,8 +71,9 @@ export const ProjectDashboardPage = () => {
         setRowsPerPage(Number.parseInt(event.target.value, 10));
         setPage(0);
     };
-
+    
     const handleOpenProjectDialog = () => {
+        setProjectForm(project);
         setIsProjectDialogOpen(true);
     };
 
@@ -133,34 +119,14 @@ export const ProjectDashboardPage = () => {
     const handleReset = () => {
         setFilters(defaultFilters);
     };
-
-    const handleUpdateProject = () => {
-        if (project?.id) {
-            updateProject({ id: project.id, data: project });
-            setIsProjectDialogOpen(false);
-        }
-    };
-
-    const handleDeleteProject = () => {
-        if (deleteTarget?.id) {
-            deleteProject(deleteTarget.id);
-            setIsDeleteDialogOpen(false);
-            clearDeleteTarget();
-        }
-    };
-
     return (
         <>
             <StyledHeader>
                 <StyledUpperBox>
                     <StyledLeftBox>
                         <ClampedTooltipText variant="h2" lines={2}>
-                            {project?.title}
+                            {project.title}
                         </ClampedTooltipText>
-                        <StatusBadge
-                            label={project?.archived ? 'Archived' : 'Active'}
-                            ownerState={{ archived: project?.archived }}
-                        />
                         <IconBox>
                             <IconBox>
                                 <EditIcon onClick={handleOpenProjectDialog} />
@@ -172,7 +138,6 @@ export const ProjectDashboardPage = () => {
                                 />
                             </IconBox>
                         </IconBox>
-                        <Badge />
                     </StyledLeftBox>
                     <StyledRightBox>
                         <StyledButton variant="contained">
@@ -185,7 +150,7 @@ export const ProjectDashboardPage = () => {
                 </StyledUpperBox>
                 <StyledLowerBox>
                     <Typography variant="body2">
-                        {project?.description}
+                        {project.description}
                     </Typography>
                 </StyledLowerBox>
             </StyledHeader>
@@ -258,7 +223,7 @@ export const ProjectDashboardPage = () => {
                         </StyledTableBody>
                     </StyledTable>
                     <TablePagination
-                        rowsPerPageOptions={ROW_PER_PAGE_OPTIONS}
+                        rowsPerPageOptions= {ROW_PER_PAGE_OPTIONS}
                         component="div"
                         count={filteredTickets?.length ?? 0}
                         rowsPerPage={rowsPerPage}
@@ -271,14 +236,22 @@ export const ProjectDashboardPage = () => {
                     open={isProjectDialogOpen}
                     title="Edit Project"
                     onClose={() => setIsProjectDialogOpen(false)}
-                    onSubmit={handleUpdateProject}
+                    onSubmit={() => {
+                        setProject(projectForm);
+                        setIsProjectDialogOpen(false);
+                    }}
                 >
                     <TextField
                         fullWidth
                         margin="normal"
                         label="Project Title"
-                        value={project?.title}
-                        onChange={(e) => setFormData({ title: e.target.value })}
+                        value={projectForm.title}
+                        onChange={(e) =>
+                            setProjectForm({
+                                ...projectForm,
+                                title: e.target.value,
+                            })
+                        }
                     />
 
                     <TextField
@@ -287,33 +260,23 @@ export const ProjectDashboardPage = () => {
                         label="Project Description"
                         multiline
                         rows={4}
-                        value={project?.description}
+                        value={projectForm.description}
                         onChange={(e) =>
-                            setFormData({ description: e.target.value })}
+                            setProjectForm({
+                                ...projectForm,
+                                description: e.target.value,
+                            })
+                        }
                     />
-                    <Box>
-                        <FormControlLabel
-                            control={
-                                <Switch
-                                    checked={project?.archived}
-                                    onChange={(e) =>
-                                        setProject({
-                                            ...project,
-                                            archived: e.target.checked,
-                                        })
-                                    }
-                                    color="error"
-                                />
-                            }
-                            label={project?.archived ? 'Archived' : 'Active'}
-                        />
-                    </Box>
                 </DialogBox>
                 <DialogBox
                     open={isDeleteDialogOpen}
                     title="Confirm Delete"
                     onClose={() => setIsDeleteDialogOpen(false)}
-                    onSubmit={handleDeleteProject}
+                    onSubmit={() => {
+                        console.log('Deleting:', deleteTarget);
+                        setIsDeleteDialogOpen(false);
+                    }}
                     submitText="Delete"
                     cancelText="Cancel"
                 >

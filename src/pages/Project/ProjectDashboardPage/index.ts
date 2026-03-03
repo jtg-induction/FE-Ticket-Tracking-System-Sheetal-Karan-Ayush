@@ -1,1 +1,1 @@
-export { ProjectDashboardPage } from './ProjectDashboard.page';
+export { ProjectDashboardPage } from './ProjectDashboardPage';
