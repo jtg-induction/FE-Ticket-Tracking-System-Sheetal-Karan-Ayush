@@ -3,6 +3,7 @@
         "baseUrl": "./src",
         "paths": {
             "@assets/*": ["assets/*"],
+            "@api": ["api"],
             "@constant": ["constant/index"],
             "@theme": ["theme/index"],
             "@components": ["components/index"],
@@ -12,7 +13,8 @@
             "@routes": ["routes/index"],
             "@routes/*": ["routes/*"],
             "@pages": ["pages/index"],
-            "@pages/*": ["pages/*"]
+            "@pages/*": ["pages/*"],
+            "@features/*": ["features/*"]
         }
     }
 }

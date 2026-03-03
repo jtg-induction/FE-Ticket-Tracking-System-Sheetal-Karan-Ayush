@@ -3,6 +3,7 @@ import {
     Box,
     BoxProps,
     Button,
+    Chip,
     styled,
     Table,
     TableBody,
@@ -122,7 +123,7 @@ export const EditIcon = styled(Edit)(({ theme }) => ({
     cursor: 'pointer',
     color: theme.palette.primary.main,
     transition: '0.2s ease',
-    
+
     '&:hover': {
         color: theme.palette.text.secondary,
     },
@@ -132,8 +133,21 @@ export const DeleteIcon = styled(Delete)(({ theme }) => ({
     cursor: 'pointer',
     transition: '0.2s ease',
     color: theme.palette.error.contrastText,
-    
+
     '&:hover': {
         color: theme.palette.error.main,
     },
+}));
+
+export const StatusBadge = styled(Chip)(({ theme, ownerState }: any) => ({
+    height: 24,
+    fontWeight: 500,
+    fontSize: 12,
+    textTransform: 'uppercase',
+    backgroundColor: ownerState.archived
+        ? theme.palette.error.contrastText
+        : theme.palette.success.contrastText,
+    color: ownerState.archived
+        ? theme.palette.grey[100]
+        : theme.palette.common.white,
 }));
