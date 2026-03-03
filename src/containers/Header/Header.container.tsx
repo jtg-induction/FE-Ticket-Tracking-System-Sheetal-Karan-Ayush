@@ -31,7 +31,7 @@ export const Header = ({ isMenuOpen, setMenuOpen }: HeaderProps) => {
      * Handles the selection of a product from the search results
      * @param product - The product object or null
      */
-    const handleSelect = (product: TopProducts | null | undefined) => {
+    const handleSelect = (project) => {
         if (!product) return;
     };
     useEffect(() => {
@@ -71,7 +71,7 @@ export const Header = ({ isMenuOpen, setMenuOpen }: HeaderProps) => {
                             <Menu fontSize="large" />
                         </HamburgerButton>
                     )}
-                    <Searchbar<TopProducts>
+                    <Searchbar
                         options={[]}
                         value={selectedProduct}
                         onSelect={handleSelect}

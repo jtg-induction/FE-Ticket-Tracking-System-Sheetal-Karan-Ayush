@@ -1,5 +1,4 @@
 import { Box, styled } from '@mui/material';
-import { posix } from 'path';
 
 export const LayoutStyled = styled(Box)(({ theme }) => {
     const { palette } = theme;

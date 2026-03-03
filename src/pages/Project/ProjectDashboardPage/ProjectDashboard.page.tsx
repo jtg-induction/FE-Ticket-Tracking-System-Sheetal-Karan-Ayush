@@ -19,10 +19,15 @@ import {
 import {
     ClampedTooltipText,
     DialogBox,
+    Filters,
     ProjectTicketFilters,
     SectionLayout,
 } from '@components';
-import { useDeleteProject, useProjectStore, useUpdateProject } from '@features/project';
+import {
+    useDeleteProject,
+    useProjectStore,
+    useUpdateProject,
+} from '@features/project';
 
 import {
     ROW_PER_PAGE_OPTIONS,
@@ -50,11 +55,11 @@ import {
 export const ProjectDashboardPage = () => {
     const {
         project,
-        setProject,
         setDeleteTarget,
         deleteTarget,
         clearDeleteTarget,
-        setFormData,
+        updateFormData,
+        setUpdateFormData,
     } = useProjectStore();
 
     const defaultFilters = {
@@ -73,9 +78,15 @@ export const ProjectDashboardPage = () => {
     const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
     const [filters, setFilters] = useState(defaultFilters);
 
-    const handleFilterChange = (field: string, value: string) => {
-        setFilters((prev) => ({ ...prev, [field]: value }));
-    };
+   const handleFilterChange = (
+       field: keyof Filters,
+       value: string | dayjs.Dayjs | null,
+   ) => {
+       setFilters((prev) => ({
+           ...prev,
+           [field]: value, 
+       }));
+   };
     const handleChangePage = (_event: unknown, newPage: number) => {
         setPage(newPage);
     };
@@ -88,6 +99,13 @@ export const ProjectDashboardPage = () => {
     };
 
     const handleOpenProjectDialog = () => {
+        if (project) {
+            setUpdateFormData({
+                title: project.title,
+                description: project.description || '',
+                status: project.status,
+            });
+        }
         setIsProjectDialogOpen(true);
     };
 
@@ -136,14 +154,22 @@ export const ProjectDashboardPage = () => {
 
     const handleUpdateProject = () => {
         if (project?.id) {
-            updateProject({ id: project.id, data: project });
+            const statusValue = updateFormData.status ?? 1;  
+            const updatedProjectData = {
+                ...project,
+                title: updateFormData.title || '',
+                description: updateFormData.description || '',
+                status: statusValue,
+            };
+
+            updateProject({ jira_project_key: project.jira_project_key, data: updatedProjectData });
             setIsProjectDialogOpen(false);
         }
     };
 
     const handleDeleteProject = () => {
-        if (deleteTarget?.id) {
-            deleteProject(deleteTarget.id);
+        if (deleteTarget?.jira_project_key) {
+            deleteProject(deleteTarget.jira_project_key);
             setIsDeleteDialogOpen(false);
             clearDeleteTarget();
         }
@@ -158,16 +184,24 @@ export const ProjectDashboardPage = () => {
                             {project?.title}
                         </ClampedTooltipText>
                         <StatusBadge
-                            label={project?.archived ? 'Archived' : 'Active'}
-                            ownerState={{ archived: project?.archived }}
+                            label={
+                                project?.status === 2
+                                    ? 'Archived'
+                                    : 'Active'
+                            }
+                            ownerState={{
+                                archived: project?.status === 2,
+                            }}
                         />
                         <IconBox>
                             <IconBox>
                                 <EditIcon onClick={handleOpenProjectDialog} />
                                 <DeleteIcon
                                     onClick={() => {
-                                        setDeleteTarget(project);
-                                        setIsDeleteDialogOpen(true);
+                                        if (project) {
+                                            setDeleteTarget(project);
+                                            setIsDeleteDialogOpen(true);
+                                        }
                                     }}
                                 />
                             </IconBox>
@@ -277,8 +311,10 @@ export const ProjectDashboardPage = () => {
                         fullWidth
                         margin="normal"
                         label="Project Title"
-                        value={project?.title}
-                        onChange={(e) => setFormData({ title: e.target.value })}
+                        value={updateFormData?.title}
+                        onChange={(e) =>
+                            setUpdateFormData({ title: e.target.value })
+                        }
                     />
 
                     <TextField
@@ -287,25 +323,32 @@ export const ProjectDashboardPage = () => {
                         label="Project Description"
                         multiline
                         rows={4}
-                        value={project?.description}
+                        value={updateFormData?.description}
                         onChange={(e) =>
-                            setFormData({ description: e.target.value })}
+                            setUpdateFormData({ description: e.target.value })
+                        }
                     />
                     <Box>
                         <FormControlLabel
                             control={
                                 <Switch
-                                    checked={project?.archived}
-                                    onChange={(e) =>
-                                        setProject({
-                                            ...project,
-                                            archived: e.target.checked,
-                                        })
-                                    }
+                                    checked={updateFormData?.status === 2} 
+                                    onChange={(e) => {
+                                        const newStatus = e.target.checked
+                                            ? 2
+                                            : 1; 
+                                        setUpdateFormData({
+                                            status: newStatus,
+                                        });
+                                    }}
                                     color="error"
                                 />
                             }
-                            label={project?.archived ? 'Archived' : 'Active'}
+                            label={
+                                updateFormData?.status === 2
+                                    ? 'Archived'
+                                    : 'Active'
+                            } 
                         />
                     </Box>
                 </DialogBox>

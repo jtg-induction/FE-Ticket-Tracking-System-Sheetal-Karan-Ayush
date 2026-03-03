@@ -1,16 +1,16 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { updateProject } from './api'; // Import API method
-import { ProjectFormData } from './schema';
+import { updateProject } from './api'; 
+import { ProjectResponse } from './schema';
 
 export const useUpdateProject = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ id, data }: { id: string; data: ProjectFormData }) =>
-            updateProject(id, data),
-        onSuccess: () => {
-            queryClient.invalidateQueries(['projects']);
+        mutationFn: ({ jira_project_key, data }: { jira_project_key: string; data: ProjectResponse }) =>
+            updateProject(jira_project_key, data),
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ['projects'] });
         }
     });
 };

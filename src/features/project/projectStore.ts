@@ -1,19 +1,21 @@
 import { create, StateCreator } from 'zustand';
 
-import { ProjectFormData, ProjectUpdateData } from './schema';
+import { ProjectFormData, ProjectResponse, ProjectUpdateData } from './schema';
 
 type ProjectStore = {
-    formData: ProjectFormData | ProjectUpdateData;
-    project: ProjectFormData | null; 
-    deleteTarget: ProjectFormData | null; 
-    setFormData: (data: Partial<ProjectFormData>) => void;
+    createFormData: ProjectFormData;
+    updateFormData: ProjectUpdateData;
+    project: ProjectResponse | null;
+    deleteTarget: ProjectResponse | null;
+    setCreateFormData: (data: Partial<ProjectFormData>) => void;
+    setUpdateFormData: (data: Partial<ProjectUpdateData>) => void;
     reset: () => void;
-    setProject: (project: ProjectFormData) => void;
-    setDeleteTarget: (project: ProjectFormData) => void;
+    setProject: (project: ProjectResponse) => void;
+    setDeleteTarget: (project: ProjectResponse) => void;
     clearDeleteTarget: () => void;
 };
 
-const initialState: ProjectFormData = {
+const initialCreateFormData: ProjectFormData = {
     title: '',
     description: '',
     jira_url: '',
@@ -22,20 +24,41 @@ const initialState: ProjectFormData = {
     jira_project_key: '',
 };
 
+const initialUpdateFormData: ProjectUpdateData = {
+    title: '',
+    description: '',
+    status: 1,
+};
+
 const storeCreator: StateCreator<ProjectStore> = (set) => ({
-    formData: initialState,
+    createFormData: initialCreateFormData,
+    updateFormData: initialUpdateFormData,
     project: null,
     deleteTarget: null,
-    setFormData: (data: Partial<ProjectFormData>) =>
-        set((state: ProjectStore) => ({
-            formData: { ...state.formData, ...data },
+    setCreateFormData: (data: Partial<ProjectFormData>) =>
+        set((state) => ({
+            createFormData: { ...state.createFormData, ...data },
         })),
-    reset: () =>
-        set({ formData: initialState, project: null, deleteTarget: null }),
-    setProject: (project: ProjectFormData | ProjectUpdateData) => set({ project }),
-    setDeleteTarget: (project: ProjectFormData) =>
+
+    setUpdateFormData: (data: Partial<ProjectUpdateData>) =>
+        set((state) => ({
+            updateFormData: { ...state.updateFormData, ...data },
+        })),
+
+    setProject: (project: ProjectResponse) => set({ project }),
+
+    setDeleteTarget: (project: ProjectResponse) =>
         set({ deleteTarget: project }),
+
     clearDeleteTarget: () => set({ deleteTarget: null }),
+
+    reset: () =>
+        set({
+            createFormData: initialCreateFormData,
+            updateFormData: initialUpdateFormData,
+            project: null,
+            deleteTarget: null,
+        }),
 });
 
 export const useProjectStore = create<ProjectStore>(storeCreator);

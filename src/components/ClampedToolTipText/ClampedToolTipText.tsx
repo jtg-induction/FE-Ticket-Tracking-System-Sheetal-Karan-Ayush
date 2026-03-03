@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Box, Tooltip, Typography } from '@mui/material';
 
 interface ClampedTooltipTextProps {
-    children: string;
+    children: React.ReactNode;
     lines?: number;
     variant?: 'body1' | 'body2' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
     maxWidth?: string | number;

@@ -1,5 +1,6 @@
 import { Delete, Edit } from '@mui/icons-material';
 import {
+    BadgeProps,
     Box,
     BoxProps,
     Button,
@@ -13,6 +14,12 @@ import {
     TableRow,
     tableRowClasses,
 } from '@mui/material';
+
+interface StatusBadgeProps extends BadgeProps {
+    ownerState: {
+        archived: boolean;
+    };
+}
 
 export const StyledHeader = styled(Box)<BoxProps>(({ theme }) => {
     const { palette, spacing } = theme;
@@ -139,7 +146,9 @@ export const DeleteIcon = styled(Delete)(({ theme }) => ({
     },
 }));
 
-export const StatusBadge = styled(Chip)(({ theme, ownerState }: any) => ({
+export const StatusBadge = styled(Chip, {
+    shouldForwardProp: (prop) => prop !== 'ownerState',
+})<StatusBadgeProps>(({ theme, ownerState }) => ({
     height: 24,
     fontWeight: 500,
     fontSize: 12,

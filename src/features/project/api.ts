@@ -1,6 +1,12 @@
 import { api, handleApiError } from '@api';
 
-import { projectCreateSchema, ProjectFormData } from './schema';
+import {
+    projectCreateSchema,
+    ProjectFormData,
+    ProjectResponse,
+    ProjectUpdateData,
+    projectUpdateSchema,
+} from './schema';
 
 type CheckKeyResponse = {
     valid: boolean;
@@ -8,7 +14,7 @@ type CheckKeyResponse = {
 
 export const createProject = async (
     data: ProjectFormData,
-): Promise<ProjectFormData> => {
+): Promise<ProjectResponse> => {
     try {
         const parseResult = projectCreateSchema.safeParse(data);
         if (!parseResult.success) {
@@ -17,12 +23,18 @@ export const createProject = async (
 
         const response = await api.post('/projects', data);
 
-        const parsed = projectCreateSchema.safeParse(response.data);
-        if (!parsed.success) {
-            throw new Error('Invalid server response');
-        }
+        const project = response.data as ProjectResponse;
 
-        return parsed.data;
+        const formattedProject: ProjectResponse = {
+            id: project.id,
+            title: project.title,
+            description: project.description || '',
+            jira_project_key: project.jira_project_key.toUpperCase(),
+            jira_url: `${project.jira_url.replace(/\/$/, '')}/browse/${project.jira_project_key}`,
+            status: 1,
+        };
+
+        return formattedProject;
     } catch (error: unknown) {
         return handleApiError(error);
     }
@@ -56,31 +68,39 @@ export const checkProjectKey = async (
 };
 
 export const updateProject = async (
-    projectId: string,
-    data: ProjectFormData,
-): Promise<ProjectFormData> => {
+    projectKey: string,
+    data: ProjectUpdateData,
+): Promise<ProjectResponse> => {
     try {
-        const parseResult = projectSchema.safeParse(data);
+        const parseResult = projectUpdateSchema.safeParse(data);
         if (!parseResult.success) {
             throw new Error('Invalid project data');
         }
 
-        const response = await api.put(`/projects/${projectId}`, data);
+        const response = await api.patch(`/projects/${projectKey}`, data);
 
-        const parsed = projectSchema.safeParse(response.data);
-        if (!parsed.success) {
-            throw new Error('Invalid server response');
-        }
+        const project = response.data as ProjectResponse;
 
-        return parsed.data;
+        const formattedProject: ProjectResponse = {
+            id: project.id,
+            title: project.title,
+            description: project.description || '',
+            jira_project_key: project.jira_project_key.toUpperCase(),
+            jira_url: `${project.jira_url.replace(/\/$/, '')}/browse/${project.jira_project_key}`,
+            status: 1,
+        };
+
+        return formattedProject;
     } catch (error: unknown) {
         return handleApiError(error);
     }
 };
 
-export const deleteProject = async (projectId: string): Promise<void> => {
+export const deleteProject = async (projectKey: string): Promise<void> => {
     try {
-        await api.delete(`/projects/${projectId}`);
+        await api.delete(`/projects/`, {
+            params: { project_key: projectKey },
+        });
     } catch (error: unknown) {
         return handleApiError(error);
     }

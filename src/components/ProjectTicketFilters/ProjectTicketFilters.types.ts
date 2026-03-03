@@ -10,6 +10,9 @@ export type Filters = {
 
 export type ProjectTicketFilterProps = {
     filters: Filters;
-    onChange: (field: keyof Filters, value: any) => void;
+    onChange: (
+        field: keyof Filters,
+        value: string | dayjs.Dayjs | null,
+    ) => void;
     onReset: () => void;
-}
+};

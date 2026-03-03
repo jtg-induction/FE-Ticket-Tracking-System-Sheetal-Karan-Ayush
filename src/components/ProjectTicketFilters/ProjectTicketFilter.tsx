@@ -1,9 +1,7 @@
 import { MenuItem } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
-import { ProjectTicketFilterProps } from './ProjectTciketFilters.types';
 import {
     FilterField,
     FiltersContainer,
@@ -12,6 +10,7 @@ import {
     SmallFilterField,
     StyledDatePicker,
 } from './ProjectTicketFilter.style';
+import { ProjectTicketFilterProps } from './ProjectTicketFilters.types';
 
 export const ProjectTicketFilters = ({
     filters,

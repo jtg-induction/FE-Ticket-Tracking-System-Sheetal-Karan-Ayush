@@ -9,8 +9,8 @@ import axios, {
 const PATH = import.meta.env.VITE_API_SERVER_URL as string;
 
 type RefreshTokenResponse = {
-    accessToken: string;
-    refreshToken: string;
+    access_token: string;
+    refresh_token: string;
 }
 
 export const api: AxiosInstance = axios.create({
@@ -31,12 +31,13 @@ const refreshTokenApi = async (): Promise<string> => {
         },
     );
 
-    const { accessToken, refreshToken } = response.data;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { access_token, refresh_token } = response.data;
+    
+    localStorage.setItem('access_token', access_token);
+    localStorage.setItem('refresh_token', refresh_token);
 
-    localStorage.setItem('access_token', accessToken);
-    localStorage.setItem('refresh_token', refreshToken);
-
-    return accessToken;
+    return access_token;
 };
 
 api.interceptors.request.use(

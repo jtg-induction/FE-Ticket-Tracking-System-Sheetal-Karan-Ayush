@@ -5,3 +5,4 @@ export {ClampedTooltipText} from './ClampedToolTipText';
 export { SectionLayout } from './SectionLayout';
 export { ProjectTicketFilters } from './ProjectTicketFilters';
 export { DialogBox } from './DialogBox';
+export type { Filters } from './ProjectTicketFilters';

@@ -48,4 +48,3 @@ export const loginUser = async (data: LoginInput): Promise<AuthResponse> => {
         return handleApiError(error);
     }
 };
-
