@@ -13,19 +13,28 @@ export const LayoutStyled = styled(Box)(({ theme }) => {
 
 export const ContentWrapper = styled(Box)({
     display: 'flex',
-    height: '100%',
+    flexGrow: 1,
+    height: `calc(100vh - 70px)`,
+    overflow: 'hidden',
 });
 
 export const StyledMainContent = styled(Box)(({ theme }) => {
     const {
-        typography: { pxToRem },
+        typography: { pxToRem }, breakpoints
     } = theme;
-
-    // const HEADER_HEIGHT = ;
+    const HEADER_HEIGHT = 64;
+    const SIDEBAR_WIDTH = 250;
     return {
+        position: 'relative',
+        height: '100%',
+        overflowY: 'auto',
         flex: '1',
         maxWidth: pxToRem(2000),
         marginInline: 'auto',
-        // marginTop: pxToRem(HEADER_HEIGHT),
+        marginLeft: pxToRem(SIDEBAR_WIDTH),
+        marginTop: pxToRem(HEADER_HEIGHT),
+        [breakpoints.down('sm')]: {
+            marginLeft: 0,
+        },
     };
 });

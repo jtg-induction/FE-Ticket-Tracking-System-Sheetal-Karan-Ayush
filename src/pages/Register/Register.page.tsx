@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 
 import { BugReport } from '@mui/icons-material';
 import {
@@ -91,13 +91,16 @@ export const Register = () => {
         }
         signupMutation.mutate({name, email, password, avatarId: 1}, { onSuccess: () => setOtpOpen(true)})
     };
-
+    const navigate = useNavigate();
     const handleVerify = (otp: number) => {
         verifyMutation.mutate({name, email, password, avatarId: 1, otp}, 
         { 
             onSuccess: (data) => {
                 setAuth(data);
                 setOtpOpen(false);
+                localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('refresh_token', data.refresh_token);
+                void navigate('/project/create')
             },
             onError: () => {
                 <Typography variant='subtitle2' sx={{ color: theme.palette.error.contrastText }}>

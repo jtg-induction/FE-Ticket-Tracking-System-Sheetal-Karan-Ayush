@@ -33,7 +33,7 @@ export const loginUser = async (data: LoginInput): Promise<AuthResponse> => {
         const payload = {
             email: data.email, password: data.password,
         }
-        const response = await api.post("/api/auth/login", payload);
+        const response = await api.post("/api/auth/login", payload); 
         const parsed = authResponseSchema.safeParse(response.data);
 
         if (!parsed.success) {
