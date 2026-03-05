@@ -20,7 +20,7 @@ const routes: RouteObject[] = [
                 element: <ProjectCreationPage />,
             },
             {
-                path: 'project/:id',
+                path: 'project/:projectKey',
                 element: <ProjectDashboardPage />,
             },
             {

@@ -13,7 +13,6 @@ import { SidebarItemListProps } from './SidebarList.types';
 
 export const SidebarItemList = ({
     item,
-    depth,
     IconComponent,
     isActive,
     isExpanded,
@@ -33,7 +32,7 @@ export const SidebarItemList = ({
                     expandIcon={<ExpandMore fontSize="large" />}
                 >
                     {IconComponent && <IconComponent />}
-                    <Typography variant={depth === 0 ? 'h3' : 'body1'}>
+                    <Typography variant='body1'>
                         {item.title}
                     </Typography>
                 </StyledAccordionSummary>

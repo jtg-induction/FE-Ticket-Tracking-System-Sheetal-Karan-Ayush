@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 
 import dayjs from 'dayjs';
+import { useParams } from 'react-router-dom';
 
 import {
     Badge,
@@ -25,6 +26,7 @@ import {
 } from '@components';
 import {
     useDeleteProject,
+    useGetProject,
     useProjectStore,
     useUpdateProject,
 } from '@features/project';
@@ -54,7 +56,6 @@ import {
 
 export const ProjectDashboardPage = () => {
     const {
-        project,
         setDeleteTarget,
         deleteTarget,
         clearDeleteTarget,
@@ -69,6 +70,8 @@ export const ProjectDashboardPage = () => {
         status: '',
         sort: 'latest',
     };
+    const { projectKey } = useParams<{ projectKey: string }>();
+    const { data: project } = useGetProject(projectKey);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
 
@@ -78,15 +81,15 @@ export const ProjectDashboardPage = () => {
     const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
     const [filters, setFilters] = useState(defaultFilters);
 
-   const handleFilterChange = (
-       field: keyof Filters,
-       value: string | dayjs.Dayjs | null,
-   ) => {
-       setFilters((prev) => ({
-           ...prev,
-           [field]: value, 
-       }));
-   };
+    const handleFilterChange = (
+        field: keyof Filters,
+        value: string | dayjs.Dayjs | null,
+    ) => {
+        setFilters((prev) => ({
+            ...prev,
+            [field]: value,
+        }));
+    };
     const handleChangePage = (_event: unknown, newPage: number) => {
         setPage(newPage);
     };
@@ -152,29 +155,27 @@ export const ProjectDashboardPage = () => {
         setFilters(defaultFilters);
     };
 
-    const handleUpdateProject = () => {
-        if (project?.id) {
-            const statusValue = updateFormData.status ?? 1;  
-            const updatedProjectData = {
-                ...project,
-                title: updateFormData.title || '',
-                description: updateFormData.description || '',
-                status: statusValue,
-            };
+     const handleUpdateProject = () => {
+         if (!project) return;
+        const statusValue = Number(updateFormData.status) || 1; 
+         updateProject({
+             jira_project_key: project.jira_project_key,
+             data: {
+                 title: updateFormData.title || '',
+                 description: updateFormData.description || '',
+                 status: statusValue,
+             },
+         });
+         setIsProjectDialogOpen(false);
+     };
 
-            updateProject({ jira_project_key: project.jira_project_key, data: updatedProjectData });
-            setIsProjectDialogOpen(false);
-        }
-    };
+   const handleDeleteProject = () => {
+       if (!deleteTarget) return;
 
-    const handleDeleteProject = () => {
-        if (deleteTarget?.jira_project_key) {
-            deleteProject(deleteTarget.jira_project_key);
-            setIsDeleteDialogOpen(false);
-            clearDeleteTarget();
-        }
-    };
-
+       deleteProject(deleteTarget.jira_project_key);
+       setIsDeleteDialogOpen(false);
+       clearDeleteTarget();
+   };
     return (
         <>
             <StyledHeader>
@@ -185,9 +186,7 @@ export const ProjectDashboardPage = () => {
                         </ClampedTooltipText>
                         <StatusBadge
                             label={
-                                project?.status === 2
-                                    ? 'Archived'
-                                    : 'Active'
+                                project?.status === 2 ? 'Archived' : 'Active'
                             }
                             ownerState={{
                                 archived: project?.status === 2,
@@ -307,6 +306,8 @@ export const ProjectDashboardPage = () => {
                     onClose={() => setIsProjectDialogOpen(false)}
                     onSubmit={handleUpdateProject}
                 >
+                    { project?.status == 1 &&
+                    <>
                     <TextField
                         fullWidth
                         margin="normal"
@@ -328,15 +329,17 @@ export const ProjectDashboardPage = () => {
                             setUpdateFormData({ description: e.target.value })
                         }
                     />
+                    </> 
+                 }
                     <Box>
                         <FormControlLabel
                             control={
                                 <Switch
-                                    checked={updateFormData?.status === 2} 
+                                    checked={updateFormData?.status === 2}
                                     onChange={(e) => {
                                         const newStatus = e.target.checked
                                             ? 2
-                                            : 1; 
+                                            : 1;
                                         setUpdateFormData({
                                             status: newStatus,
                                         });
@@ -348,7 +351,7 @@ export const ProjectDashboardPage = () => {
                                 updateFormData?.status === 2
                                     ? 'Archived'
                                     : 'Active'
-                            } 
+                            }
                         />
                     </Box>
                 </DialogBox>
