@@ -13,9 +13,9 @@ import {
 } from '@mui/material';
 
 import { HeroCard } from '@components';
-import { VerifyOtpDialog } from '@containers/VerifyOtp/VerifyOtp.container';
+import { VerifyOtpDialog } from '@containers/VerifyOtp';
 import { useSignupMutation, useVerifyMutation } from '@features/auth';
-import { useAuthStore } from '@features/auth/authStore';
+import { useAuthStore } from '@features/auth';
 
 import {
     StyledContent,
@@ -87,7 +87,6 @@ export const Register = () => {
         e.preventDefault();
 
         if (!isFormValid) {
-            // console.log('Submission blocked: Fix validation errors first.');
             return;
         }
         signupMutation.mutate({name, email, password, avatarId: 1}, { onSuccess: () => setOtpOpen(true)})
@@ -97,7 +96,7 @@ export const Register = () => {
         verifyMutation.mutate({name, email, password, avatarId: 1, otp}, 
         { 
             onSuccess: (data) => {
-                setAuth(data)
+                setAuth(data);
                 setOtpOpen(false);
             },
             onError: () => {
@@ -205,7 +204,7 @@ export const Register = () => {
                             Submit
                         </Button>
                     </Stack>
-                    <VerifyOtpDialog open={otpOpen} handleVerify={handleVerify} setOpen={setOtpOpen}/>
+                    <VerifyOtpDialog open={otpOpen} handleVerify={handleVerify} setOpen={setOtpOpen} errorMsg = {verifyMutation.error?.message || ""}/>
                     <Typography textAlign={'center'}>
                         Have an account? <NavLink to="/login">Login</NavLink>
                     </Typography>

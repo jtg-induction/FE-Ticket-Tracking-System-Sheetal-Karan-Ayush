@@ -1,14 +1,16 @@
 import { useState } from "react"
 
+import { Typography } from "@mui/material";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 
 import { AppDialog } from "@components/AppDialog/AppDialog.component";
+import { theme } from "@theme";
 
 import { VerifyOtpProps } from "./VerifyOtp.types";
 
 
-export const VerifyOtpDialog = ({open, setOpen, handleVerify}: VerifyOtpProps) => {
+export const VerifyOtpDialog = ({open, setOpen, handleVerify, errorMsg}: VerifyOtpProps) => {
     const [otp, setOtp] = useState<string>("");
 
     return (
@@ -36,6 +38,9 @@ export const VerifyOtpDialog = ({open, setOpen, handleVerify}: VerifyOtpProps) =
                 setOtp(val);
             }}
         />
+        <Typography variant='subtitle2' sx={{ color: theme.palette.error.contrastText }}>
+            {errorMsg}
+        </Typography>
         </AppDialog>
     );
 }

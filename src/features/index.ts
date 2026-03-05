@@ -1,2 +1,2 @@
-export { useLoginMutation, useSignupMutation } from './auth'
+export { useLoginMutation, useSignupMutation, useVerifyMutation } from './auth'
 export { type InviteUserRequest, type InviteUserResponse } from './inviteUser'

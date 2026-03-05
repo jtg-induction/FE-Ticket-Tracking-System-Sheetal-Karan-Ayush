@@ -1,1 +1,1 @@
-export { type InviteUserRequest, type InviteUserResponse } from './inviteUser.schema'
+export { type InviteUserRequest, type InviteUserResponse, inviteUserRequestSchema } from './inviteUser.schema'
