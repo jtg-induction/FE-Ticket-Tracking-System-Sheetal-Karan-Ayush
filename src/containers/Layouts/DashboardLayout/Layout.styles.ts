@@ -21,11 +21,14 @@ export const StyledMainContent = styled(Box)(({ theme }) => {
         typography: { pxToRem },
     } = theme;
 
-    // const HEADER_HEIGHT = ;
     return {
         flex: '1',
         maxWidth: pxToRem(2000),
         marginInline: 'auto',
-        // marginTop: pxToRem(HEADER_HEIGHT),
+        padding: pxToRem(16),
+        [theme.breakpoints.up('sm')]: {
+            width:`calc(100vw - ${pxToRem(250)})`,
+            marginLeft: pxToRem(250),
+        },
     };
 });
