@@ -1,3 +1,5 @@
+import { PRIMARY_FONT } from 'constant/themeConstant';
+
 import { createTheme } from '@mui/material/styles';
 
 import { SCALING_FACTOR } from '@constant';
@@ -16,7 +18,7 @@ const baseTheme = createTheme({
     mixins,
     components,
     typography: {
-        fontFamily: 'Inter',
+        fontFamily: `${PRIMARY_FONT}`,
         ...typography.typographyUtil,
     },
     spacing: (factor: number) =>

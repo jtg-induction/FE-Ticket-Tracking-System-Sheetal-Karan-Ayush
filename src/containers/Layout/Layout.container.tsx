@@ -23,12 +23,6 @@ export const Layout = () => {
             <ContentWrapper>
                 <SideBar isMenuOpen={isMenuOpen} toggleDrawer={toggleDrawer} />
                 <StyledMainContent>
-                    <h1>
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                        Ullam aspernatur corporis magni minus recusandae dolore
-                        molestias vero iste quas magnam ipsa, cumque provident
-                        odio quidem ea obcaecati delectus in illo.
-                    </h1>
                     <Outlet />
                 </StyledMainContent>
             </ContentWrapper>

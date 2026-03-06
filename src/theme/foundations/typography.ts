@@ -1,12 +1,16 @@
-import { FALLBACK_FONTS, PRIMARY_FONT } from 'constant/themeConstant';
-
 import type { Theme } from '@mui/material/styles';
 import type {
     TypographyOptions,
     TypographyUtils,
 } from '@mui/material/styles/createTypography';
 
-import { FONT_SIZES, FONT_WEIGHTS, HTML_FONT_SIZE } from '@constant';
+import {
+    FALLBACK_FONTS,
+    FONT_SIZES,
+    FONT_WEIGHTS,
+    HTML_FONT_SIZE,
+    PRIMARY_FONT,
+} from '@constant';
 
 /* Custom px to rem function */
 const typographyUtil: TypographyUtils = {
@@ -24,7 +28,7 @@ const typographyUtil: TypographyUtils = {
  * @returns The function returns a TypographyOptions object, which includes various typography settings,
  */
 const typographyStyle = (theme: Theme): TypographyOptions => ({
-    fontFamily: `'${PRIMARY_FONT}', ${FALLBACK_FONTS}`,
+    fontFamily: `${PRIMARY_FONT}, ${FALLBACK_FONTS}`,
     htmlFontSize: HTML_FONT_SIZE,
 
     h1: {

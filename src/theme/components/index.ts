@@ -1,7 +1,4 @@
-import {
-    HTML_FONT_SIZE_PERCENTAGE,
-    PRIMARY_FONT,
-} from 'constant/themeConstant';
+import { HTML_FONT_SIZE_PERCENTAGE, PRIMARY_FONT } from 'constant';
 
 import type { Components } from '@mui/material/styles';
 

@@ -35,7 +35,7 @@ export const COLORS = {
  * Font Types
  * @constant
  */
-export const PRIMARY_FONT = 'Inter';
+export const PRIMARY_FONT = `'Inter'`;
 export const FALLBACK_FONTS = 'sans-serif';
 
 /**
