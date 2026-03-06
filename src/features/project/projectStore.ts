@@ -5,7 +5,11 @@ import { ProjectFormData, ProjectResponse, ProjectUpdateData } from './schema';
 type ProjectStore = {
     createFormData: ProjectFormData;
     updateFormData: ProjectUpdateData;
+    projects: ProjectResponse[];
     project: ProjectResponse | null;
+    setProjects: (projects: ProjectResponse[]) => void;
+    addProject: (project: ProjectResponse) => void;
+    removeProject: (id: string) => void;
     deleteTarget: ProjectResponse | null;
     setCreateFormData: (data: Partial<ProjectFormData>) => void;
     setUpdateFormData: (data: Partial<ProjectUpdateData>) => void;
@@ -31,6 +35,7 @@ const initialUpdateFormData: ProjectUpdateData = {
 };
 
 const storeCreator: StateCreator<ProjectStore> = (set) => ({
+    projects: [],
     createFormData: initialCreateFormData,
     updateFormData: initialUpdateFormData,
     project: null,
@@ -44,9 +49,17 @@ const storeCreator: StateCreator<ProjectStore> = (set) => ({
         set((state) => ({
             updateFormData: { ...state.updateFormData, ...data },
         })),
-
+    setProjects: (projects) => set({ projects }),
     setProject: (project: ProjectResponse) => set({ project }),
+    addProject: (project) =>
+        set((state) => ({
+            projects: [...state.projects, project],
+        })),
 
+    removeProject: (id) =>
+        set((state) => ({
+            projects: state.projects.filter((p) => p.id !== id),
+        })),
     setDeleteTarget: (project: ProjectResponse) =>
         set({ deleteTarget: project }),
 

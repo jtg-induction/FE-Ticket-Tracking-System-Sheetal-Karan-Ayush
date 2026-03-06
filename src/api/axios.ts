@@ -19,18 +19,17 @@ export const api: AxiosInstance = axios.create({
 
 const refreshTokenApi = async (): Promise<string> => {
     const previousRefreshToken = localStorage.getItem('refresh_token');
-
+    
     if (!previousRefreshToken) {
         throw new Error('No refresh token found');
     }
-
+    
     const response: AxiosResponse<RefreshTokenResponse> = await api.post(
         '/api/auth/refresh',
         {
-            refresh_token: previousRefreshToken,
+            token: previousRefreshToken,
         },
     );
-
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { access_token, refresh_token } = response.data;
     
@@ -59,34 +58,44 @@ api.interceptors.response.use(
     async (error: AxiosError) => {
         const originalRequest = error.config as InternalAxiosRequestConfig & {
             __isRetrying?: boolean;
-        };;
-        const status = error.response ? error.response.status : null;
+        };
+        const status = error.response?.status ?? null;
 
-        if (status === 401 &&  originalRequest && !originalRequest.__isRetrying) {
-              originalRequest.__isRetrying = true;
+        if (
+            status === 401 &&
+            originalRequest &&
+            !originalRequest.__isRetrying
+        ) {
+            originalRequest.__isRetrying = true;
 
-            if (!isRefreshing) {
-                isRefreshing = true;
-
-                try {
-                    const newAccessToken = await refreshTokenApi();
-
-                    api.defaults.headers['Authorization'] =
-                        `Bearer ${newAccessToken}`;
-
-                    failedQueue.forEach((cb) => cb(newAccessToken));
-                    failedQueue = [];
-                } finally {
-                    isRefreshing = false;
-                }
-            }
-
-            return new Promise((resolve) => {
+            return new Promise((resolve, reject) => {
                 failedQueue.push((newAccessToken: string) => {
                     (originalRequest.headers as AxiosHeaders)['Authorization'] =
                         `Bearer ${newAccessToken}`;
                     resolve(api(originalRequest));
                 });
+
+                if (!isRefreshing) {
+                    isRefreshing = true;
+                    refreshTokenApi()
+                        .then((newAccessToken) => {
+                            api.defaults.headers['Authorization'] =
+                                `Bearer ${newAccessToken}`;
+                            failedQueue.forEach((cb) => cb(newAccessToken));
+                            failedQueue = [];
+                        })
+                        .catch((err) => {
+                            failedQueue = [];
+                            if (err instanceof Error) {
+                                reject(err); 
+                            } else {
+                                reject(new Error(JSON.stringify(err))); 
+                            }
+                        })
+                        .finally(() => {
+                            isRefreshing = false;
+                        });
+                }
             });
         }
 

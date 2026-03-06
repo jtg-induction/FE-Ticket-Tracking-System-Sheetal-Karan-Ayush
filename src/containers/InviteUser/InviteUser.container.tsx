@@ -8,20 +8,19 @@ import { inviteUserRequestSchema } from "@features/inviteUser";
 import { useInviteUserMutation } from "@features/inviteUser/useInviteUserMutation";
 import { theme } from "@theme";
 
-import { UserRole } from "./InviteUser.types";
+import { InviteUserProps, UserRole } from "./InviteUser.types";
 
-export const InviteUser = () => {
-    const [open, setOpen] = useState(true);
+export const InviteUser = ({open, setOpen, projectId, projectKey}: InviteUserProps) => {
     const [email, setEmail] = useState("");
-    const [role, setRole] = useState<UserRole>(1);
+    const [role, setRole] = useState<UserRole>(2);
     const [errors, setErrors] = useState<Record<string, string>>({})
     const inviteMutation = useInviteUserMutation();
-    const projectId = 1
     const inviteOnClick = () => {
         const formData = {
             email,
             role,
             project_id: projectId,
+            project_key: projectKey,
         }
 
         const result = inviteUserRequestSchema.safeParse(formData)
@@ -69,6 +68,16 @@ export const InviteUser = () => {
                         />
                     </RadioGroup>
                 </FormControl>
+                {inviteMutation.isError && (
+                    <Typography variant='subtitle2' sx={{ color: theme.palette.error.contrastText }}>
+                        {inviteMutation.error.message}
+                    </Typography>
+                )}
+                {inviteMutation.isSuccess && (
+                    <Typography variant='subtitle2' sx={{ color: theme.palette.success.contrastText }}>
+                        {inviteMutation.data.message}
+                    </Typography>
+                )}
             </AppDialog>
         </>    
     )

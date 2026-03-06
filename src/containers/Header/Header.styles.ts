@@ -24,8 +24,7 @@ export const HamburgerButton = styled(Box)<HamburgerButtonProps & BoxProps>(({
     theme
 }) => {
     const {
-        typography: { pxToRem },
-        // palette,
+        typography: { pxToRem }
     } = theme;
     return {
         display: 'flex',
