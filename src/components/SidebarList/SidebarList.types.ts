@@ -13,7 +13,6 @@ export type SidebarItemListProps = {
     depth: number;
     IconComponent?: ElementType;
     isActive: boolean;
-    isExpanded: boolean;
     hasChildren: boolean;
     count: number;
     onClick?: () => void;
