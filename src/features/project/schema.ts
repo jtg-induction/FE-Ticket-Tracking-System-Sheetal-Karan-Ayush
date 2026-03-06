@@ -28,6 +28,7 @@ export type ProjectResponse = {
     jira_project_key: string;
     jira_url: string;
     status: number;
+    role: number;
 };
 
 export type ProjectFormData = z.infer<typeof projectCreateSchema>;
