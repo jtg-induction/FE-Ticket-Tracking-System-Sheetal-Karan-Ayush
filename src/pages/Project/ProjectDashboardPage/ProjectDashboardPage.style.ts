@@ -31,10 +31,7 @@ export const StyledHeader = styled(Box)<BoxProps>(({ theme }) => {
         padding: spacing(4),
         gap: spacing(2),
         backgroundColor: palette.common.white,
-        // position: 'fixed',
         width: '100%',
-        // top: 0,
-        // height: typography.pxToRem(64),
         zIndex: theme.zIndex.drawer + 1,
     };
 });

@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import dayjs from 'dayjs';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import {
     Badge,
@@ -70,8 +70,10 @@ export const ProjectDashboardPage = () => {
         status: '',
         sort: 'latest',
     };
+    const navigate = useNavigate();
     const { projectKey } = useParams<{ projectKey: string }>();
-    const { data: project } = useGetProject(projectKey);
+    const { data: project, isError } = useGetProject(projectKey);
+    const isDeveloper = project?.role === 2;
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
 
@@ -100,7 +102,11 @@ export const ProjectDashboardPage = () => {
         setRowsPerPage(Number.parseInt(event.target.value, 10));
         setPage(0);
     };
-
+    useEffect(() => {
+        if (isError) {
+            void navigate('/*')
+        }
+    }, [isError, navigate]);
     const handleOpenProjectDialog = () => {
         if (project) {
             setUpdateFormData({
@@ -140,6 +146,19 @@ export const ProjectDashboardPage = () => {
 
         filtered.sort((a, b) => {
             const dateA = dayjs(a.Deadline);
+            <IconBox>
+                <IconBox>
+                    <EditIcon onClick={handleOpenProjectDialog} />
+                    <DeleteIcon
+                        onClick={() => {
+                            if (project) {
+                                setDeleteTarget(project);
+                                setIsDeleteDialogOpen(true);
+                            }
+                        }}
+                    />
+                </IconBox>
+            </IconBox>;
             const dateB = dayjs(b.Deadline);
 
             if (filters.sort === 'latest') {
@@ -155,27 +174,27 @@ export const ProjectDashboardPage = () => {
         setFilters(defaultFilters);
     };
 
-     const handleUpdateProject = () => {
-         if (!project) return;
-        const statusValue = Number(updateFormData.status) || 1; 
-         updateProject({
-             jira_project_key: project.jira_project_key,
-             data: {
-                 title: updateFormData.title || '',
-                 description: updateFormData.description || '',
-                 status: statusValue,
-             },
-         });
-         setIsProjectDialogOpen(false);
-     };
+    const handleUpdateProject = () => {
+        if (!project) return;
+        const statusValue = Number(updateFormData.status) || 1;
+        updateProject({
+            jira_project_key: project.jira_project_key,
+            data: {
+                title: updateFormData.title || '',
+                description: updateFormData.description || '',
+                status: statusValue,
+            },
+        });
+        setIsProjectDialogOpen(false);
+    };
 
-   const handleDeleteProject = () => {
-       if (!deleteTarget) return;
+    const handleDeleteProject = () => {
+        if (!deleteTarget) return;
 
-       deleteProject(deleteTarget.jira_project_key);
-       setIsDeleteDialogOpen(false);
-       clearDeleteTarget();
-   };
+        deleteProject(deleteTarget.jira_project_key);
+        setIsDeleteDialogOpen(false);
+        clearDeleteTarget();
+    };
     return (
         <>
             <StyledHeader>
@@ -192,29 +211,35 @@ export const ProjectDashboardPage = () => {
                                 archived: project?.status === 2,
                             }}
                         />
-                        <IconBox>
+                        {!isDeveloper && (
                             <IconBox>
-                                <EditIcon onClick={handleOpenProjectDialog} />
-                                <DeleteIcon
-                                    onClick={() => {
-                                        if (project) {
-                                            setDeleteTarget(project);
-                                            setIsDeleteDialogOpen(true);
-                                        }
-                                    }}
-                                />
+                                <IconBox>
+                                    <EditIcon
+                                        onClick={handleOpenProjectDialog}
+                                    />
+                                    <DeleteIcon
+                                        onClick={() => {
+                                            if (project) {
+                                                setDeleteTarget(project);
+                                                setIsDeleteDialogOpen(true);
+                                            }
+                                        }}
+                                    />
+                                </IconBox>
                             </IconBox>
-                        </IconBox>
+                        )}
                         <Badge />
                     </StyledLeftBox>
-                    <StyledRightBox>
-                        <StyledButton variant="contained">
-                            Import ticket
-                        </StyledButton>
-                        <StyledButton variant="contained">
-                            Create ticket
-                        </StyledButton>
-                    </StyledRightBox>
+                    {!isDeveloper && (
+                        <StyledRightBox>
+                            <StyledButton variant="contained">
+                                Import ticket
+                            </StyledButton>
+                            <StyledButton variant="contained">
+                                Create ticket
+                            </StyledButton>
+                        </StyledRightBox>
+                    )}
                 </StyledUpperBox>
                 <StyledLowerBox>
                     <Typography variant="body2">
@@ -306,31 +331,33 @@ export const ProjectDashboardPage = () => {
                     onClose={() => setIsProjectDialogOpen(false)}
                     onSubmit={handleUpdateProject}
                 >
-                    { project?.status == 1 &&
-                    <>
-                    <TextField
-                        fullWidth
-                        margin="normal"
-                        label="Project Title"
-                        value={updateFormData?.title}
-                        onChange={(e) =>
-                            setUpdateFormData({ title: e.target.value })
-                        }
-                    />
+                    {project?.status == 1 && (
+                        <>
+                            <TextField
+                                fullWidth
+                                margin="normal"
+                                label="Project Title"
+                                value={updateFormData?.title}
+                                onChange={(e) =>
+                                    setUpdateFormData({ title: e.target.value })
+                                }
+                            />
 
-                    <TextField
-                        fullWidth
-                        margin="normal"
-                        label="Project Description"
-                        multiline
-                        rows={4}
-                        value={updateFormData?.description}
-                        onChange={(e) =>
-                            setUpdateFormData({ description: e.target.value })
-                        }
-                    />
-                    </> 
-                 }
+                            <TextField
+                                fullWidth
+                                margin="normal"
+                                label="Project Description"
+                                multiline
+                                rows={4}
+                                value={updateFormData?.description}
+                                onChange={(e) =>
+                                    setUpdateFormData({
+                                        description: e.target.value,
+                                    })
+                                }
+                            />
+                        </>
+                    )}
                     <Box>
                         <FormControlLabel
                             control={
