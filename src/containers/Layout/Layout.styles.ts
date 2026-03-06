@@ -1,5 +1,7 @@
 import { Box, styled } from '@mui/material';
 
+import { CONTAINER_MAX_WIDTH } from '@constant';
+
 export const LayoutStyled = styled(Box)(({ theme }) => {
     const { palette } = theme;
 
@@ -21,11 +23,9 @@ export const StyledMainContent = styled(Box)(({ theme }) => {
         typography: { pxToRem },
     } = theme;
 
-    // const HEADER_HEIGHT = ;
     return {
         flex: '1',
-        maxWidth: pxToRem(2000),
+        maxWidth: pxToRem(CONTAINER_MAX_WIDTH),
         marginInline: 'auto',
-        // marginTop: pxToRem(HEADER_HEIGHT),
     };
 });

@@ -5,3 +5,5 @@ export {
     FONT_WEIGHTS,
     FONT_SIZES,
 } from './themeConstant';
+
+export { CONTAINER_MAX_WIDTH } from './layoutConstants';

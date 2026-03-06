@@ -10,7 +10,7 @@ import { breakpoints, mixins, palette, typography } from './foundations';
 /* 
 Initialize the theme with base theme elements (excluding typography styles and spacing to ensure the theme has correct breakpoints and pxToRem function set.)
 */
-let theme = createTheme({
+const baseTheme = createTheme({
     palette,
     breakpoints,
     mixins,
@@ -23,9 +23,9 @@ let theme = createTheme({
         theme.typography.pxToRem(factor * SCALING_FACTOR),
 });
 
-theme = createTheme(theme, {
+const theme = createTheme(baseTheme, {
     typography: {
-        ...typography.typographyStyle(theme),
+        ...typography.typographyStyle(baseTheme),
     },
 });
 

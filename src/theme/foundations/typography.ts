@@ -1,3 +1,5 @@
+import { FALLBACK_FONTS, PRIMARY_FONT } from 'constant/themeConstant';
+
 import type { Theme } from '@mui/material/styles';
 import type {
     TypographyOptions,
@@ -22,7 +24,7 @@ const typographyUtil: TypographyUtils = {
  * @returns The function returns a TypographyOptions object, which includes various typography settings,
  */
 const typographyStyle = (theme: Theme): TypographyOptions => ({
-    fontFamily: `'Inter', sans-serif`,
+    fontFamily: `'${PRIMARY_FONT}', ${FALLBACK_FONTS}`,
     htmlFontSize: HTML_FONT_SIZE,
 
     h1: {

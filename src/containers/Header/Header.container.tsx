@@ -7,18 +7,18 @@ import { HeaderProps } from './Header.types';
 
 export const Header = ({ isMenuOpen, setMenuOpen }: HeaderProps) => {
     const theme = useTheme();
-    const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     useEffect(() => {
-        if (isDesktop) {
-            setMenuOpen(true);
-        } else {
+        if (isMobile) {
             setMenuOpen(false);
+        } else {
+            setMenuOpen(true);
         }
-    }, [isDesktop, setMenuOpen]);
+    }, [isMobile, setMenuOpen]);
 
     return (
         <HeaderStyled component={'header'}>
-            {!isDesktop && (
+            {isMobile && (
                 <HamburgerButton
                     component={'button'}
                     isOpen={isMenuOpen}
