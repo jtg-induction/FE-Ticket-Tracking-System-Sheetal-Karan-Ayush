@@ -7,20 +7,20 @@ import InterVariableTTF from '@assets/fonts/inter/Inter-VariableFont_opsz,wght.t
 import InterVariableWOFF2 from '@assets/fonts/inter/Inter-VariableFont_opsz,wght.woff2';
 
 const fontFaceDeclarations = `
-      @font-face {
+    @font-face {
         font-display: swap; 
         font-family: ${PRIMARY_FONT};
         src: url(${InterVariableWOFF2}) format('woff2'), 
             url(${InterVariableTTF}) format('truetype');
-      };
+        };
     `;
 
 export const components: Components = {
     MuiCssBaseline: {
         styleOverrides: `
             ${fontFaceDeclarations},
-            html: {
-                fontSize: ${HTML_FONT_SIZE_PERCENTAGE},
+            html {
+                font-size: ${HTML_FONT_SIZE_PERCENTAGE}%;
             },
         `,
     },
