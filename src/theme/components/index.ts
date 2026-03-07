@@ -11,17 +11,17 @@ const fontFaceDeclarations = `
         font-display: swap; 
         font-family: ${PRIMARY_FONT};
         src: url(${InterVariableWOFF2}) format('woff2'), 
-        url(${InterVariableTTF}) format('truetype');
+            url(${InterVariableTTF}) format('truetype');
       };
     `;
 
 export const components: Components = {
     MuiCssBaseline: {
-        styleOverrides: {
-            '@font-face': fontFaceDeclarations,
+        styleOverrides: `
+            ${fontFaceDeclarations},
             html: {
-                fontSize: `${HTML_FONT_SIZE_PERCENTAGE}%`,
+                fontSize: ${HTML_FONT_SIZE_PERCENTAGE},
             },
-        },
+        `,
     },
 };
