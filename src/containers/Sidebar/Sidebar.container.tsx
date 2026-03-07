@@ -8,8 +8,6 @@ export const SideBar = ({ isMenuOpen, toggleDrawer }: SideBarProps) => {
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const drawerVariant = isMobile ? 'temporary' : 'permanent';
 
-    const drawerContent = <SideBarStyled component={'aside'}></SideBarStyled>;
-
     return (
         <Drawer
             variant={drawerVariant}
@@ -17,7 +15,7 @@ export const SideBar = ({ isMenuOpen, toggleDrawer }: SideBarProps) => {
             onClose={toggleDrawer}
         >
             <Toolbar />
-            {drawerContent}
+            <SideBarStyled component={'aside'}></SideBarStyled>;
         </Drawer>
     );
 };

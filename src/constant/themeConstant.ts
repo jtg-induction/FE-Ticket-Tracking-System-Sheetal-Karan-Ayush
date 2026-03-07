@@ -32,10 +32,23 @@ export const COLORS = {
 };
 
 /**
+ * Font Types
+ * @constant
+ */
+export const PRIMARY_FONT = `'Inter'`;
+export const FALLBACK_FONTS = 'sans-serif';
+
+/**
+ * Base font size percentage
+ * @constant
+ */
+export const HTML_FONT_SIZE_PERCENTAGE = 62.5;
+
+/**
  * Base font size in pixels.
  * @constant
  */
-export const HTML_FONT_SIZE = 10;
+export const HTML_FONT_SIZE = (HTML_FONT_SIZE_PERCENTAGE / 100) * 16;
 
 /**
  * Scaling factor used for spacing.
