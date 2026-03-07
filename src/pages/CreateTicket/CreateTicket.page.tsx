@@ -1,4 +1,4 @@
-import { Box, Button, FormControl, Stack, TextField, Typography, useTheme } from "@mui/material"
+import { Autocomplete, Box, Button, Chip, FormControl, Stack, TextField, Typography, useTheme } from "@mui/material"
 import { useState } from "react";
 import { ticketPriorityOptions, ticketStatusOptions, ticketTypeOptions } from "./CreateTicket.config";
 import { SelectInput } from "@components";
@@ -24,6 +24,7 @@ export const CreateTicket = () => {
     const [ticketType, setTicketType] = useState(0);
     const [ticketStatus, setTicketStatus] = useState(0);
     const [ticketPriority, setTicketPriority] = useState(0);
+    const [labels, setLabels] = useState<string[]>([]);
     const [deadline, setDeadline] = React.useState<dayjs.Dayjs | null>(null);
 
     const {
@@ -132,6 +133,37 @@ export const CreateTicket = () => {
                                 : ''
                         }
                     />
+
+
+
+                    <Autocomplete
+                        multiple
+                        freeSolo
+                        options={[]}
+                        value={labels}
+                        onChange={(_, newValue) => setLabels(newValue)}
+                        renderTags={(value, getTagProps) =>
+                            value.map((option, index) => {
+                                const { key, ...tagProps } = getTagProps({ index });
+                                return (
+                                    <Chip
+                                        key={key} 
+                                        label={option}
+                                        {...tagProps} 
+                                        color="success"
+                                    />
+                                );
+                            })
+                        }
+                        renderInput={(params) => (
+                            <TextField {...params} label="Add Labels" placeholder="Type and press Enter" />
+                        )}
+                    />
+
+
+
+
+
 
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker

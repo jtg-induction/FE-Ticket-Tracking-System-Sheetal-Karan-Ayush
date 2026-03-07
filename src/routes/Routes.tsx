@@ -10,12 +10,17 @@ const routes: RouteObject[] = [
 
         children: [
             {
-                path: 'ticket/create',
-                element: <CreateTicket />,
-            },
-            {
-                path: 'ticket/details/:key',
-                element: <TicketDetails />,
+                path: 'project/:projectKey',
+                children: [
+                    {
+                        path: 'create',
+                        element: <CreateTicket />
+                    },
+                    {
+                        path: ':ticketKey',
+                        element: <TicketDetails />
+                    },
+                ]
             },
             {
                 path: '*',
