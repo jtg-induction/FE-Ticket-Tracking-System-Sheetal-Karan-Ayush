@@ -1,12 +1,12 @@
 import { createBrowserRouter, RouteObject } from 'react-router-dom';
 
-import { Layout } from '@containers';
 import { Login, PageNotFound, Register } from '@pages';
+import { DashboardLayout } from '@containers';
 
 const routes: RouteObject[] = [
     {
         path: '/',
-        element: <Layout />,
+        element: <DashboardLayout />,
 
         children: [
             {

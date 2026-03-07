@@ -1,8 +1,6 @@
-import { PRIMARY_FONT } from 'constant/themeConstant';
-
 import { createTheme } from '@mui/material/styles';
 
-import { SCALING_FACTOR } from '@constant';
+import { SCALING_FACTOR, PRIMARY_FONT, SHADOWS } from '@constant';
 
 /* Customized MUI components themes */
 import { components } from './components';
@@ -23,6 +21,7 @@ const baseTheme = createTheme({
     },
     spacing: (factor: number) =>
         theme.typography.pxToRem(factor * SCALING_FACTOR),
+    shadow: SHADOWS,
 });
 
 const theme = createTheme(baseTheme, {
