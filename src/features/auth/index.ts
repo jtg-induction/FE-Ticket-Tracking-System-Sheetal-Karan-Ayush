@@ -1,2 +1,2 @@
-export { useLoginMutation } from './useLoginMutation'
-export { useSignupMutation } from './useSignupMutation'
+export { useLoginMutation } from './useLoginMutation';
+export { useSignupMutation } from './useSignupMutation';

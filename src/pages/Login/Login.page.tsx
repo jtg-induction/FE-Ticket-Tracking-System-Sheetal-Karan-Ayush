@@ -61,7 +61,7 @@ export const Login = () => {
             // console.log('Submission blocked: Fix validation errors first.');
             return;
         }
-        loginMutation.mutate({email, password})
+        loginMutation.mutate({ email, password });
         //call backend
         // console.log('Form Submitted Data:', { email, password });
     };
@@ -125,7 +125,10 @@ export const Login = () => {
                         />
 
                         {loginMutation.isError && (
-                            <Typography variant='subtitle2' sx={{ color: theme.palette.error.contrastText }}>
+                            <Typography
+                                variant="subtitle2"
+                                sx={{ color: theme.palette.error.contrastText }}
+                            >
                                 {loginMutation.error.message}
                             </Typography>
                         )}
@@ -141,7 +144,8 @@ export const Login = () => {
                     </Stack>
 
                     <Typography textAlign={'center'}>
-                        {"Don't have an account?" }<NavLink to="/register">Register</NavLink>
+                        {"Don't have an account?"}
+                        <NavLink to="/register">Register</NavLink>
                     </Typography>
                 </StyledLoginCard>
                 {isDesktop && <HeroCard />}

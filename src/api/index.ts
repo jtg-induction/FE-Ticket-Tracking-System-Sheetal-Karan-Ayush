@@ -1,2 +1,2 @@
 export { api } from './axios';
-export { inviteUserApi } from './inviteUserApi'
+export { inviteUserApi } from './inviteUserApi';

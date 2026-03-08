@@ -1,65 +1,76 @@
-import { CommentItem, EnumChip } from "@components";
-import { EnumSelect } from "@components/EnumSelect/EnumSelect.component";
-import { Delete, Edit } from "@mui/icons-material";
-import { Autocomplete, Box, Button, Card, Chip, Container, Divider, Paper, Stack, TextField, Typography, useTheme } from "@mui/material";
-import { TICKET_PRIORITY, TICKET_STATUS, TICKET_TYPE } from "constant/ticketEnums";
-import { useState } from "react";
-import { useParams } from "react-router-dom";
-import { CommentType } from "./TicketDetails.type";
+import { useState } from 'react';
 
+import {
+    TICKET_PRIORITY,
+    TICKET_STATUS,
+    TICKET_TYPE,
+} from 'constant/ticketEnums';
+import { useParams } from 'react-router-dom';
+
+import { Delete, Edit } from '@mui/icons-material';
+import {
+    Autocomplete,
+    Box,
+    Button,
+    Card,
+    Chip,
+    Divider,
+    Stack,
+    TextField,
+    Typography,
+} from '@mui/material';
+
+import { CommentItem, EnumChip } from '@components';
+import { EnumSelect } from '@components/EnumSelect/EnumSelect.component';
+
+import { CommentType } from './TicketDetails.type';
 
 export const TicketDetails = () => {
-
-    const theme = useTheme();
-
-
-
-
-
     // MOCK DATA
     const MOCK_TICKET = {
-        id: "1",
-        ticketKey: "T101",
-        title: "First Ticket",
-        description: "this is a demo ticket related to first bug. this is its description.",
+        id: '1',
+        ticketKey: 'T101',
+        title: 'First Ticket',
+        description:
+            'this is a demo ticket related to first bug. this is its description.',
         type: 3,
         status: 2,
         priority: 1,
-        createdAt: "2024-03-20T10:30:00Z",
-        assignee: "john@gmail.com",
-        reporter: "smith@example.com",
-        labels: ["issue", "minor", "first", "mandatory"],
+        createdAt: '2024-03-20T10:30:00Z',
+        assignee: 'john@gmail.com',
+        reporter: 'smith@example.com',
+        labels: ['issue', 'minor', 'first', 'mandatory'],
         history: [],
         comments: [
             {
                 id: 1,
-                user: "First User",
-                commentText: "Ticket created and assigned to Tech Team.",
+                user: 'First User',
+                commentText: 'Ticket created and assigned to Tech Team.',
                 parentComment: null,
-                time: "2026-02-06T12:10:00Z",
+                time: '2026-02-06T12:10:00Z',
             },
             {
                 id: 2,
-                user: "Jane Doe",
-                commentText: "Checking the payment logs now.",
+                user: 'Jane Doe',
+                commentText: 'Checking the payment logs now.',
                 parentComment: null,
-                time: "2026-03-06T12:15:00Z",
+                time: '2026-03-06T12:15:00Z',
             },
             {
                 id: 3,
-                user: "Second User",
-                commentText: "Reply to first comment",
+                user: 'Second User',
+                commentText: 'Reply to first comment',
                 parentComment: 1,
-                time: "2026-03-06T12:55:00Z",
+                time: '2026-03-06T12:55:00Z',
             },
             {
                 id: 4,
-                user: "Second User",
-                commentText: "Fixed the issue",
+                user: 'Second User',
+                commentText: 'Fixed the issue',
                 parentComment: 1,
-                time: "2026-03-07T10:10:00Z",
-            }
-        ]
+                time: '2026-03-07T10:10:00Z',
+            },
+        ],
     };
 
     const { projectKey, ticketKey } = useParams();
@@ -72,23 +83,19 @@ export const TicketDetails = () => {
     const [reporter, setReporter] = useState(`${ticket.reporter}`);
     const [labels, setLabels] = useState<string[]>(ticket.labels);
     const [comments, setComments] = useState<CommentType[]>(ticket.comments);
-    const [newComment, setNewComment] = useState("");
-
+    const [newComment, setNewComment] = useState('');
 
     const mainComments = comments.filter(
-        (comment) => comment.parentComment === null
-    )
+        (comment) => comment.parentComment === null,
+    );
 
     const getReplies = (commentId: number) =>
-        comments.filter(
-            (reply) => reply.parentComment === commentId
-        )
+        comments.filter((reply) => reply.parentComment === commentId);
 
     //TODO: modify to call update api on save (if isEditing)
     const handleEditClick = () => {
         setIsEditing(!isEditing);
-    }
-
+    };
 
     const handleAddComment = () => {
         const comment = {
@@ -97,11 +104,11 @@ export const TicketDetails = () => {
             commentText: newComment,
             time: new Date().toISOString(),
             parentComment: null,
-            user: "current user",
-        }
-        setComments((prev) => [comment, ...prev])
-        setNewComment("");
-    }
+            user: 'current user',
+        };
+        setComments((prev) => [comment, ...prev]);
+        setNewComment('');
+    };
 
     const handleReply = (text: string, parentId: number) => {
         const reply = {
@@ -110,51 +117,57 @@ export const TicketDetails = () => {
             commentText: text,
             time: new Date().toISOString(),
             parentComment: parentId,
-            user: "current user",
-        }
+            user: 'current user',
+        };
         setComments((prev) => [reply, ...prev]);
-    }
-
-
-
-
+    };
 
     return (
-
-        <Box display="flex" flexDirection={"column"} gap={2}>
-
+        <Box display="flex" flexDirection={'column'} gap={2}>
             {/* for heading -> project and ticket headings */}
             <Box padding={'12px'}>
-                <Typography variant="h3" color="info.contrastText">Project: {projectKey}</Typography>
+                <Typography variant="h3" color="info.contrastText">
+                    Project: {projectKey}
+                </Typography>
 
                 <Box display={'flex'} gap={4}>
-                    <Typography variant="h2">
-                        Ticket: {ticketKey}
-                    </Typography>
+                    <Typography variant="h2">Ticket: {ticketKey}</Typography>
 
                     <EnumSelect
                         value={ticket.status}
                         map={TICKET_STATUS}
-                        onChange={(status) => setTicket((prev) => ({ ...prev, status }))}
+                        onChange={(status) =>
+                            setTicket((prev) => ({ ...prev, status }))
+                        }
                     />
-
                 </Box>
             </Box>
 
-
             {/* for centre card having three partitions */}
             <Box display={'flex'} gap={3}>
-
                 {/* ticket info card */}
-                <Box sx={{ flex: 4, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Box
+                    sx={{
+                        flex: 4,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                    }}
+                >
                     {/* first card in info card -> having title, description and labels (first of three partitions) */}
-                    <Card sx={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <Card
+                        sx={{
+                            padding: '12px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '12px',
+                        }}
+                    >
                         {/* heading -> title and icons */}
                         <Box display={'flex'} justifyContent={'space-between'}>
-
                             {/* left container */}
                             <TextField
-                                label={isEditing ? "Title" : null}
+                                label={isEditing ? 'Title' : null}
                                 fullWidth
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
@@ -164,25 +177,33 @@ export const TicketDetails = () => {
                                         disableUnderline: !isEditing,
                                     },
                                 }}
-                                variant={isEditing ? "outlined" : "standard"}
+                                variant={isEditing ? 'outlined' : 'standard'}
                                 sx={{
-                                    "& .MuiInputBase-input": !isEditing ? (theme) => ({
-                                        ...theme.typography.h3,
-                                        color: theme.palette.primary.main,
-                                    }) : {},
+                                    '& .MuiInputBase-input': !isEditing
+                                        ? (theme) => ({
+                                              ...theme.typography.h3,
+                                              color: theme.palette.primary.main,
+                                          })
+                                        : {},
                                 }}
                             />
 
                             {/* right container */}
                             <Box display={'flex'} gap={2} alignItems={'center'}>
-                                {isEditing ? <Button onClick={handleEditClick}>Save</Button> : <Edit onClick={handleEditClick} />}
+                                {isEditing ? (
+                                    <Button onClick={handleEditClick}>
+                                        Save
+                                    </Button>
+                                ) : (
+                                    <Edit onClick={handleEditClick} />
+                                )}
                                 <Delete />
                             </Box>
                         </Box>
 
                         {/* description */}
                         <TextField
-                            label={isEditing ? "Description" : null}
+                            label={isEditing ? 'Description' : null}
                             multiline
                             fullWidth
                             minRows={isEditing ? 3 : 1}
@@ -194,11 +215,11 @@ export const TicketDetails = () => {
                                     disableUnderline: !isEditing,
                                 },
                             }}
-                            variant={isEditing ? "outlined" : "standard"}
+                            variant={isEditing ? 'outlined' : 'standard'}
                         />
 
                         {/* for showing labels */}
-                        {isEditing ?
+                        {isEditing ? (
                             <Autocomplete
                                 multiple
                                 freeSolo
@@ -207,7 +228,8 @@ export const TicketDetails = () => {
                                 onChange={(_, newValue) => setLabels(newValue)}
                                 renderTags={(value, getTagProps) =>
                                     value.map((option, index) => {
-                                        const { key, ...tagProps } = getTagProps({ index });
+                                        const { key, ...tagProps } =
+                                            getTagProps({ index });
                                         return (
                                             <Chip
                                                 key={key}
@@ -219,10 +241,14 @@ export const TicketDetails = () => {
                                     })
                                 }
                                 renderInput={(params) => (
-                                    <TextField {...params} label="Add Labels" placeholder="Type and press Enter" />
+                                    <TextField
+                                        {...params}
+                                        label="Add Labels"
+                                        placeholder="Type and press Enter"
+                                    />
                                 )}
                             />
-                            :
+                        ) : (
                             <Box display={'flex'} alignItems={'center'} gap={2}>
                                 <Typography variant="body1">Labels:</Typography>
 
@@ -234,14 +260,21 @@ export const TicketDetails = () => {
                                     />
                                 ))}
                             </Box>
-                        }
-
+                        )}
                     </Card>
 
                     {/* second card in info card -> having assignments (first of three partitions) */}
-                    <Card sx={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-
-                        <Typography variant="body1" color="info.contrastText">ASSIGNMENTS</Typography>
+                    <Card
+                        sx={{
+                            padding: '12px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '8px',
+                        }}
+                    >
+                        <Typography variant="body1" color="info.contrastText">
+                            ASSIGNMENTS
+                        </Typography>
 
                         {/* assignee */}
                         <Box display={'flex'} alignItems={'center'} gap={2}>
@@ -257,7 +290,7 @@ export const TicketDetails = () => {
                                         disableUnderline: !isEditing,
                                     },
                                 }}
-                                variant={isEditing ? "outlined" : "standard"}
+                                variant={isEditing ? 'outlined' : 'standard'}
                             />
                         </Box>
                         {/* reporter */}
@@ -274,24 +307,34 @@ export const TicketDetails = () => {
                                         disableUnderline: !isEditing,
                                     },
                                 }}
-                                variant={isEditing ? "outlined" : "standard"}
+                                variant={isEditing ? 'outlined' : 'standard'}
                             />
                         </Box>
-
                     </Card>
                 </Box>
 
                 {/* status, type and priority details card */}
-                <Card sx={{ flex: 1, padding: '12px', maxWidth: '250px', minWidth: '180px' }}>
-
+                <Card
+                    sx={{
+                        flex: 1,
+                        padding: '12px',
+                        maxWidth: '250px',
+                        minWidth: '180px',
+                    }}
+                >
                     {isEditing ? (
-                        <Box display={'flex'} flexDirection={'column'} gap={4} >
+                        <Box display={'flex'} flexDirection={'column'} gap={4}>
                             <Box display={'flex'} alignItems={'center'} gap={2}>
                                 <Typography>Status:</Typography>
                                 <EnumSelect
                                     value={ticket.status}
                                     map={TICKET_STATUS}
-                                    onChange={(status) => setTicket((prev) => ({ ...prev, status }))}
+                                    onChange={(status) =>
+                                        setTicket((prev) => ({
+                                            ...prev,
+                                            status,
+                                        }))
+                                    }
                                 />
                             </Box>
 
@@ -300,7 +343,9 @@ export const TicketDetails = () => {
                                 <EnumSelect
                                     value={ticket.type}
                                     map={TICKET_TYPE}
-                                    onChange={(type) => setTicket((prev) => ({ ...prev, type }))}
+                                    onChange={(type) =>
+                                        setTicket((prev) => ({ ...prev, type }))
+                                    }
                                 />
                             </Box>
 
@@ -309,7 +354,12 @@ export const TicketDetails = () => {
                                 <EnumSelect
                                     value={ticket.priority}
                                     map={TICKET_PRIORITY}
-                                    onChange={(priority) => setTicket((prev) => ({ ...prev, priority }))}
+                                    onChange={(priority) =>
+                                        setTicket((prev) => ({
+                                            ...prev,
+                                            priority,
+                                        }))
+                                    }
                                 />
                             </Box>
                         </Box>
@@ -317,44 +367,59 @@ export const TicketDetails = () => {
                         <Box display={'flex'} flexDirection={'column'} gap={4}>
                             <Box display={'flex'} alignItems={'center'} gap={2}>
                                 <Typography>Status:</Typography>
-                                <EnumChip value={ticket.status} map={TICKET_STATUS} />
+                                <EnumChip
+                                    value={ticket.status}
+                                    map={TICKET_STATUS}
+                                />
                             </Box>
                             <Box display={'flex'} alignItems={'center'} gap={2}>
                                 <Typography>Type:</Typography>
-                                <EnumChip value={ticket.type} map={TICKET_TYPE} />
+                                <EnumChip
+                                    value={ticket.type}
+                                    map={TICKET_TYPE}
+                                />
                             </Box>
                             <Box display={'flex'} alignItems={'center'} gap={2}>
                                 <Typography>Priority:</Typography>
-                                <EnumChip value={ticket.priority} map={TICKET_PRIORITY} />
+                                <EnumChip
+                                    value={ticket.priority}
+                                    map={TICKET_PRIORITY}
+                                />
                             </Box>
                         </Box>
-                    )
-                    }
+                    )}
                 </Card>
-
 
                 {/* history card */}
                 <Card sx={{ padding: '12px', flex: 2 }}>
-                    <Typography variant="h3" textAlign={'center'}>History</Typography>
+                    <Typography variant="h3" textAlign={'center'}>
+                        History
+                    </Typography>
                 </Card>
-
             </Box>
 
             {/*comments card*/}
-            <Card sx={{ padding: 3, display:"flex", flexDirection:"column", gap:'8px' }}> 
-                <Typography variant="h3">
-                    Comments
-                </Typography>
+            <Card
+                sx={{
+                    padding: 3,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                }}
+            >
+                <Typography variant="h3">Comments</Typography>
 
                 {/* comment box */}
-                <Box display="flex" gap={2} >
+                <Box display="flex" gap={2}>
                     <TextField
                         fullWidth
                         size="small"
                         placeholder="Add a comment..."
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
+                        onKeyDown={(e) =>
+                            e.key === 'Enter' && handleAddComment()
+                        }
                     />
                     <Button
                         variant="contained"
@@ -380,8 +445,6 @@ export const TicketDetails = () => {
                     ))}
                 </Stack>
             </Card>
-
         </Box>
-
-    )
-}
+    );
+};

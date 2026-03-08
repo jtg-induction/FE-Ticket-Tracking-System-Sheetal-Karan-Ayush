@@ -21,7 +21,7 @@ const queryClient = new QueryClient({
         mutations: {
             retry: 0,
         },
-    }
+    },
 });
 
 createRoot(rootElement).render(

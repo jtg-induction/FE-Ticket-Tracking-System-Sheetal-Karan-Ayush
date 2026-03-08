@@ -66,20 +66,20 @@ export const Register = () => {
     };
 
     const isFormValid =
-        name.length > 2 && name.length < 256 && 
-        email.length > 0 && email.length < 256 && 
-        password.length > 7 && password.length < 256 && 
+        name.length > 2 &&
+        name.length < 256 &&
+        email.length > 0 &&
+        email.length < 256 &&
+        password.length > 7 &&
+        password.length < 256 &&
         confirmPassword.length > 7 &&
         !isInvalidName &&
         !isInvalidEmail &&
         !isInvalidPassword &&
         password === confirmPassword;
 
-    
-
     const signupMutation = useSignupMutation();
 
-    
     const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
         e.preventDefault();
 
@@ -87,7 +87,7 @@ export const Register = () => {
             // console.log('Submission blocked: Fix validation errors first.');
             return;
         }
-        signupMutation.mutate({name, email, password, avatarId: 1})
+        signupMutation.mutate({ name, email, password, avatarId: 1 });
     };
 
     return (
@@ -174,7 +174,10 @@ export const Register = () => {
                             }
                         />
                         {signupMutation.isError && (
-                            <Typography variant='subtitle2' sx={{ color: theme.palette.error.contrastText }}>
+                            <Typography
+                                variant="subtitle2"
+                                sx={{ color: theme.palette.error.contrastText }}
+                            >
                                 {signupMutation.error.message}
                             </Typography>
                         )}

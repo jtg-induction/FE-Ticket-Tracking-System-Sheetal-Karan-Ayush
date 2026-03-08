@@ -1,4 +1,4 @@
-import { Card, styled, TextField } from "@mui/material";
+import { Card, styled, TextField } from '@mui/material';
 
 export const StyledErrorTextField = styled(TextField)(({ theme }) => ({
     '& .MuiInputLabel-root.Mui-error': {
@@ -12,14 +12,13 @@ export const StyledErrorTextField = styled(TextField)(({ theme }) => ({
     },
 }));
 
-
 export const StyledWrapper = styled(Card)(({ theme }) => {
-
-    const { typography: { pxToRem } } = theme;
+    const {
+        typography: { pxToRem },
+    } = theme;
 
     return {
         maxWidth: pxToRem(1024),
         margin: 'auto',
-    }
-
+    };
 });

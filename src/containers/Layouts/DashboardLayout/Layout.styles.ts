@@ -27,7 +27,7 @@ export const StyledMainContent = styled(Box)(({ theme }) => {
         marginInline: 'auto',
         padding: pxToRem(16),
         [theme.breakpoints.up('sm')]: {
-            width:`calc(100vw - ${pxToRem(250)})`,
+            width: `calc(100vw - ${pxToRem(250)})`,
             marginLeft: pxToRem(250),
         },
     };

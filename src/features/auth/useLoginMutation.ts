@@ -1,8 +1,8 @@
-import { loginUser } from 'api/authApi'
+import { loginUser } from 'api/authApi';
 
-import { useMutation } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query';
 
-import { useAuthStore } from './authStore'
+import { useAuthStore } from './authStore';
 
 export const useLoginMutation = () => {
     const setAuth = useAuthStore((s) => s.setAuth);
@@ -12,4 +12,4 @@ export const useLoginMutation = () => {
             setAuth(data);
         },
     });
-}
+};

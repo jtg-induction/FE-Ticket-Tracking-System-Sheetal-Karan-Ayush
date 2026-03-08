@@ -1,1 +1,1 @@
-export {CommentItem} from './CommentItem.component';
+export { CommentItem } from './CommentItem.component';

@@ -1,25 +1,36 @@
-import { Autocomplete, Box, Button, Chip, FormControl, Stack, TextField, Typography, useTheme } from "@mui/material"
-import { useState } from "react";
-import { ticketPriorityOptions, ticketStatusOptions, ticketTypeOptions } from "./CreateTicket.config";
-import { SelectInput } from "@components";
-import { StyledErrorTextField, StyledWrapper } from "./CreateTicket.styles";
-import { useEmailValidation } from "hooks/useEmailValidation";
+import { useState } from 'react';
+import React from 'react';
 
-
+import dayjs from 'dayjs';
+import { useEmailValidation } from 'hooks/useEmailValidation';
 import { NavLink } from 'react-router-dom';
 
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import {
+    Autocomplete,
+    Box,
+    Button,
+    Chip,
+    FormControl,
+    Stack,
+    TextField,
+    Typography,
+    useTheme,
+} from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import React from "react";
-import dayjs from "dayjs";
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
+import { SelectInput } from '@components';
 
+import {
+    ticketPriorityOptions,
+    ticketStatusOptions,
+    ticketTypeOptions,
+} from './CreateTicket.config';
+import { StyledErrorTextField, StyledWrapper } from './CreateTicket.styles';
 
 export const CreateTicket = () => {
-
     const theme = useTheme();
-
 
     const [ticketType, setTicketType] = useState(0);
     const [ticketStatus, setTicketStatus] = useState(0);
@@ -30,20 +41,18 @@ export const CreateTicket = () => {
     const {
         email: reporter,
         isInvalid: isInvalidReporter,
-        handleChange: handleReporterChange
+        handleChange: handleReporterChange,
     } = useEmailValidation();
 
     const {
         email: assignee,
         isInvalid: isInvalidAssignee,
-        handleChange: handleAssigneeChange
+        handleChange: handleAssigneeChange,
     } = useEmailValidation();
-
 
     return (
         <StyledWrapper elevation={2}>
-            <Stack spacing={4} padding={'16px'} >
-
+            <Stack spacing={4} padding={'16px'}>
                 <Typography
                     variant="h2"
                     align="center"
@@ -52,14 +61,8 @@ export const CreateTicket = () => {
                     CREATE NEW TICKET
                 </Typography>
 
-
                 <FormControl sx={{ display: 'flex', gap: '10px' }}>
-
-                    <TextField
-                        required
-                        name="title"
-                        label="Title"
-                    />
+                    <TextField required name="title" label="Title" />
 
                     <TextField
                         multiline
@@ -69,12 +72,14 @@ export const CreateTicket = () => {
                     />
 
                     {/* jira ticket key */}
-                    <TextField
-                        name="key"
-                        label="Ticket key"
-                    />
+                    <TextField name="key" label="Ticket key" />
 
-                    <Box display={"flex"} flexDirection={'row'} justifyContent={'space-between'} gap={'12px'}>
+                    <Box
+                        display={'flex'}
+                        flexDirection={'row'}
+                        justifyContent={'space-between'}
+                        gap={'12px'}
+                    >
                         {/* ticket type */}
                         <SelectInput
                             label="Ticket Type"
@@ -98,7 +103,6 @@ export const CreateTicket = () => {
                             options={ticketPriorityOptions}
                             onChange={setTicketPriority}
                         />
-
                     </Box>
 
                     {/* assignee */}
@@ -133,8 +137,6 @@ export const CreateTicket = () => {
                         }
                     />
 
-
-
                     <Autocomplete
                         multiple
                         freeSolo
@@ -143,26 +145,27 @@ export const CreateTicket = () => {
                         onChange={(_, newValue) => setLabels(newValue)}
                         renderTags={(value, getTagProps) =>
                             value.map((option, index) => {
-                                const { key, ...tagProps } = getTagProps({ index });
+                                const { key, ...tagProps } = getTagProps({
+                                    index,
+                                });
                                 return (
                                     <Chip
-                                        key={key} 
+                                        key={key}
                                         label={option}
-                                        {...tagProps} 
+                                        {...tagProps}
                                         color="success"
                                     />
                                 );
                             })
                         }
                         renderInput={(params) => (
-                            <TextField {...params} label="Add Labels" placeholder="Type and press Enter" />
+                            <TextField
+                                {...params}
+                                label="Add Labels"
+                                placeholder="Type and press Enter"
+                            />
                         )}
                     />
-
-
-
-
-
 
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
@@ -172,20 +175,19 @@ export const CreateTicket = () => {
                         />
                     </LocalizationProvider>
 
-
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        type="submit"
-                    >
+                    <Button variant="contained" color="primary" type="submit">
                         Create
                     </Button>
-
                 </FormControl>
 
-                <Typography align="center">Click <NavLink to="/ticket/import" color="inherit">here</NavLink> to import ticket from Jira.</Typography>
+                <Typography align="center">
+                    Click{' '}
+                    <NavLink to="/ticket/import" color="inherit">
+                        here
+                    </NavLink>{' '}
+                    to import ticket from Jira.
+                </Typography>
             </Stack>
-
         </StyledWrapper>
-    )
-}
+    );
+};

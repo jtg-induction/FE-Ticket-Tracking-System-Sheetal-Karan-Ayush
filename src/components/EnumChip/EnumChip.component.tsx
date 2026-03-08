@@ -1,18 +1,13 @@
-import { Chip } from "@mui/material";
-import { EnumChipProps } from "./EnumChip.types";
+import { Chip } from '@mui/material';
 
-export const EnumChip = ({value,map}: EnumChipProps) => {
+import { EnumChipProps } from './EnumChip.types';
+
+export const EnumChip = ({ value, map }: EnumChipProps) => {
     const config = map[value];
 
-    if(!config){
-        return <Chip label="Unknown"/>
+    if (!config) {
+        return <Chip label="Unknown" />;
     }
 
-    return(
-        <Chip
-            label={config.label}
-            color={config.color}
-            variant="filled"
-        />
-    )
-}
+    return <Chip label={config.label} color={config.color} variant="filled" />;
+};

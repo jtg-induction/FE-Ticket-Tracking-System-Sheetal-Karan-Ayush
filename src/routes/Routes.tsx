@@ -1,7 +1,13 @@
 import { createBrowserRouter, RouteObject } from 'react-router-dom';
 
 import { Layout } from '@containers';
-import { CreateTicket, Login, PageNotFound, Register, TicketDetails } from '@pages';
+import {
+    CreateTicket,
+    Login,
+    PageNotFound,
+    Register,
+    TicketDetails,
+} from '@pages';
 
 const routes: RouteObject[] = [
     {
@@ -14,13 +20,13 @@ const routes: RouteObject[] = [
                 children: [
                     {
                         path: 'create',
-                        element: <CreateTicket />
+                        element: <CreateTicket />,
                     },
                     {
                         path: ':ticketKey',
-                        element: <TicketDetails />
+                        element: <TicketDetails />,
                     },
-                ]
+                ],
             },
             {
                 path: '*',

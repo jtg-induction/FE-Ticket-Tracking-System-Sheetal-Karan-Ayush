@@ -1,1 +1,1 @@
-export type UserRole = "developer" | "admin"
+export type UserRole = 'developer' | 'admin';
