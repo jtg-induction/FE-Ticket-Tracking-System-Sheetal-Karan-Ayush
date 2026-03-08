@@ -70,7 +70,6 @@ export const CreateTicket = () => {
 
                     {/* jira ticket key */}
                     <TextField
-                        required
                         name="key"
                         label="Ticket key"
                     />

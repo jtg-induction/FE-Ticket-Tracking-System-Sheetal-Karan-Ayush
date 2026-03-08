@@ -1,16 +1,17 @@
-import { EnumChip } from "@components";
+import { CommentItem, EnumChip } from "@components";
 import { EnumSelect } from "@components/EnumSelect/EnumSelect.component";
 import { Delete, Edit } from "@mui/icons-material";
-import { Autocomplete, Box, Button, Card, Chip, Container, Paper, TextField, Typography, useTheme } from "@mui/material";
+import { Autocomplete, Box, Button, Card, Chip, Container, Divider, Paper, Stack, TextField, Typography, useTheme } from "@mui/material";
 import { TICKET_PRIORITY, TICKET_STATUS, TICKET_TYPE } from "constant/ticketEnums";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
+import { CommentType } from "./TicketDetails.type";
 
 
 export const TicketDetails = () => {
 
     const theme = useTheme();
-    
+
 
 
 
@@ -30,8 +31,34 @@ export const TicketDetails = () => {
         labels: ["issue", "minor", "first", "mandatory"],
         history: [],
         comments: [
-            { id: 1, user: "Support Bot", commentText: "Ticket created and assigned to Tech Team.", time: "10:31 AM" },
-            { id: 2, user: "Jane Doe", commentText: "Checking the payment logs now.", time: "11:15 AM" }
+            {
+                id: 1,
+                user: "First User",
+                commentText: "Ticket created and assigned to Tech Team.",
+                parentComment: null,
+                time: "2026-02-06T12:10:00Z",
+            },
+            {
+                id: 2,
+                user: "Jane Doe",
+                commentText: "Checking the payment logs now.",
+                parentComment: null,
+                time: "2026-03-06T12:15:00Z",
+            },
+            {
+                id: 3,
+                user: "Second User",
+                commentText: "Reply to first comment",
+                parentComment: 1,
+                time: "2026-03-06T12:55:00Z",
+            },
+            {
+                id: 4,
+                user: "Second User",
+                commentText: "Fixed the issue",
+                parentComment: 1,
+                time: "2026-03-07T10:10:00Z",
+            }
         ]
     };
 
@@ -44,10 +71,48 @@ export const TicketDetails = () => {
     const [assignee, setAssignee] = useState(`${ticket.assignee}`);
     const [reporter, setReporter] = useState(`${ticket.reporter}`);
     const [labels, setLabels] = useState<string[]>(ticket.labels);
+    const [comments, setComments] = useState<CommentType[]>(ticket.comments);
+    const [newComment, setNewComment] = useState("");
+
+
+    const mainComments = comments.filter(
+        (comment) => comment.parentComment === null
+    )
+
+    const getReplies = (commentId: number) =>
+        comments.filter(
+            (reply) => reply.parentComment === commentId
+        )
 
     //TODO: modify to call update api on save (if isEditing)
     const handleEditClick = () => {
         setIsEditing(!isEditing);
+    }
+
+
+    const handleAddComment = () => {
+        const comment = {
+            //TODO: First send request to backend and then get id from response
+            id: Date.now(),
+            commentText: newComment,
+            time: new Date().toISOString(),
+            parentComment: null,
+            user: "current user",
+        }
+        setComments((prev) => [comment, ...prev])
+        setNewComment("");
+    }
+
+    const handleReply = (text: string, parentId: number) => {
+        const reply = {
+            //TODO: First send request to backend and then get id from response
+            id: Date.now(),
+            commentText: text,
+            time: new Date().toISOString(),
+            parentComment: parentId,
+            user: "current user",
+        }
+        setComments((prev) => [reply, ...prev]);
     }
 
 
@@ -56,7 +121,7 @@ export const TicketDetails = () => {
 
     return (
 
-        <Box>
+        <Box display="flex" flexDirection={"column"} gap={2}>
 
             {/* for heading -> project and ticket headings */}
             <Box padding={'12px'}>
@@ -81,9 +146,9 @@ export const TicketDetails = () => {
             <Box display={'flex'} gap={3}>
 
                 {/* ticket info card */}
-                <Box sx={{flex: 4, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <Box sx={{ flex: 4, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {/* first card in info card -> having title, description and labels (first of three partitions) */}
-                    <Card sx={{ padding: '12px' }}>
+                    <Card sx={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {/* heading -> title and icons */}
                         <Box display={'flex'} justifyContent={'space-between'}>
 
@@ -174,7 +239,7 @@ export const TicketDetails = () => {
                     </Card>
 
                     {/* second card in info card -> having assignments (first of three partitions) */}
-                    <Card sx={{ padding: '12px' }}>
+                    <Card sx={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
 
                         <Typography variant="body1" color="info.contrastText">ASSIGNMENTS</Typography>
 
@@ -276,8 +341,44 @@ export const TicketDetails = () => {
             </Box>
 
             {/*comments card*/}
-            <Card sx={{ padding: '12px'}}>
-                <Typography variant="h3">Comments</Typography>
+            <Card sx={{ padding: 3, display:"flex", flexDirection:"column", gap:'8px' }}> 
+                <Typography variant="h3">
+                    Comments
+                </Typography>
+
+                {/* comment box */}
+                <Box display="flex" gap={2} >
+                    <TextField
+                        fullWidth
+                        size="small"
+                        placeholder="Add a comment..."
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
+                    />
+                    <Button
+                        variant="contained"
+                        size="small"
+                        onClick={handleAddComment}
+                        disabled={!newComment.trim()}
+                    >
+                        Comment
+                    </Button>
+                </Box>
+
+                {/* Comments List */}
+                <Stack spacing={3}>
+                    {mainComments.map((comment) => (
+                        <Box key={comment.id}>
+                            <Divider />
+                            <CommentItem
+                                comment={comment}
+                                replies={getReplies(comment.id)}
+                                onReply={handleReply}
+                            />
+                        </Box>
+                    ))}
+                </Stack>
             </Card>
 
         </Box>

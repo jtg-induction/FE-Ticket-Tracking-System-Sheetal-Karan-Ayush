@@ -1,6 +1,8 @@
-// type , status, prority
 
-
-export type ticketType = {
-    
+export type CommentType = {
+    id: number,
+    user: string,
+    commentText: string,
+    parentComment: number | null,
+    time: string,
 }
