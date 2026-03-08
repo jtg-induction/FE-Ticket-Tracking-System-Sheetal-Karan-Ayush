@@ -29,7 +29,7 @@ export const TicketDetails = () => {
     // MOCK DATA
     const MOCK_TICKET = {
         id: '1',
-        ticketKey: 'T101',
+        ticketKey: 'TCK-101',
         title: 'First Ticket',
         description:
             'this is a demo ticket related to first bug. this is its description.',

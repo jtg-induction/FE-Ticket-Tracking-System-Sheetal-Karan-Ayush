@@ -3,7 +3,6 @@ import React from 'react';
 
 import dayjs from 'dayjs';
 import { useEmailValidation } from 'hooks/useEmailValidation';
-import { NavLink } from 'react-router-dom';
 
 import {
     Autocomplete,
@@ -21,6 +20,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
 import { SelectInput } from '@components';
+import { JiraImportDialog } from '@containers';
 
 import {
     ticketPriorityOptions,
@@ -37,6 +37,7 @@ export const CreateTicket = () => {
     const [ticketPriority, setTicketPriority] = useState(0);
     const [labels, setLabels] = useState<string[]>([]);
     const [deadline, setDeadline] = React.useState<dayjs.Dayjs | null>(null);
+    const [openJiraDialog, setOpenJiraDialog] = useState(false);
 
     const {
         email: reporter,
@@ -180,13 +181,18 @@ export const CreateTicket = () => {
                     </Button>
                 </FormControl>
 
-                <Typography align="center">
-                    Click{' '}
-                    <NavLink to="/ticket/import" color="inherit">
-                        here
-                    </NavLink>{' '}
-                    to import ticket from Jira.
+                <Typography
+                    align="center"
+                    sx={{ cursor: 'pointer' }}
+                    color="info.contrastText"
+                    onClick={() => setOpenJiraDialog(true)}
+                >
+                    Click here to import ticket from Jira.
                 </Typography>
+                <JiraImportDialog
+                    open={openJiraDialog}
+                    handleClose={() => setOpenJiraDialog(false)}
+                />
             </Stack>
         </StyledWrapper>
     );

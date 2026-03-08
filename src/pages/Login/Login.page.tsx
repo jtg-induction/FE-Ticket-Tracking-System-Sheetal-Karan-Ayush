@@ -58,12 +58,10 @@ export const Login = () => {
         e.preventDefault();
 
         if (!isFormValid) {
-            // console.log('Submission blocked: Fix validation errors first.');
             return;
         }
         loginMutation.mutate({ email, password });
         //call backend
-        // console.log('Form Submitted Data:', { email, password });
     };
 
     return (
