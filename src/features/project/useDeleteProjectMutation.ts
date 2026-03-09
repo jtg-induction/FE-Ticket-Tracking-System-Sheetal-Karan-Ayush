@@ -16,7 +16,7 @@ export const useDeleteProject = () => {
                 queryKey: ['project', jira_project_key],
             });
 
-            void navigate('/');
+            void navigate('/project/create');
         },
     });
 };

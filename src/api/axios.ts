@@ -30,13 +30,14 @@ const refreshTokenApi = async (): Promise<string> => {
             token: previousRefreshToken,
         },
     );
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { access_token, refresh_token } = response.data;
     
-    localStorage.setItem('access_token', access_token);
-    localStorage.setItem('refresh_token', refresh_token);
+    const accessToken = response.data.access_token;
+    const refreshToken = response.data.refresh_token
+    
+    localStorage.setItem('access_token', accessToken);
+    localStorage.setItem('refresh_token', refreshToken);
 
-    return access_token;
+    return accessToken;
 };
 
 api.interceptors.request.use(

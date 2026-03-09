@@ -183,6 +183,7 @@ export const ProjectDashboardPage = () => {
         deleteProject(deleteTarget.jira_project_key);
         setIsDeleteDialogOpen(false);
         clearDeleteTarget();
+        
     };
     return (
         <>

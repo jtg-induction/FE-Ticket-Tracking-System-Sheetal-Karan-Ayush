@@ -74,6 +74,10 @@ export const ProjectCreationPage = () => {
         }
     }, 500);
 
+    const isInvalidFormat =
+        createFormData.jira_project_key.length >= 0 &&
+        !/^[A-Z]{2,10}$/.test(createFormData.jira_project_key);
+
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     ): void => {
@@ -85,13 +89,10 @@ export const ProjectCreationPage = () => {
         setCreateFormData({ [name]: value });
         setErrors((prev) => ({ ...prev, [name]: '' }));
         setApiError(false);
-        if (name === 'jira_project_key' && value.length >= 2) {
+        if (!isInvalidFormat && name === 'jira_project_key' && value.length >= 2) {
             void debouncedCheckKey(value);
         }
     };
-    const isInvalidFormat =
-        createFormData.jira_project_key.length > 0 &&
-        !/^[A-Za-z]{2,10}$/.test(createFormData.jira_project_key);
 
         
         const isKeyDisabled =
@@ -237,7 +238,7 @@ export const ProjectCreationPage = () => {
                     }}
                     helperText={
                         isInvalidFormat
-                            ? 'Key must contain only 2-10 letters'
+                            ? 'Key must contain only 2-10 capital letters'
                             : isUnique === false
                               ? 'Key already exists'
                               : isUnique === true
