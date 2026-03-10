@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 
 import { BugReport } from '@mui/icons-material';
 import {
@@ -53,17 +53,23 @@ export const Login = () => {
         !isInvalidPassword;
 
     const loginMutation = useLoginMutation();
-
+     const navigate = useNavigate();
     const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
         e.preventDefault();
 
         if (!isFormValid) {
-            // console.log('Submission blocked: Fix validation errors first.');
             return;
         }
-        loginMutation.mutate({email, password})
-        //call backend
-        // console.log('Form Submitted Data:', { email, password });
+        loginMutation.mutate(
+            { email, password },
+            {
+                onSuccess: (data) => {
+                    localStorage.setItem('access_token', data.access_token);
+                    localStorage.setItem('refresh_token', data.refresh_token);
+                    void navigate('/');
+                }
+            },
+        );
     };
 
     return (

@@ -1,0 +1,1 @@
+export { ClampedTooltipText } from './ClampedToolTipText';

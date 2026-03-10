@@ -1,7 +1,8 @@
 import { createBrowserRouter, RouteObject } from 'react-router-dom';
 
 import { Layout } from '@containers';
-import { CreateTicket, Login, PageNotFound, Register, TicketDetails } from '@pages';
+import { CreateTicket, Login, PageNotFound, ProjectCreationPage, ProjectDashboardPage,Register, TicketDetails} from '@pages';
+
 
 const routes: RouteObject[] = [
     {
@@ -16,6 +17,15 @@ const routes: RouteObject[] = [
             {
                 path: 'ticket/details/:key',
                 element: <TicketDetails />,
+               
+            },
+            {
+                path: 'project/create',
+                element: <ProjectCreationPage />,
+            },
+            {
+                path: 'project/:projectKey',
+                element: <ProjectDashboardPage />,
             },
             {
                 path: '*',
