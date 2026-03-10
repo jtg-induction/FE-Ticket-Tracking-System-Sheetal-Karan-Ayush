@@ -1,8 +1,7 @@
-import { VerifyOtp } from 'api/authApi'
-
+import { verifyOtp } from '@api/auth'
 import { useMutation } from '@tanstack/react-query'
 
 
 export const useVerifyMutation = () => useMutation({
-    mutationFn: VerifyOtp,
+    mutationFn: verifyOtp,
 })

@@ -1,5 +1,4 @@
-import { signupUser } from 'api/authApi'
-
+import { signupUser } from '@api'
 import { useMutation } from '@tanstack/react-query'
 
 

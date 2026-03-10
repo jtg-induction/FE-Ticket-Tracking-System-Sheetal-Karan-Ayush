@@ -1,0 +1,1 @@
+export { verifyOtp } from './verifyOtp'

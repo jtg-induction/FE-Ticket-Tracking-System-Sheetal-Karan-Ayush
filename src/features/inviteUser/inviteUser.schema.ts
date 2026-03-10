@@ -7,7 +7,3 @@ export const inviteUserRequestSchema = z.object({
 })
 
 export type InviteUserRequest = z.infer<typeof inviteUserRequestSchema>
-
-export type InviteUserResponse = {
-    message: string;
-}

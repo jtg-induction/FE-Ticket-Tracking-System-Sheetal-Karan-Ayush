@@ -1,11 +1,9 @@
 import { useState } from "react"
 
-import { FormControl, FormControlLabel, FormLabel, Radio, RadioGroup, TextField, Typography } from "@mui/material";
-import Button from "@mui/material/Button";
+import { Button,FormControl, FormControlLabel, FormLabel, Radio, RadioGroup, TextField, Typography } from "@mui/material";
 
 import { AppDialog } from "@components/AppDialog/AppDialog.component";
-import { inviteUserRequestSchema } from "@features/inviteUser";
-import { useInviteUserMutation } from "@features/inviteUser/useInviteUserMutation";
+import { inviteUserRequestSchema, useInviteUserMutation } from "@features/inviteUser";
 import { theme } from "@theme";
 
 import { UserRole } from "./InviteUser.types";

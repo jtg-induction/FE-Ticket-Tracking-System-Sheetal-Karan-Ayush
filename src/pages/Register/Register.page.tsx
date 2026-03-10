@@ -81,6 +81,7 @@ export const Register = () => {
     const [otpOpen, setOtpOpen] = useState<boolean>(false);
     const signupMutation = useSignupMutation();
     const verifyMutation = useVerifyMutation();
+
     const setAuth = useAuthStore((s) => s.setAuth);
     
     const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
@@ -145,7 +146,7 @@ export const Register = () => {
                             error={isInvalidName}
                             helperText={
                                 isInvalidName
-                                    ? 'Enter a valid name (letters only) minlength-2 maxlength-255'
+                                    ? 'Enter a valid name (letters only), with length ranging from 2 to 255'
                                     : ''
                             }
                         />
