@@ -1,3 +1,3 @@
 export { loginUser } from './login';
-export { signupUser } from './signup'
-
+export { signupUser, type SignupInput } from './signup'
+export { verifyOtp } from './verifyOtp'
