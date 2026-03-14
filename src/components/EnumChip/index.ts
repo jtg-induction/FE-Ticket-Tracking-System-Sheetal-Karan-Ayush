@@ -1,1 +1,1 @@
-export {EnumChip} from './EnumChip.component';
+export { EnumChip } from './EnumChip.component';

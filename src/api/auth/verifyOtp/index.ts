@@ -1,1 +1,1 @@
-export { verifyOtp } from './verifyOtp'
+export { verifyOtp } from './verifyOtp';

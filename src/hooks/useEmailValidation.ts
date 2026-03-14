@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { isValidEmail } from "utils/validators/email";
+import { useState } from 'react';
 
+import { isValidEmail } from 'utils/validators/email';
 
 export const useEmailValidation = () => {
     const [email, setEmail] = useState('');
@@ -15,6 +15,5 @@ export const useEmailValidation = () => {
         email,
         isInvalid,
         handleChange,
-    }
-
+    };
 };

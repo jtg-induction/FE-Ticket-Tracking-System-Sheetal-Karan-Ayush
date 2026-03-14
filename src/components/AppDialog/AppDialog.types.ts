@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode } from 'react';
 
 export type AppDialogProps = {
     open: boolean;
@@ -6,7 +6,6 @@ export type AppDialogProps = {
     title?: string;
     children: ReactNode;
     actions?: ReactNode;
-    maxWidth?: "xs" | "sm" | "md" | "lg" | "xl";
-    fullWidth?: boolean; 
+    maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+    fullWidth?: boolean;
 };
-

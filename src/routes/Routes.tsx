@@ -1,35 +1,48 @@
 import { createBrowserRouter, RouteObject } from 'react-router-dom';
 
 import { Layout } from '@containers';
-import { CreateTicket, Login, PageNotFound, ProjectCreationPage, ProjectDashboardPage,Register, TicketDetails} from '@pages';
+import {
+    CreateTicket,
+    Login,
+    PageNotFound,
+    ProjectCreationPage,
+    ProjectDashboardPage,
+    Register,
+    TicketDetails,
+} from '@pages';
 
+import { ProtectedRoute } from './ProtectedRoutes';
 
 const routes: RouteObject[] = [
     {
-        path: '/',
-        element: <Layout />,
-
+        element: <ProtectedRoute />,
         children: [
             {
-                path: 'ticket/create',
-                element: <CreateTicket />,
-            },
-            {
-                path: 'ticket/details/:key',
-                element: <TicketDetails />,
-               
-            },
-            {
-                path: 'project/create',
-                element: <ProjectCreationPage />,
-            },
-            {
-                path: 'project/:projectKey',
-                element: <ProjectDashboardPage />,
-            },
-            {
-                path: '*',
-                element: <PageNotFound />,
+                path: '/',
+                element: <Layout />,
+
+                children: [
+                    {
+                        path: 'project/create',
+                        element: <ProjectCreationPage />,
+                    },
+                    {
+                        path: 'project/:projectKey',
+                        element: <ProjectDashboardPage />,
+                    },
+                    {
+                        path: 'project/:projectKey/ticket/create',
+                        element: <CreateTicket />,
+                    },
+                    {
+                        path: 'project/:projectKey/ticket/:ticketKey',
+                        element: <TicketDetails />,
+                    },
+                    {
+                        path: '*',
+                        element: <PageNotFound />,
+                    },
+                ],
             },
         ],
     },

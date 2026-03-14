@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import dayjs from 'dayjs';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -6,12 +6,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
     Badge,
     Box,
+    Button,
     Divider,
     FormControlLabel,
     Switch,
     TableCell,
     TableHead,
-    TablePagination,
     TableRow,
     TextField,
     Typography,
@@ -30,12 +30,10 @@ import {
     useProjectStore,
     useUpdateProject,
 } from '@features/project';
+import { useGetAllTickets } from '@features/ticket/getAllTickets/usegetAllTickets'; // Custom hook
+import { TicketConstToStatusMap } from '@pages/TicketDetails/TicketDetails.util';
 
-import {
-    ROW_PER_PAGE_OPTIONS,
-    TICKET_TABLE_HEADER,
-    ticketData,
-} from './ProjectDashboard.config';
+import { TICKET_TABLE_HEADER } from './ProjectDashboard.config';
 import {
     DeleteIcon,
     DesktopTableCell,
@@ -64,24 +62,25 @@ export const ProjectDashboardPage = () => {
     } = useProjectStore();
 
     const defaultFilters = {
-        title: '',
-        assignee: '',
-        deadline: null,
-        status: '',
+        title: undefined,
+        assignee: undefined,
+        deadline: undefined,
+        status: undefined,
         sort: 'latest',
     };
+
     const navigate = useNavigate();
     const { projectKey } = useParams<{ projectKey: string }>();
     const { data: project, isError } = useGetProject(projectKey);
     const isDeveloper = project?.role === 2;
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
 
     const { mutate: updateProject } = useUpdateProject();
     const { mutate: deleteProject } = useDeleteProject();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
     const [filters, setFilters] = useState(defaultFilters);
+    const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+    const [importTicketKey, setImportTicketKey] = useState('');
 
     const handleFilterChange = (
         field: keyof Filters,
@@ -92,21 +91,24 @@ export const ProjectDashboardPage = () => {
             [field]: value,
         }));
     };
-    const handleChangePage = (_event: unknown, newPage: number) => {
-        setPage(newPage);
-    };
 
-    const handleChangeRowsPerPage = (
-        event: React.ChangeEvent<HTMLInputElement>,
-    ) => {
-        setRowsPerPage(Number.parseInt(event.target.value, 10));
-        setPage(0);
-    };
+    const { data, fetchNextPage, hasNextPage, isLoading } = useGetAllTickets(
+        projectKey as string,
+        {
+            sort: filters.sort,
+            limit: 10,
+            title: filters.title,
+            status: filters.status,
+            assignee: filters.assignee,
+        },
+    );
+
     useEffect(() => {
         if (isError) {
-            void navigate('/*')
+            void navigate('/*');
         }
     }, [isError, navigate]);
+
     const handleOpenProjectDialog = () => {
         if (project) {
             setUpdateFormData({
@@ -117,58 +119,6 @@ export const ProjectDashboardPage = () => {
         }
         setIsProjectDialogOpen(true);
     };
-
-    const filteredTickets = useMemo(() => {
-        const filtered = ticketData.filter((ticket) => {
-            const matchesTitle = ticket.title
-                .toLowerCase()
-                .includes(filters.title.toLowerCase());
-
-            const matchesAssignee = ticket.assignee
-                .toLowerCase()
-                .includes(filters.assignee.toLowerCase());
-
-            const matchesStatus = filters.status
-                ? ticket.Status === filters.status
-                : true;
-
-            const matchesDeadline = filters.deadline
-                ? dayjs(ticket.Deadline).isSame(filters.deadline, 'day')
-                : true;
-
-            return (
-                matchesTitle &&
-                matchesAssignee &&
-                matchesStatus &&
-                matchesDeadline
-            );
-        });
-
-        filtered.sort((a, b) => {
-            const dateA = dayjs(a.Deadline);
-            <IconBox>
-                <IconBox>
-                    <EditIcon onClick={handleOpenProjectDialog} />
-                    <DeleteIcon
-                        onClick={() => {
-                            if (project) {
-                                setDeleteTarget(project);
-                                setIsDeleteDialogOpen(true);
-                            }
-                        }}
-                    />
-                </IconBox>
-            </IconBox>;
-            const dateB = dayjs(b.Deadline);
-
-            if (filters.sort === 'latest') {
-                return dateB.valueOf() - dateA.valueOf();
-            }
-            return dateA.valueOf() - dateB.valueOf();
-        });
-
-        return filtered;
-    }, [filters]);
 
     const handleReset = () => {
         setFilters(defaultFilters);
@@ -190,11 +140,11 @@ export const ProjectDashboardPage = () => {
 
     const handleDeleteProject = () => {
         if (!deleteTarget) return;
-
         deleteProject(deleteTarget.jira_project_key);
         setIsDeleteDialogOpen(false);
         clearDeleteTarget();
     };
+
     return (
         <>
             <StyledHeader>
@@ -232,10 +182,16 @@ export const ProjectDashboardPage = () => {
                     </StyledLeftBox>
                     {!isDeveloper && (
                         <StyledRightBox>
-                            <StyledButton variant="contained">
+                            <StyledButton
+                                variant="contained"
+                                onClick={() => setIsImportDialogOpen(true)}
+                            >
                                 Import ticket
                             </StyledButton>
-                            <StyledButton variant="contained">
+                            <StyledButton
+                                variant="contained"
+                                onClick={() => void navigate('ticket/create')}
+                            >
                                 Create ticket
                             </StyledButton>
                         </StyledRightBox>
@@ -264,7 +220,7 @@ export const ProjectDashboardPage = () => {
                                             <DesktopTableCell key={idx}>
                                                 <Typography
                                                     variant="subtitle1"
-                                                    color="text.secondary"
+                                                    color="text.primary"
                                                 >
                                                     {headerCell.title}
                                                 </Typography>
@@ -275,7 +231,7 @@ export const ProjectDashboardPage = () => {
                                         <TableCell key={idx}>
                                             <Typography
                                                 variant="subtitle1"
-                                                color="text.secondary"
+                                                color="text.primary"
                                             >
                                                 {headerCell.title}
                                             </Typography>
@@ -285,46 +241,96 @@ export const ProjectDashboardPage = () => {
                             </StyledTableRow>
                         </TableHead>
                         <StyledTableBody>
-                            {filteredTickets?.map((ticket) => (
-                                <TableRow key={ticket.id}>
-                                    <TableCell component="th" scope="row">
-                                        {ticket.title}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography
-                                            variant="body2"
-                                            color="text.secondary"
-                                        >
-                                            {ticket.assignee}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography variant="body2">
-                                            {ticket.Deadline}
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Typography
-                                            variant="body2"
-                                            color="text.secondary"
-                                        >
-                                            {ticket.Status}
-                                        </Typography>
+                            {isLoading ? (
+                                <TableRow>
+                                    <TableCell colSpan={4} align="center">
+                                        Loading tickets...
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                            ) : isError ? (
+                                <TableRow>
+                                    <TableCell colSpan={4} align="center">
+                                        Error loading tickets. Please try again
+                                        later.
+                                    </TableCell>
+                                </TableRow>
+                            ) : data?.pages?.length > 0 ? (
+                                data.pages
+                                    .flatMap((page) => page.tickets)
+                                    .map((ticket) => (
+                                        <TableRow
+                                            key={ticket.id}
+                                            onClick={() => {
+                                                void navigate(
+                                                    `ticket/${ticket.jira_ticket_key}`,
+                                                );
+                                            }}
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            <TableCell
+                                                component="th"
+                                                scope="row"
+                                            >
+                                                {ticket.title}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography
+                                                    variant="body2"
+                                                    color="text.secondary"
+                                                >
+                                                    {ticket.assignee}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography variant="body2">
+                                                    {ticket.deadline
+                                                        ? dayjs(
+                                                              ticket.deadline,
+                                                          ).format(
+                                                              'MMM DD, YYYY',
+                                                          )
+                                                        : 'N/A'}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography
+                                                    variant="body2"
+                                                    color="text.secondary"
+                                                >
+                                                    {
+                                                        TicketConstToStatusMap[
+                                                            ticket.status
+                                                        ]
+                                                    }
+                                                </Typography>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={4} align="center">
+                                        No tickets available.
+                                    </TableCell>
+                                </TableRow>
+                            )}
                         </StyledTableBody>
                     </StyledTable>
-                    <TablePagination
-                        rowsPerPageOptions={ROW_PER_PAGE_OPTIONS}
-                        component="div"
-                        count={filteredTickets?.length ?? 0}
-                        rowsPerPage={rowsPerPage}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                    />
                 </StyledTableContainer>
+
+                {/* Load More Button */}
+                {hasNextPage && (
+                    <Box display="flex" my={2}>
+                        <Button
+                            variant="outlined"
+                            onClick={() => void fetchNextPage()}
+                            disabled={isLoading}
+                        >
+                            {isLoading ? 'Loading...' : 'Load More'}
+                        </Button>
+                    </Box>
+                )}
+
+                {/* Dialogs for Project Update and Delete */}
                 <DialogBox
                     open={isProjectDialogOpen}
                     title="Edit Project"
@@ -342,7 +348,6 @@ export const ProjectDashboardPage = () => {
                                     setUpdateFormData({ title: e.target.value })
                                 }
                             />
-
                             <TextField
                                 fullWidth
                                 margin="normal"
@@ -391,6 +396,29 @@ export const ProjectDashboardPage = () => {
                     cancelText="Cancel"
                 >
                     <Typography>Are you sure you want to delete?</Typography>
+                </DialogBox>
+                <DialogBox
+                    open={isImportDialogOpen}
+                    title="Import Ticket"
+                    onClose={() => setIsImportDialogOpen(false)}
+                    // onSubmit={handleImportTicket}
+                    submitText="Import"
+                    cancelText="Cancel"
+                >
+                    <TextField
+                        label="Jira Ticket Key"
+                        variant="outlined"
+                        fullWidth
+                        value={importTicketKey}
+                        onChange={(e) => setImportTicketKey(e.target.value)}
+                        sx={{ marginBottom: 2 }}
+                    />
+
+                    {/* {ticketImportError && (
+            <Typography color="error" variant="body2">
+                {ticketImportError}
+            </Typography>
+            )} */}
                 </DialogBox>
             </SectionLayout>
         </>

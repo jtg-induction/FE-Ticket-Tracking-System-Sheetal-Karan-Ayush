@@ -11,7 +11,7 @@ const PATH = import.meta.env.VITE_API_SERVER_URL as string;
 type RefreshTokenResponse = {
     access_token: string;
     refresh_token: string;
-}
+};
 
 export const api: AxiosInstance = axios.create({
     baseURL: PATH,
@@ -19,11 +19,11 @@ export const api: AxiosInstance = axios.create({
 
 const refreshTokenApi = async (): Promise<string> => {
     const previousRefreshToken = localStorage.getItem('refresh_token');
-    
+
     if (!previousRefreshToken) {
         throw new Error('No refresh token found');
     }
-    
+
     const response: AxiosResponse<RefreshTokenResponse> = await api.post(
         '/api/auth/refresh',
         {
@@ -32,7 +32,7 @@ const refreshTokenApi = async (): Promise<string> => {
     );
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { access_token, refresh_token } = response.data;
-    
+
     localStorage.setItem('access_token', access_token);
     localStorage.setItem('refresh_token', refresh_token);
 
@@ -43,7 +43,8 @@ api.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
         const token = localStorage.getItem('access_token');
         if (token) {
-            (config.headers as AxiosHeaders)['Authorization'] = `Bearer ${token}`;
+            (config.headers as AxiosHeaders)['Authorization'] =
+                `Bearer ${token}`;
         }
         return config;
     },
@@ -87,9 +88,9 @@ api.interceptors.response.use(
                         .catch((err) => {
                             failedQueue = [];
                             if (err instanceof Error) {
-                                reject(err); 
+                                reject(err);
                             } else {
-                                reject(new Error(JSON.stringify(err))); 
+                                reject(new Error(JSON.stringify(err)));
                             }
                         })
                         .finally(() => {

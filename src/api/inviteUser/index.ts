@@ -1,1 +1,1 @@
-export { inviteUserApi } from './inviteUserApi'
+export { inviteUserApi } from './inviteUserApi';

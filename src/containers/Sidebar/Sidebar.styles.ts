@@ -4,7 +4,7 @@ export const SideBarStyled = styled(Box)<BoxProps>(({ theme }) => {
     const {
         typography: { pxToRem },
         palette,
-        spacing
+        spacing,
     } = theme;
 
     return {

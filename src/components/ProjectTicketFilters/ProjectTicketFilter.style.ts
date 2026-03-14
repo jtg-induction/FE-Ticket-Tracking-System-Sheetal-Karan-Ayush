@@ -64,6 +64,6 @@ export const StyledDatePicker = styled(DatePicker)(({ theme }) => ({
     },
 
     [theme.breakpoints.up('md')]: {
-        flex: '0 0 200px', 
+        flex: '0 0 200px',
     },
 }));

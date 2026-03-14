@@ -21,10 +21,10 @@ export const HeaderStyled = styled(AppBar)<BoxProps>(({ theme }) => {
 });
 
 export const HamburgerButton = styled(Box)<HamburgerButtonProps & BoxProps>(({
-    theme
+    theme,
 }) => {
     const {
-        typography: { pxToRem }
+        typography: { pxToRem },
     } = theme;
     return {
         display: 'flex',

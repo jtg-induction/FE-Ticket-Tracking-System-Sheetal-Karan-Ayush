@@ -1,3 +1,3 @@
-import type { SignupInput } from "@api";
+import type { SignupInput } from '@api';
 
-export type OtpInput = SignupInput & {otp: number;}
+export type OtpInput = SignupInput & { otp: number };

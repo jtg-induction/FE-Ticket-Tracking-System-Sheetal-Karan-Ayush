@@ -1,48 +1,85 @@
-import { Box, Button, FormControl, Stack, TextField, Typography, useTheme } from "@mui/material"
-import { useState } from "react";
-import { ticketPriorityOptions, ticketStatusOptions, ticketTypeOptions } from "./CreateTicket.config";
-import { SelectInput } from "@components";
-import { StyledErrorTextField, StyledWrapper } from "./CreateTicket.styles";
-import { useEmailValidation } from "hooks/useEmailValidation";
+import { useState } from 'react';
+import React from 'react';
 
-
+import dayjs from 'dayjs';
 import { NavLink } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import {
+    Box,
+    Button,
+    CircularProgress,
+    FormControl,
+    Stack,
+    Typography,
+    useTheme,
+} from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import React from "react";
-import dayjs from "dayjs";
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
+import { SelectInput } from '@components';
+import { ticketCreateSchema } from '@features/ticket/createTicket/createTicket.schema';
+import { useCreateTicketMutation } from '@features/ticket/createTicket/useCreateTicketMutation';
+import { useTicketStore } from '@features/ticket/store/ticketStore';
 
+import {
+    ticketPriorityOptions,
+    ticketStatusOptions,
+    ticketTypeOptions,
+} from './CreateTicket.config';
+import { StyledErrorTextField, StyledWrapper } from './CreateTicket.styles';
 
 export const CreateTicket = () => {
-
     const theme = useTheme();
 
-
-    const [ticketType, setTicketType] = useState(0);
-    const [ticketStatus, setTicketStatus] = useState(0);
-    const [ticketPriority, setTicketPriority] = useState(0);
+    const [ticketType, setTicketType] = useState(1);
+    const [ticketStatus, setTicketStatus] = useState(1);
+    const [ticketPriority, setTicketPriority] = useState(1);
     const [deadline, setDeadline] = React.useState<dayjs.Dayjs | null>(null);
+    const { createFormData, setCreateFormData } = useTicketStore();
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const createTicketMutation = useCreateTicketMutation();
+    const isSubmitting = createTicketMutation.isPending;
+    const { projectKey } = useParams<{ projectKey: string }>();
 
-    const {
-        email: reporter,
-        isInvalid: isInvalidReporter,
-        handleChange: handleReporterChange
-    } = useEmailValidation();
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    ): void => {
+        const { name, value } = e.target as {
+            name: keyof typeof createFormData;
+            value: string;
+        };
 
-    const {
-        email: assignee,
-        isInvalid: isInvalidAssignee,
-        handleChange: handleAssigneeChange
-    } = useEmailValidation();
+        setCreateFormData({ [name]: value });
+        setErrors((prev) => ({ ...prev, [name]: '' }));
+    };
 
+    const handleCreateSubmit = () => {
+        setCreateFormData({ project_key: projectKey });
+        setCreateFormData({ labels: ['hii', 'hello'] });
+        const result = ticketCreateSchema.safeParse(createFormData);
+
+        if (!result.success) {
+            const fieldErrors: Record<string, string> = {};
+            result.error.issues.forEach((err) => {
+                const field = err.path[0] as string;
+                fieldErrors[field] = err.message;
+            });
+            setErrors(fieldErrors);
+            return;
+        }
+
+        createTicketMutation.mutate(result.data, {
+            onSuccess: () => {
+                setErrors({});
+            },
+        });
+    };
 
     return (
         <StyledWrapper elevation={2}>
-            <Stack spacing={4} padding={'16px'} >
-
+            <Stack spacing={4} padding={'16px'}>
                 <Typography
                     variant="h2"
                     align="center"
@@ -51,54 +88,62 @@ export const CreateTicket = () => {
                     CREATE NEW TICKET
                 </Typography>
 
-
                 <FormControl sx={{ display: 'flex', gap: '10px' }}>
-
-                    <TextField
+                    <StyledErrorTextField
                         required
                         name="title"
                         label="Title"
+                        error={!!errors.title}
+                        helperText={errors.title}
+                        onChange={handleChange}
                     />
 
-                    <TextField
+                    <StyledErrorTextField
                         multiline
                         rows={3}
                         name="description"
                         label="Description"
+                        error={!!errors.description}
+                        onChange={handleChange}
+                        helperText={errors.description}
                     />
 
-                    {/* jira ticket key */}
-                    <TextField
-                        required
-                        name="key"
-                        label="Ticket key"
-                    />
-
-                    <Box display={"flex"} flexDirection={'row'} justifyContent={'space-between'} gap={'12px'}>
+                    <Box
+                        display={'flex'}
+                        flexDirection={'row'}
+                        justifyContent={'space-between'}
+                        gap={'12px'}
+                    >
                         {/* ticket type */}
                         <SelectInput
+                            name="ticket_type"
                             label="Ticket Type"
                             value={ticketType}
                             options={ticketTypeOptions}
                             onChange={setTicketType}
+                            error={!!errors.ticket_type}
+                            helperText={errors.ticket_type}
                         />
 
                         {/* status */}
                         <SelectInput
                             label="Ticket Status"
+                            name="status"
                             value={ticketStatus}
                             options={ticketStatusOptions}
+                            error={!!errors.status}
                             onChange={setTicketStatus}
                         />
 
                         {/* priority*/}
                         <SelectInput
                             label="Ticket Priority"
+                            name="priority"
                             value={ticketPriority}
                             options={ticketPriorityOptions}
+                            error={!!errors.priority}
                             onChange={setTicketPriority}
                         />
-
                     </Box>
 
                     {/* assignee */}
@@ -106,55 +151,58 @@ export const CreateTicket = () => {
                         required
                         name="assignee"
                         label="Assignee"
-                        type="email"
-                        value={assignee}
-                        onChange={handleAssigneeChange}
-                        error={isInvalidAssignee}
-                        helperText={
-                            isInvalidAssignee
-                                ? 'Enter a valid email address'
-                                : ''
-                        }
-                    />
-
-                    {/* reporter */}
-                    <StyledErrorTextField
-                        required
-                        name="reporter"
-                        label="Reporter"
-                        type="email"
-                        value={reporter}
-                        onChange={handleReporterChange}
-                        error={isInvalidReporter}
-                        helperText={
-                            isInvalidReporter
-                                ? 'Enter a valid email address'
-                                : ''
-                        }
+                        onChange={handleChange}
+                        error={!!errors.assignee}
+                        helperText={errors.assignee}
                     />
 
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
                             label="Deadline"
+                            name="deadline"
                             value={deadline}
                             onChange={(value) => setDeadline(value)}
                         />
                     </LocalizationProvider>
 
+                    {createTicketMutation.isError && (
+                        <Typography
+                            variant="subtitle2"
+                            sx={{ color: theme.palette.error.contrastText }}
+                        >
+                            {createTicketMutation.error.message}
+                        </Typography>
+                    )}
 
+                    {createTicketMutation.isSuccess && (
+                        <Typography
+                            variant="subtitle2"
+                            sx={{ color: theme.palette.success.contrastText }}
+                        >
+                            Ticket Created Successfully
+                        </Typography>
+                    )}
                     <Button
                         variant="contained"
                         color="primary"
                         type="submit"
+                        onClick={handleCreateSubmit}
                     >
-                        Create
+                        {isSubmitting ? (
+                            <CircularProgress size={22} color="inherit" />
+                        ) : (
+                            'Create'
+                        )}
                     </Button>
-
                 </FormControl>
-
-                <Typography align="center">Click <NavLink to="/ticket/import" color="inherit">here</NavLink> to import ticket from Jira.</Typography>
+                <Typography align="center">
+                    Click{' '}
+                    <NavLink to="/ticket/import" color="inherit">
+                        here
+                    </NavLink>{' '}
+                    to import ticket from Jira.
+                </Typography>
             </Stack>
-
         </StyledWrapper>
-    )
-}
+    );
+};

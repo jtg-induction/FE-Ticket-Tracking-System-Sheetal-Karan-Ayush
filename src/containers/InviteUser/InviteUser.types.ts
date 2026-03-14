@@ -1,1 +1,1 @@
-export type UserRole = 1 | 2
+export type UserRole = 1 | 2;

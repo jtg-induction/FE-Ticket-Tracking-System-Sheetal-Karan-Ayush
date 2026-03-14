@@ -1,6 +1,6 @@
 export type VerifyOtpProps = {
-    open: boolean
+    open: boolean;
     setOpen: (val: boolean) => void;
     handleVerify: (val: number) => void;
     errorMsg: string;
-}
+};

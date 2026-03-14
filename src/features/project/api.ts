@@ -32,7 +32,7 @@ export const createProject = async (
             jira_project_key: project.jira_project_key.toUpperCase(),
             jira_url: `${project.jira_url.replace(/\/$/, '')}/browse/${project.jira_project_key}`,
             status: 1,
-            role: 1
+            role: 1,
         };
 
         return formattedProject;
@@ -89,7 +89,7 @@ export const updateProject = async (
             jira_project_key: project.jira_project_key.toUpperCase(),
             jira_url: `${project.jira_url.replace(/\/$/, '')}/browse/${project.jira_project_key}`,
             status: 1,
-            role: 1
+            role: 1,
         };
 
         return formattedProject;
@@ -110,7 +110,7 @@ export const deleteProject = async (projectKey: string): Promise<void> => {
 
 export const getAllProjects = async (): Promise<ProjectResponse[]> => {
     try {
-        const response = await api.get<ProjectResponse[]>('/projects/my');
+        const response = await api.get<ProjectResponse[]>('/projects');
 
         const projects = response.data;
 
@@ -122,7 +122,7 @@ export const getAllProjects = async (): Promise<ProjectResponse[]> => {
                 jira_project_key: project.jira_project_key.toUpperCase(),
                 jira_url: `${project.jira_url.replace(/\/$/, '')}/browse/${project.jira_project_key}`,
                 status: project.status ?? 1,
-                role: project.role
+                role: project.role,
             }),
         );
 
@@ -132,21 +132,25 @@ export const getAllProjects = async (): Promise<ProjectResponse[]> => {
     }
 };
 
-export const getProject = async (projectKey: string): Promise<ProjectResponse> => {
+export const getProject = async (
+    projectKey: string,
+): Promise<ProjectResponse> => {
     try {
-        const response = await api.get<ProjectResponse>(`/projects/${projectKey}`);
+        const response = await api.get<ProjectResponse>(
+            `/projects/${projectKey}`,
+        );
 
         const project = response.data;
 
-          const formattedProject: ProjectResponse = {
-              id: project.id,
-              title: project.title,
-              description: project.description || '',
-              jira_project_key: project.jira_project_key.toUpperCase(),
-              jira_url: `${project.jira_url.replace(/\/$/, '')}/browse/${project.jira_project_key}`,
-              status: project.status,
-              role: project.role
-          };
+        const formattedProject: ProjectResponse = {
+            id: project.id,
+            title: project.title,
+            description: project.description || '',
+            jira_project_key: project.jira_project_key.toUpperCase(),
+            jira_url: `${project.jira_url.replace(/\/$/, '')}/browse/${project.jira_project_key}`,
+            status: project.status,
+            role: project.role,
+        };
 
         return formattedProject;
     } catch (error: unknown) {

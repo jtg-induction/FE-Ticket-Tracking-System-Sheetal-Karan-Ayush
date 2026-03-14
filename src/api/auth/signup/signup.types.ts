@@ -3,4 +3,4 @@ export type SignupInput = {
     email: string;
     password: string;
     avatarId: number;
-}
+};

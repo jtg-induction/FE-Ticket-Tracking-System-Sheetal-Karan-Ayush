@@ -53,7 +53,7 @@ export const ProjectCreationPage = () => {
             });
             setIsUnique(res.valid);
         } catch (error: unknown) {
-            setApiError(true); 
+            setApiError(true);
             if (axios.isAxiosError(error)) {
                 if (error.response && error.response.status === 502) {
                     setSnackbarMessage(
@@ -65,7 +65,9 @@ export const ProjectCreationPage = () => {
                     );
                 }
             } else {
-                setSnackbarMessage('Unauthorized: Invalid Jira URL, Access Token, or Admin Email');
+                setSnackbarMessage(
+                    'Unauthorized: Invalid Jira URL, Access Token, or Admin Email',
+                );
             }
             setSnackbarOpen(true);
             setIsUnique(false);
@@ -93,17 +95,18 @@ export const ProjectCreationPage = () => {
         createFormData.jira_project_key.length > 0 &&
         !/^[A-Za-z]{2,10}$/.test(createFormData.jira_project_key);
 
-        
-        const isKeyDisabled =
+    const isKeyDisabled =
         !createFormData.jira_url ||
         !createFormData.access_token ||
         !createFormData.lead_email;
-        
-        const isSubmitDisabled =
-            !createFormData.jira_project_key ||
-            isInvalidFormat ||
-            isUnique === false ||
-            apiError || isKeyDisabled || isSubmitting;
+
+    const isSubmitDisabled =
+        !createFormData.jira_project_key ||
+        isInvalidFormat ||
+        isUnique === false ||
+        apiError ||
+        isKeyDisabled ||
+        isSubmitting;
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
