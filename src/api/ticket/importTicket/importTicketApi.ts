@@ -7,11 +7,11 @@ import {
 import { TicketImportFormData } from '@features/ticket/importTicket/importTicket.schema';
 
 export const importTicket = async (
-    data: TicketImportFormData
+    data: TicketImportFormData,
 ): Promise<GetTicketResponse> => {
     try {
-        const response = await api.get(
-            `/project/${data.projectKey}/ticket/${data.ticketKey}`,
+        const response = await api.post(
+            `project/${data.projectKey}/ticket/${data.ticketKey}`,
         );
 
         const parsed = ticketsResponseSchema.safeParse(response.data);

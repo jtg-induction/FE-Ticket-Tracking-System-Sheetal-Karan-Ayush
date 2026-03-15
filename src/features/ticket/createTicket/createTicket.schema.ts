@@ -61,15 +61,15 @@ export const ticketCreateSchema = z.object({
 
 export const ticketResponseSchema = z.object({
     id: z.number().int(),
-    title: z.string().min(1),
+    title: z.string(),
     description: z.string(),
     ticket_type: z.number().int(),
     status: z.number().int(),
-    jira_ticket_key: z.string().min(1),
+    jira_ticket_key: z.string(),
     priority: z.number().int(),
     assignee: z.email(),
     reporter: z.email(),
-    labels: z.array(z.string()).min(1),
+    labels: z.array(z.string()),
     deadline: z.string().nullable(),
     created_at: z.string(),
 });

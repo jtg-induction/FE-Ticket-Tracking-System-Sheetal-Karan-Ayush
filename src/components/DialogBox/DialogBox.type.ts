@@ -8,6 +8,6 @@ export type DialogBoxProps = {
     onSubmit?: () => void;
     submitText?: string;
     cancelText?: string;
-    isSubmitting? : boolean;
+    isSubmitting?: boolean;
     maxWidth?: 'xs' | 'sm' | 'md' | 'lg';
 };

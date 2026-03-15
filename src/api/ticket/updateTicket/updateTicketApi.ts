@@ -12,7 +12,7 @@ export const updateTicket = async (
     try {
         const response = await api.patch(
             `/project/${requestBody.project_key}/ticket/${requestBody.ticket_key}`,
-            requestBody
+            requestBody,
         );
 
         const parsed = ticketResponseSchema.safeParse(response.data);

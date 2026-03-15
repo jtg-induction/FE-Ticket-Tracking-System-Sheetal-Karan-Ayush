@@ -38,6 +38,7 @@ const initialCreateFormData: TicketFormData = {
     assignee: '',
     labels: [],
     project_key: '',
+    // deadline: undefined,
 };
 
 const initialUpdateFormData: TicketUpdateFormData = {

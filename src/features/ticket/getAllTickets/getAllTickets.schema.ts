@@ -21,7 +21,7 @@ export const getAllTicketsRequestSchema = z.object({
 });
 
 export const ticketsResponseSchema = z.object({
-    id: z.number().int(),
+    id: z.int().nullable(),
     title: z.string(),
     description: z.string(),
     ticket_type: z.number().int(),
@@ -30,16 +30,25 @@ export const ticketsResponseSchema = z.object({
     priority: z.number().int(),
     assignee: z.email(),
     reporter: z.email(),
-    deadline: z.string().datetime().nullable(),
-    created_at: z.string().datetime(),
+    deadline: z.string().nullable(),
+    created_at: z.string(),
     labels: z.array(z.string()),
+});
+
+export const getAllTicketsJqlRequestSchema = z.object({
+    jql: z.string(),
+    cursor: z.string().optional(),
+    limit: z.number().int().min(1).max(100).default(20),
 });
 
 export const getAllTicketsResponseSchema = z.object({
     tickets: z.array(ticketsResponseSchema),
-    next_cursor: z.string().optional(),
+    next_cursor: z.string().nullable()
 });
 
 export type GetTicketResponse = z.infer<typeof ticketsResponseSchema>;
 export type GetAllTicketsFormData = z.infer<typeof getAllTicketsRequestSchema>;
 export type GetAllTicketsResponse = z.infer<typeof getAllTicketsResponseSchema>;
+export type GetAllTicketsJqlFormData =  z.infer<typeof getAllTicketsJqlRequestSchema>;
+export type QueryParams = Omit<GetAllTicketsFormData, 'cursor'>;
+export type JqlQueryParams = Omit<GetAllTicketsJqlFormData, 'cursor'>;

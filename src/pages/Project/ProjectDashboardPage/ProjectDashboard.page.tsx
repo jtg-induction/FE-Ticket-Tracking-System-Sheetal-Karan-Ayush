@@ -8,7 +8,11 @@ import {
     Box,
     Button,
     Divider,
+    FormControl,
     FormControlLabel,
+    InputLabel,
+    MenuItem,
+    Select,
     Switch,
     TableCell,
     TableHead,
@@ -31,7 +35,11 @@ import {
     useUpdateProject,
 } from '@features/project';
 import { useGetAllTickets } from '@features/ticket/getAllTickets/usegetAllTickets'; // Custom hook
+import { importTicketRequestSchema } from '@features/ticket/importTicket/importTicket.schema';
+import { useImportTicketMutation } from '@features/ticket/importTicket/useImportTicket';
+import { StyledErrorTextField } from '@pages/Register/Register.styles';
 import { TicketConstToStatusMap } from '@pages/TicketDetails/TicketDetails.util';
+import { theme } from '@theme';
 
 import { TICKET_TABLE_HEADER } from './ProjectDashboard.config';
 import {
@@ -78,9 +86,10 @@ export const ProjectDashboardPage = () => {
     const { mutate: deleteProject } = useDeleteProject();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
-    const [filters, setFilters] = useState(defaultFilters);
+    const [filters, setFilters] = useState<Filters>(defaultFilters);
     const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
     const [importTicketKey, setImportTicketKey] = useState('');
+    const importTicketMutation = useImportTicketMutation();
 
     const handleFilterChange = (
         field: keyof Filters,
@@ -91,16 +100,23 @@ export const ProjectDashboardPage = () => {
             [field]: value,
         }));
     };
+    const [filterType, setFilterType] = useState('Custom');
+    const [jqlQuery, setJqlQuery] = useState('');
 
     const { data, fetchNextPage, hasNextPage, isLoading } = useGetAllTickets(
         projectKey as string,
+        (filterType == 'JQL'),
+        (filterType != 'JQL') ?  
         {
-            sort: filters.sort,
+            ...filters,
+            deadline: filters.deadline ? filters.deadline.toISOString() : undefined,
             limit: 10,
-            title: filters.title,
-            status: filters.status,
-            assignee: filters.assignee,
-        },
+        } : undefined,
+        (filterType == 'JQL') ?  
+        {
+            jql: jqlQuery,
+            limit: 10,
+        } : undefined,
     );
 
     useEffect(() => {
@@ -145,6 +161,34 @@ export const ProjectDashboardPage = () => {
         clearDeleteTarget();
     };
 
+    const [importErrors, setImportErrors] = useState<Record<string, string>>({});
+
+    const handleImportTicket = () => {
+        const requestData = {
+            projectKey: projectKey,
+            ticketKey: importTicketKey,
+        };
+        const result = importTicketRequestSchema.safeParse(requestData);
+
+        if (!result.success) {
+            const fieldErrors: Record<string, string> = {};
+            result.error.issues.forEach((err) => {
+                const field = err.path[0] as string;
+                fieldErrors[field] = err.message;
+            });
+            setImportErrors(fieldErrors);
+            return;
+        }
+
+        importTicketMutation.mutate(result.data);
+    };
+
+    // New state for filter type (JQL or Custom)
+    
+    const handleJqlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setJqlQuery(event.target.value);
+    };
+
     return (
         <>
             <StyledHeader>
@@ -154,9 +198,7 @@ export const ProjectDashboardPage = () => {
                             {project?.title}
                         </ClampedTooltipText>
                         <StatusBadge
-                            label={
-                                project?.status === 2 ? 'Archived' : 'Active'
-                            }
+                            label={project?.status === 2 ? 'Archived' : 'Active'}
                             ownerState={{
                                 archived: project?.status === 2,
                             }}
@@ -198,18 +240,55 @@ export const ProjectDashboardPage = () => {
                     )}
                 </StyledUpperBox>
                 <StyledLowerBox>
-                    <Typography variant="body2">
-                        {project?.description}
-                    </Typography>
+                    <Typography variant="body2">{project?.description}</Typography>
                 </StyledLowerBox>
             </StyledHeader>
             <Divider />
+
             <SectionLayout>
-                <ProjectTicketFilters
-                    filters={filters}
-                    onChange={handleFilterChange}
-                    onReset={handleReset}
-                />
+                <Box sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', md: 'row' }, 
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 2,
+                    width: '100%'
+                }}>
+                    <FormControl variant="outlined" sx={{ minWidth: 120, marginBottom: 2, marginRight: 2 }}>
+                        <InputLabel>Filter Type</InputLabel>
+                        <Select
+                            value={filterType}
+                            onChange={(e) => setFilterType(e.target.value)}
+                            label="Filter Type"
+                        >
+                            <MenuItem value="Custom">Custom</MenuItem>
+                            <MenuItem value="JQL">JQL</MenuItem>
+                        </Select>
+                    </FormControl>
+
+                    {filterType === 'JQL' ? ( <>
+                        <TextField
+                            label="Enter JQL(Project Key is pre included)"
+                            variant="outlined"
+                            fullWidth
+                            value={jqlQuery}
+                            onChange={handleJqlChange}
+                            sx={{
+                                marginBottom: 2,  
+                                minWidth: theme.spacing(75),
+                                maxWidth: theme.spacing(200),
+                            }}
+                        />
+                    </>
+                    ) : (
+                        <ProjectTicketFilters
+                            filters={filters}
+                            onChange={handleFilterChange}
+                            onReset={handleReset}
+                        />
+                    )}
+                </Box>
+
                 <StyledTableContainer>
                     <StyledTable aria-label="Ticket table">
                         <TableHead>
@@ -218,10 +297,7 @@ export const ProjectDashboardPage = () => {
                                     if (headerCell.isHiddenInMobile) {
                                         return (
                                             <DesktopTableCell key={idx}>
-                                                <Typography
-                                                    variant="subtitle1"
-                                                    color="text.primary"
-                                                >
+                                                <Typography variant="subtitle1" color="text.primary">
                                                     {headerCell.title}
                                                 </Typography>
                                             </DesktopTableCell>
@@ -229,10 +305,7 @@ export const ProjectDashboardPage = () => {
                                     }
                                     return (
                                         <TableCell key={idx}>
-                                            <Typography
-                                                variant="subtitle1"
-                                                color="text.primary"
-                                            >
+                                            <Typography variant="subtitle1" color="text.primary">
                                                 {headerCell.title}
                                             </Typography>
                                         </TableCell>
@@ -250,58 +323,38 @@ export const ProjectDashboardPage = () => {
                             ) : isError ? (
                                 <TableRow>
                                     <TableCell colSpan={4} align="center">
-                                        Error loading tickets. Please try again
-                                        later.
+                                        Error loading tickets. Please try again later.
                                     </TableCell>
                                 </TableRow>
-                            ) : data?.pages?.length > 0 ? (
+                            ) : data?.pages?.length? (
                                 data.pages
                                     .flatMap((page) => page.tickets)
                                     .map((ticket) => (
                                         <TableRow
                                             key={ticket.id}
                                             onClick={() => {
-                                                void navigate(
-                                                    `ticket/${ticket.jira_ticket_key}`,
-                                                );
+                                                void navigate(`ticket/${ticket.jira_ticket_key}`);
                                             }}
                                             style={{ cursor: 'pointer' }}
                                         >
-                                            <TableCell
-                                                component="th"
-                                                scope="row"
-                                            >
+                                            <TableCell component="th" scope="row">
                                                 {ticket.title}
                                             </TableCell>
                                             <TableCell>
-                                                <Typography
-                                                    variant="body2"
-                                                    color="text.secondary"
-                                                >
+                                                <Typography variant="body2" color="text.secondary">
                                                     {ticket.assignee}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell>
                                                 <Typography variant="body2">
                                                     {ticket.deadline
-                                                        ? dayjs(
-                                                              ticket.deadline,
-                                                          ).format(
-                                                              'MMM DD, YYYY',
-                                                          )
+                                                        ? dayjs(ticket.deadline).format('MMM DD, YYYY')
                                                         : 'N/A'}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell>
-                                                <Typography
-                                                    variant="body2"
-                                                    color="text.secondary"
-                                                >
-                                                    {
-                                                        TicketConstToStatusMap[
-                                                            ticket.status
-                                                        ]
-                                                    }
+                                                <Typography variant="body2" color="text.secondary">
+                                                    {TicketConstToStatusMap[ticket.status]}
                                                 </Typography>
                                             </TableCell>
                                         </TableRow>
@@ -320,16 +373,11 @@ export const ProjectDashboardPage = () => {
                 {/* Load More Button */}
                 {hasNextPage && (
                     <Box display="flex" my={2}>
-                        <Button
-                            variant="outlined"
-                            onClick={() => void fetchNextPage()}
-                            disabled={isLoading}
-                        >
+                        <Button variant="outlined" onClick={() => void fetchNextPage()} disabled={isLoading}>
                             {isLoading ? 'Loading...' : 'Load More'}
                         </Button>
                     </Box>
                 )}
-
                 {/* Dialogs for Project Update and Delete */}
                 <DialogBox
                     open={isProjectDialogOpen}
@@ -369,9 +417,7 @@ export const ProjectDashboardPage = () => {
                                 <Switch
                                     checked={updateFormData?.status === 2}
                                     onChange={(e) => {
-                                        const newStatus = e.target.checked
-                                            ? 2
-                                            : 1;
+                                        const newStatus = e.target.checked ? 2 : 1;
                                         setUpdateFormData({
                                             status: newStatus,
                                         });
@@ -379,11 +425,7 @@ export const ProjectDashboardPage = () => {
                                     color="error"
                                 />
                             }
-                            label={
-                                updateFormData?.status === 2
-                                    ? 'Archived'
-                                    : 'Active'
-                            }
+                            label={updateFormData?.status === 2 ? 'Archived' : 'Active'}
                         />
                     </Box>
                 </DialogBox>
@@ -401,24 +443,28 @@ export const ProjectDashboardPage = () => {
                     open={isImportDialogOpen}
                     title="Import Ticket"
                     onClose={() => setIsImportDialogOpen(false)}
-                    // onSubmit={handleImportTicket}
+                    onSubmit={handleImportTicket}
                     submitText="Import"
                     cancelText="Cancel"
                 >
-                    <TextField
+                    <StyledErrorTextField
                         label="Jira Ticket Key"
                         variant="outlined"
                         fullWidth
                         value={importTicketKey}
-                        onChange={(e) => setImportTicketKey(e.target.value)}
+                        onChange={(e) => { setImportErrors({}); setImportTicketKey(e.target.value)}}
                         sx={{ marginBottom: 2 }}
+                        error={!!importErrors.ticketKey}
+                        helperText={importErrors.ticketKey}
                     />
-
-                    {/* {ticketImportError && (
-            <Typography color="error" variant="body2">
-                {ticketImportError}
-            </Typography>
-            )} */}
+                    {importTicketMutation.isError && (
+                        <Typography
+                            variant="subtitle2"
+                            sx={{ color: theme.palette.error.contrastText }}
+                        >
+                            {importTicketMutation.error.message}
+                        </Typography>
+                    )}
                 </DialogBox>
             </SectionLayout>
         </>

@@ -1,20 +1,19 @@
 import { handleApiError } from '@api/apiErrorHandling';
 import { api } from '@api/axios';
 import {
-    GetAllTicketsFormData,
+    GetAllTicketsJqlFormData,
     GetAllTicketsResponse,
     getAllTicketsResponseSchema,
 } from '@features/ticket/getAllTickets/getAllTickets.schema';
 
-export const getAllTickets = async (
+export const getAllTicketsJql = async (
     projectKey: string,
-    params: GetAllTicketsFormData,
+    params: GetAllTicketsJqlFormData,
 ): Promise<GetAllTicketsResponse> => {
     try {
-        const response = await api.get(`/project/${projectKey}/ticket`, {
-            params
+        const response = await api.post(`/project/${projectKey}/search`, {jql: params.jql}, {
+            params: {limit: params.limit, cursor: params.cursor}
         });
-
         const parsed = getAllTicketsResponseSchema.safeParse(response.data);
         
         if (!parsed.success) {

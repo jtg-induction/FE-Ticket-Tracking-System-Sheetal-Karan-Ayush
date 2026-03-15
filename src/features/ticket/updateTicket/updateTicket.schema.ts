@@ -27,11 +27,13 @@ export const ticketUpdateRequestSchema = z.object({
             z.literal(TicketStatus.CLOSED),
         ])
         .optional(),
-    priority: z.union([
-        z.literal(TicketPriority.LOW),
-        z.literal(TicketPriority.MEDIUM),
-        z.literal(TicketPriority.HIGH),
-    ]).optional(),
+    priority: z
+        .union([
+            z.literal(TicketPriority.LOW),
+            z.literal(TicketPriority.MEDIUM),
+            z.literal(TicketPriority.HIGH),
+        ])
+        .optional(),
     assignee: z
         .email('Invalid email format for assignee.')
         .min(5, 'Assignee email must be at least 5 characters long.')

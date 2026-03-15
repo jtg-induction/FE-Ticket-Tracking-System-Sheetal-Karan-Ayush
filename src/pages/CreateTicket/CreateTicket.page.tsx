@@ -52,13 +52,18 @@ export const CreateTicket = () => {
         };
 
         setCreateFormData({ [name]: value });
-        setErrors((prev) => ({ ...prev, [name]: '' }));
+        setErrors({});
     };
 
     const handleCreateSubmit = () => {
-        setCreateFormData({ project_key: projectKey });
-        setCreateFormData({ labels: ['hii', 'hello'] });
-        const result = ticketCreateSchema.safeParse(createFormData);
+        const payload = {
+            ...createFormData,
+            project_key: projectKey,
+            labels: ['hii', 'hello'],
+            deadline: deadline?.toISOString() ?? null,
+        };
+
+        const result = ticketCreateSchema.safeParse(payload);
 
         if (!result.success) {
             const fieldErrors: Record<string, string> = {};
