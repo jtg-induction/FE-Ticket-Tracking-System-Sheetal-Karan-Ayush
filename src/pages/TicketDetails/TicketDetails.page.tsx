@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import dayjs from 'dayjs';
 import { useParams } from 'react-router-dom';
@@ -75,7 +75,12 @@ export const TicketDetails: React.FC = () => {
         );
     };
 
-
+    useEffect(() => {
+        if (ticket) {
+            setUpdateFormData({...ticket, deadline: ticket.deadline ?? undefined});
+        }
+    }, [ticket]);
+    
     const handleFieldChange = (
         field: keyof TicketUpdateFormData,
         value: TicketUpdateFormData[keyof TicketUpdateFormData],
