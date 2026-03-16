@@ -2,16 +2,16 @@ import { useState } from 'react';
 import React from 'react';
 
 import dayjs from 'dayjs';
-import { useEmailValidation } from 'hooks/useEmailValidation';
+import { NavLink } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import {
     Autocomplete,
     Box,
     Button,
-    Chip,
+    CircularProgress,
     FormControl,
     Stack,
-    TextField,
     Typography,
     useTheme,
 } from '@mui/material';
@@ -20,7 +20,9 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
 import { SelectInput } from '@components';
-import { JiraImportDialog } from '@containers';
+import { ticketCreateSchema } from '@features/ticket/createTicket/createTicket.schema';
+import { useCreateTicketMutation } from '@features/ticket/createTicket/useCreateTicketMutation';
+import { useTicketStore } from '@features/ticket/store/ticketStore';
 
 import {
     ticketPriorityOptions,
@@ -32,24 +34,49 @@ import { StyledErrorTextField, StyledWrapper } from './CreateTicket.styles';
 export const CreateTicket = () => {
     const theme = useTheme();
 
-    const [ticketType, setTicketType] = useState(0);
-    const [ticketStatus, setTicketStatus] = useState(0);
-    const [ticketPriority, setTicketPriority] = useState(0);
-    const [labels, setLabels] = useState<string[]>([]);
+    const [ticketType, setTicketType] = useState(1);
+    const [ticketStatus, setTicketStatus] = useState(1);
+    const [ticketPriority, setTicketPriority] = useState(1);
     const [deadline, setDeadline] = React.useState<dayjs.Dayjs | null>(null);
-    const [openJiraDialog, setOpenJiraDialog] = useState(false);
+    const { createFormData, setCreateFormData } = useTicketStore();
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const createTicketMutation = useCreateTicketMutation();
+    const isSubmitting = createTicketMutation.isPending;
+    const { projectKey } = useParams<{ projectKey: string }>();
 
-    const {
-        email: reporter,
-        isInvalid: isInvalidReporter,
-        handleChange: handleReporterChange,
-    } = useEmailValidation();
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    ): void => {
+        const { name, value } = e.target as {
+            name: keyof typeof createFormData;
+            value: string;
+        };
 
-    const {
-        email: assignee,
-        isInvalid: isInvalidAssignee,
-        handleChange: handleAssigneeChange,
-    } = useEmailValidation();
+        setCreateFormData({ [name]: value });
+        setErrors((prev) => ({ ...prev, [name]: '' }));
+    };
+
+    const handleCreateSubmit = () => {
+        setCreateFormData({ project_key: projectKey });
+        setCreateFormData({ labels: ['hii', 'hello'] });
+        const result = ticketCreateSchema.safeParse(createFormData);
+
+        if (!result.success) {
+            const fieldErrors: Record<string, string> = {};
+            result.error.issues.forEach((err) => {
+                const field = err.path[0] as string;
+                fieldErrors[field] = err.message;
+            });
+            setErrors(fieldErrors);
+            return;
+        }
+
+        createTicketMutation.mutate(result.data, {
+            onSuccess: () => {
+                setErrors({});
+            },
+        });
+    };
 
     return (
         <StyledWrapper elevation={2}>
@@ -63,17 +90,24 @@ export const CreateTicket = () => {
                 </Typography>
 
                 <FormControl sx={{ display: 'flex', gap: '10px' }}>
-                    <TextField required name="title" label="Title" />
+                    <StyledErrorTextField
+                        required
+                        name="title"
+                        label="Title"
+                        error={!!errors.title}
+                        helperText={errors.title}
+                        onChange={handleChange}
+                    />
 
-                    <TextField
+                    <StyledErrorTextField
                         multiline
                         rows={3}
                         name="description"
                         label="Description"
+                        error={!!errors.description}
+                        onChange={handleChange}
+                        helperText={errors.description}
                     />
-
-                    {/* jira ticket key */}
-                    <TextField name="key" label="Ticket key" />
 
                     <Box
                         display={'flex'}
@@ -83,25 +117,32 @@ export const CreateTicket = () => {
                     >
                         {/* ticket type */}
                         <SelectInput
+                            name="ticket_type"
                             label="Ticket Type"
                             value={ticketType}
                             options={ticketTypeOptions}
                             onChange={setTicketType}
+                            error={!!errors.ticket_type}
+                            helperText={errors.ticket_type}
                         />
 
                         {/* status */}
                         <SelectInput
                             label="Ticket Status"
+                            name="status"
                             value={ticketStatus}
                             options={ticketStatusOptions}
+                            error={!!errors.status}
                             onChange={setTicketStatus}
                         />
 
                         {/* priority*/}
                         <SelectInput
                             label="Ticket Priority"
+                            name="priority"
                             value={ticketPriority}
                             options={ticketPriorityOptions}
+                            error={!!errors.priority}
                             onChange={setTicketPriority}
                         />
                     </Box>
@@ -111,31 +152,9 @@ export const CreateTicket = () => {
                         required
                         name="assignee"
                         label="Assignee"
-                        type="email"
-                        value={assignee}
-                        onChange={handleAssigneeChange}
-                        error={isInvalidAssignee}
-                        helperText={
-                            isInvalidAssignee
-                                ? 'Enter a valid email address'
-                                : ''
-                        }
-                    />
-
-                    {/* reporter */}
-                    <StyledErrorTextField
-                        required
-                        name="reporter"
-                        label="Reporter"
-                        type="email"
-                        value={reporter}
-                        onChange={handleReporterChange}
-                        error={isInvalidReporter}
-                        helperText={
-                            isInvalidReporter
-                                ? 'Enter a valid email address'
-                                : ''
-                        }
+                        onChange={handleChange}
+                        error={!!errors.assignee}
+                        helperText={errors.assignee}
                     />
 
                     <Autocomplete
@@ -171,28 +190,49 @@ export const CreateTicket = () => {
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
                             label="Deadline"
+                            name="deadline"
                             value={deadline}
                             onChange={(value) => setDeadline(value)}
                         />
                     </LocalizationProvider>
 
-                    <Button variant="contained" color="primary" type="submit">
-                        Create
+                    {createTicketMutation.isError && (
+                        <Typography
+                            variant="subtitle2"
+                            sx={{ color: theme.palette.error.contrastText }}
+                        >
+                            {createTicketMutation.error.message}
+                        </Typography>
+                    )}
+
+                    {createTicketMutation.isSuccess && (
+                        <Typography
+                            variant="subtitle2"
+                            sx={{ color: theme.palette.success.contrastText }}
+                        >
+                            Ticket Created Successfully
+                        </Typography>
+                    )}
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        type="submit"
+                        onClick={handleCreateSubmit}
+                    >
+                        {isSubmitting ? (
+                            <CircularProgress size={22} color="inherit" />
+                        ) : (
+                            'Create'
+                        )}
                     </Button>
                 </FormControl>
-
-                <Typography
-                    align="center"
-                    sx={{ cursor: 'pointer' }}
-                    color="info.contrastText"
-                    onClick={() => setOpenJiraDialog(true)}
-                >
-                    Click here to import ticket from Jira.
+                <Typography align="center">
+                    Click{' '}
+                    <NavLink to="/ticket/import" color="inherit">
+                        here
+                    </NavLink>{' '}
+                    to import ticket from Jira.
                 </Typography>
-                <JiraImportDialog
-                    open={openJiraDialog}
-                    handleClose={() => setOpenJiraDialog(false)}
-                />
             </Stack>
         </StyledWrapper>
     );

@@ -5,7 +5,10 @@ type Option = {
 
 export type SelectInputProps = {
     label: string;
+    name?: string;
+    error?: boolean;
     value: number;
+    helperText?: string;
     onChange: (value: number) => void;
     options: Option[];
     required?: boolean;

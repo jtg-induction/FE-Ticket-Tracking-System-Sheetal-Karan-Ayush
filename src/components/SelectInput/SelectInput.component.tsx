@@ -1,6 +1,12 @@
 import React from 'react';
 
-import { FormControl, MenuItem, Select } from '@mui/material';
+import {
+    FormControl,
+    FormHelperText,
+    InputLabel,
+    MenuItem,
+    Select,
+} from '@mui/material';
 
 import { SelectInputProps } from './SelectInput.types';
 
@@ -9,15 +15,19 @@ export const SelectInput: React.FC<SelectInputProps> = ({
     value,
     onChange,
     options,
+    name,
+    helperText,
+    error = false,
     fullWidth = true,
     required = true,
 }) => (
-    <FormControl fullWidth={fullWidth} required={required}>
+    <FormControl fullWidth={fullWidth} required={required} error={error}>
+        <InputLabel>{label}</InputLabel>
         <Select
             label={label}
             value={value}
             onChange={(e) => onChange(Number(e.target.value))}
-            notched={false}
+            name={name ?? ''}
         >
             {options.map((opt) => (
                 <MenuItem
@@ -29,5 +39,6 @@ export const SelectInput: React.FC<SelectInputProps> = ({
                 </MenuItem>
             ))}
         </Select>
+        {helperText && <FormHelperText>{helperText}</FormHelperText>}
     </FormControl>
 );

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 
 import { BugReport } from '@mui/icons-material';
 import {
@@ -13,7 +13,9 @@ import {
 } from '@mui/material';
 
 import { HeroCard } from '@components';
-import { useSignupMutation } from '@features/auth';
+import { VerifyOtpDialog } from '@containers/VerifyOtp';
+import { useSignupMutation, useVerifyMutation } from '@features/auth';
+import { useAuthStore } from '@features/auth';
 
 import {
     StyledContent,
@@ -78,16 +80,45 @@ export const Register = () => {
         !isInvalidPassword &&
         password === confirmPassword;
 
+    const [otpOpen, setOtpOpen] = useState<boolean>(false);
     const signupMutation = useSignupMutation();
+    const verifyMutation = useVerifyMutation();
+
+    const setAuth = useAuthStore((s) => s.setAuth);
 
     const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
         e.preventDefault();
 
         if (!isFormValid) {
-            // console.log('Submission blocked: Fix validation errors first.');
             return;
         }
-        signupMutation.mutate({ name, email, password, avatarId: 1 });
+        signupMutation.mutate(
+            { name, email, password, avatarId: 1 },
+            { onSuccess: () => setOtpOpen(true) },
+        );
+    };
+    const navigate = useNavigate();
+    const handleVerify = (otp: number) => {
+        verifyMutation.mutate(
+            { name, email, password, avatarId: 1, otp },
+            {
+                onSuccess: (data) => {
+                    setAuth(data);
+                    setOtpOpen(false);
+                    localStorage.setItem('access_token', data.access_token);
+                    localStorage.setItem('refresh_token', data.refresh_token);
+                    void navigate('/project/create');
+                },
+                onError: () => {
+                    <Typography
+                        variant="subtitle2"
+                        sx={{ color: theme.palette.error.contrastText }}
+                    >
+                        {verifyMutation.error?.message}
+                    </Typography>;
+                },
+            },
+        );
     };
 
     return (
@@ -125,7 +156,7 @@ export const Register = () => {
                             error={isInvalidName}
                             helperText={
                                 isInvalidName
-                                    ? 'Enter a valid name (letters only) minlength-2 maxlength-255'
+                                    ? 'Enter a valid name (letters only), with length ranging from 2 to 255'
                                     : ''
                             }
                         />
@@ -190,7 +221,12 @@ export const Register = () => {
                             Submit
                         </Button>
                     </Stack>
-
+                    <VerifyOtpDialog
+                        open={otpOpen}
+                        handleVerify={handleVerify}
+                        setOpen={setOtpOpen}
+                        errorMsg={verifyMutation.error?.message || ''}
+                    />
                     <Typography textAlign={'center'}>
                         Have an account? <NavLink to="/login">Login</NavLink>
                     </Typography>

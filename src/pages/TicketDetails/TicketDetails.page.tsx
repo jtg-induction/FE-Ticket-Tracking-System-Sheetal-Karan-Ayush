@@ -1,450 +1,442 @@
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import {
-    TICKET_PRIORITY,
-    TICKET_STATUS,
-    TICKET_TYPE,
-} from 'constant/ticketEnums';
 import { useParams } from 'react-router-dom';
 
-import { Delete, Edit } from '@mui/icons-material';
+import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import {
-    Autocomplete,
     Box,
     Button,
     Card,
+    CardContent,
     Chip,
     Divider,
+    FormControl,
+    IconButton,
+    InputLabel,
+    MenuItem,
+    Select,
     Stack,
-    TextField,
     Typography,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
-import { CommentItem, EnumChip } from '@components';
-import { EnumSelect } from '@components/EnumSelect/EnumSelect.component';
+import { DialogBox } from '@components/DialogBox';
+import { COLORS } from '@constant';
+import { useDeleteTicket } from '@features/ticket/deleteTicket/useDeleteTicketMutation';
+import { useGetTicket } from '@features/ticket/getTicket/useGetTicket';
+import { useTicketStore } from '@features/ticket/store/ticketStore';
+import { TicketUpdateFormData, ticketUpdateRequestSchema } from '@features/ticket/updateTicket/updateTicket.schema';
+import { useUpdateTicketMutation } from '@features/ticket/updateTicket/useUpdateTicketMutation';
 
-import { CommentType } from './TicketDetails.type';
+import { StyledErrorTextField, StyledLabel } from './TicketDetails.style';
+import {
+    TicketConstToPriorityMap,
+    TicketConstToStatusMap,
+    TicketConstToTypeMap,
+} from './TicketDetails.util';
 
-export const TicketDetails = () => {
-    // MOCK DATA
-    const MOCK_TICKET = {
-        id: '1',
-        ticketKey: 'TCK-101',
-        title: 'First Ticket',
-        description:
-            'this is a demo ticket related to first bug. this is its description.',
-        type: 3,
-        status: 2,
-        priority: 1,
-        createdAt: '2024-03-20T10:30:00Z',
-        assignee: 'john@gmail.com',
-        reporter: 'smith@example.com',
-        labels: ['issue', 'minor', 'first', 'mandatory'],
-        history: [],
-        comments: [
-            {
-                id: 1,
-                user: 'First User',
-                commentText: 'Ticket created and assigned to Tech Team.',
-                parentComment: null,
-                time: '2026-02-06T12:10:00Z',
-            },
-            {
-                id: 2,
-                user: 'Jane Doe',
-                commentText: 'Checking the payment logs now.',
-                parentComment: null,
-                time: '2026-03-06T12:15:00Z',
-            },
-            {
-                id: 3,
-                user: 'Second User',
-                commentText: 'Reply to first comment',
-                parentComment: 1,
-                time: '2026-03-06T12:55:00Z',
-            },
-            {
-                id: 4,
-                user: 'Second User',
-                commentText: 'Fixed the issue',
-                parentComment: 1,
-                time: '2026-03-07T10:10:00Z',
-            },
-        ],
-    };
-
-    const { projectKey, ticketKey } = useParams();
-
-    const [ticket, setTicket] = useState(MOCK_TICKET);
-    const [isEditing, setIsEditing] = useState(false);
-    const [description, setDescription] = useState(`${ticket.description}`);
-    const [title, setTitle] = useState(`${ticket.title}`);
-    const [assignee, setAssignee] = useState(`${ticket.assignee}`);
-    const [reporter, setReporter] = useState(`${ticket.reporter}`);
-    const [labels, setLabels] = useState<string[]>(ticket.labels);
-    const [comments, setComments] = useState<CommentType[]>(ticket.comments);
-    const [newComment, setNewComment] = useState('');
-
-    const mainComments = comments.filter(
-        (comment) => comment.parentComment === null,
+export const TicketDetails: React.FC = () => {
+    const theme = useTheme();
+    const { projectKey, ticketKey } = useParams<{
+        projectKey: string;
+        ticketKey: string;
+    }>();
+    const { data: ticket } = useGetTicket(
+        projectKey as string,
+        ticketKey as string,
     );
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] =
+        useState<boolean>(false);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const deleteTicketMutation = useDeleteTicket();
+    const { updateFormData, setUpdateFormData } = useTicketStore();
+    const updateTicketMutation = useUpdateTicketMutation();
+    const formatDate = (dateString: string) =>
+        new Date(dateString).toLocaleDateString();
 
-    const getReplies = (commentId: number) =>
-        comments.filter((reply) => reply.parentComment === commentId);
-
-    //TODO: modify to call update api on save (if isEditing)
-    const handleEditClick = () => {
-        setIsEditing(!isEditing);
+    const handleDeleteTicket = () => {
+        if (!projectKey || !ticketKey) {
+            return;
+        }
+        deleteTicketMutation.mutate(
+            { projectKey, ticketKey },
+            {
+                onSuccess: () => setIsDeleteDialogOpen(false),
+            },
+        );
     };
 
-    const handleAddComment = () => {
-        const comment = {
-            //TODO: First send request to backend and then get id from response
-            id: Date.now(),
-            commentText: newComment,
-            time: new Date().toISOString(),
-            parentComment: null,
-            user: 'current user',
-        };
-        setComments((prev) => [comment, ...prev]);
-        setNewComment('');
+    useEffect(() => {
+        if (ticket) {
+            setUpdateFormData({...ticket, deadline: ticket.deadline ?? undefined});
+        }
+    }, [ticket]);
+
+    const handleFieldChange = (field: keyof TicketUpdateFormData, value: TicketUpdateFormData[keyof TicketUpdateFormData]) => {
+        setUpdateFormData({ [field]: value });
+        setErrors((prev) => ({ ...prev, [field]: '' }));
     };
 
-    const handleReply = (text: string, parentId: number) => {
-        const reply = {
-            //TODO: First send request to backend and then get id from response
-            id: Date.now(),
-            commentText: text,
-            time: new Date().toISOString(),
-            parentComment: parentId,
-            user: 'current user',
-        };
-        setComments((prev) => [reply, ...prev]);
+    const handleSaveChanges = () => {
+        setUpdateFormData({ project_key: projectKey });
+        setUpdateFormData({ ticket_key: ticketKey });
+        const result = ticketUpdateRequestSchema.safeParse(updateFormData);
+
+        if (!result.success) {
+            const fieldErrors: Record<string, string> = {};
+            result.error.issues.forEach((err) => {
+                const field = err.path[0] as string;
+                fieldErrors[field] = err.message;
+            });
+            setErrors(fieldErrors);
+            return;
+        }
+        updateTicketMutation.mutate(result.data)
+        // setIsEditDialogOpen(false);
     };
 
     return (
-        <Box display="flex" flexDirection={'column'} gap={2}>
-            {/* for heading -> project and ticket headings */}
-            <Box padding={'12px'}>
-                <Typography variant="h3" color="info.contrastText">
-                    Project: {projectKey}
-                </Typography>
-
-                <Box display={'flex'} gap={4}>
-                    <Typography variant="h2">Ticket: {ticketKey}</Typography>
-
-                    <EnumSelect
-                        value={ticket.status}
-                        map={TICKET_STATUS}
-                        onChange={(status) =>
-                            setTicket((prev) => ({ ...prev, status }))
-                        }
-                    />
-                </Box>
-            </Box>
-
-            {/* for centre card having three partitions */}
-            <Box display={'flex'} gap={3}>
-                {/* ticket info card */}
-                <Box
-                    sx={{
-                        flex: 4,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '8px',
-                    }}
-                >
-                    {/* first card in info card -> having title, description and labels (first of three partitions) */}
-                    <Card
-                        sx={{
-                            padding: '12px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '12px',
-                        }}
-                    >
-                        {/* heading -> title and icons */}
-                        <Box display={'flex'} justifyContent={'space-between'}>
-                            {/* left container */}
-                            <TextField
-                                label={isEditing ? 'Title' : null}
-                                fullWidth
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                                slotProps={{
-                                    input: {
-                                        readOnly: !isEditing,
-                                        disableUnderline: !isEditing,
-                                    },
-                                }}
-                                variant={isEditing ? 'outlined' : 'standard'}
-                                sx={{
-                                    '& .MuiInputBase-input': !isEditing
-                                        ? (theme) => ({
-                                              ...theme.typography.h3,
-                                              color: theme.palette.primary.main,
-                                          })
-                                        : {},
-                                }}
-                            />
-
-                            {/* right container */}
-                            <Box display={'flex'} gap={2} alignItems={'center'}>
-                                {isEditing ? (
-                                    <Button onClick={handleEditClick}>
-                                        Save
-                                    </Button>
-                                ) : (
-                                    <Edit onClick={handleEditClick} />
-                                )}
-                                <Delete />
-                            </Box>
-                        </Box>
-
-                        {/* description */}
-                        <TextField
-                            label={isEditing ? 'Description' : null}
-                            multiline
-                            fullWidth
-                            minRows={isEditing ? 3 : 1}
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            slotProps={{
-                                input: {
-                                    readOnly: !isEditing,
-                                    disableUnderline: !isEditing,
-                                },
-                            }}
-                            variant={isEditing ? 'outlined' : 'standard'}
-                        />
-
-                        {/* for showing labels */}
-                        {isEditing ? (
-                            <Autocomplete
-                                multiple
-                                freeSolo
-                                options={[]}
-                                value={labels}
-                                onChange={(_, newValue) => setLabels(newValue)}
-                                renderTags={(value, getTagProps) =>
-                                    value.map((option, index) => {
-                                        const { key, ...tagProps } =
-                                            getTagProps({ index });
-                                        return (
-                                            <Chip
-                                                key={key}
-                                                label={option}
-                                                {...tagProps}
-                                                color="success"
-                                            />
-                                        );
-                                    })
-                                }
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        label="Add Labels"
-                                        placeholder="Type and press Enter"
-                                    />
-                                )}
-                            />
-                        ) : (
-                            <Box display={'flex'} alignItems={'center'} gap={2}>
-                                <Typography variant="body1">Labels:</Typography>
-
-                                {labels.map((label, index) => (
-                                    <Chip
-                                        key={index}
-                                        label={label}
-                                        color="success"
-                                    />
-                                ))}
-                            </Box>
-                        )}
-                    </Card>
-
-                    {/* second card in info card -> having assignments (first of three partitions) */}
-                    <Card
-                        sx={{
-                            padding: '12px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '8px',
-                        }}
-                    >
-                        <Typography variant="body1" color="info.contrastText">
-                            ASSIGNMENTS
-                        </Typography>
-
-                        {/* assignee */}
-                        <Box display={'flex'} alignItems={'center'} gap={2}>
-                            <Typography variant="body1">Assignee:</Typography>
-                            <TextField
-                                fullWidth
-                                type="email"
-                                value={assignee}
-                                onChange={(e) => setAssignee(e.target.value)}
-                                slotProps={{
-                                    input: {
-                                        readOnly: !isEditing,
-                                        disableUnderline: !isEditing,
-                                    },
-                                }}
-                                variant={isEditing ? 'outlined' : 'standard'}
-                            />
-                        </Box>
-                        {/* reporter */}
-                        <Box display={'flex'} alignItems={'center'} gap={2}>
-                            <Typography variant="body1">Reporter:</Typography>
-                            <TextField
-                                fullWidth
-                                type="email"
-                                value={reporter}
-                                onChange={(e) => setReporter(e.target.value)}
-                                slotProps={{
-                                    input: {
-                                        readOnly: !isEditing,
-                                        disableUnderline: !isEditing,
-                                    },
-                                }}
-                                variant={isEditing ? 'outlined' : 'standard'}
-                            />
-                        </Box>
-                    </Card>
-                </Box>
-
-                {/* status, type and priority details card */}
+        <>
+            {ticket ? (
                 <Card
                     sx={{
-                        flex: 1,
-                        padding: '12px',
-                        maxWidth: '250px',
-                        minWidth: '180px',
+                        maxWidth: theme.spacing(200),
+                        marginX: 'auto',
+                        marginY: theme.spacing(5),
+                        borderRadius: 3,
+                        boxShadow: 5,
                     }}
                 >
-                    {isEditing ? (
-                        <Box display={'flex'} flexDirection={'column'} gap={4}>
-                            <Box display={'flex'} alignItems={'center'} gap={2}>
-                                <Typography>Status:</Typography>
-                                <EnumSelect
-                                    value={ticket.status}
-                                    map={TICKET_STATUS}
-                                    onChange={(status) =>
-                                        setTicket((prev) => ({
-                                            ...prev,
-                                            status,
-                                        }))
-                                    }
-                                />
-                            </Box>
-
-                            <Box display={'flex'} alignItems={'center'} gap={2}>
-                                <Typography>Type:</Typography>
-                                <EnumSelect
-                                    value={ticket.type}
-                                    map={TICKET_TYPE}
-                                    onChange={(type) =>
-                                        setTicket((prev) => ({ ...prev, type }))
-                                    }
-                                />
-                            </Box>
-
-                            <Box display={'flex'} alignItems={'center'} gap={2}>
-                                <Typography>Priority:</Typography>
-                                <EnumSelect
-                                    value={ticket.priority}
-                                    map={TICKET_PRIORITY}
-                                    onChange={(priority) =>
-                                        setTicket((prev) => ({
-                                            ...prev,
-                                            priority,
-                                        }))
-                                    }
-                                />
-                            </Box>
-                        </Box>
-                    ) : (
-                        <Box display={'flex'} flexDirection={'column'} gap={4}>
-                            <Box display={'flex'} alignItems={'center'} gap={2}>
-                                <Typography>Status:</Typography>
-                                <EnumChip
-                                    value={ticket.status}
-                                    map={TICKET_STATUS}
-                                />
-                            </Box>
-                            <Box display={'flex'} alignItems={'center'} gap={2}>
-                                <Typography>Type:</Typography>
-                                <EnumChip
-                                    value={ticket.type}
-                                    map={TICKET_TYPE}
-                                />
-                            </Box>
-                            <Box display={'flex'} alignItems={'center'} gap={2}>
-                                <Typography>Priority:</Typography>
-                                <EnumChip
-                                    value={ticket.priority}
-                                    map={TICKET_PRIORITY}
-                                />
-                            </Box>
-                        </Box>
-                    )}
-                </Card>
-
-                {/* history card */}
-                <Card sx={{ padding: '12px', flex: 2 }}>
-                    <Typography variant="h3" textAlign={'center'}>
-                        History
-                    </Typography>
-                </Card>
-            </Box>
-
-            {/*comments card*/}
-            <Card
-                sx={{
-                    padding: 3,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '8px',
-                }}
-            >
-                <Typography variant="h3">Comments</Typography>
-
-                {/* comment box */}
-                <Box display="flex" gap={2}>
-                    <TextField
-                        fullWidth
-                        size="small"
-                        placeholder="Add a comment..."
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        onKeyDown={(e) =>
-                            e.key === 'Enter' && handleAddComment()
-                        }
-                    />
-                    <Button
-                        variant="contained"
-                        size="small"
-                        onClick={handleAddComment}
-                        disabled={!newComment.trim()}
+                    <CardContent
+                        sx={{
+                            paddingX: theme.spacing(5),
+                            paddingY: theme.spacing(4),
+                        }}
                     >
-                        Comment
-                    </Button>
-                </Box>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                            }}
+                        >
+                            <Typography
+                                variant="h3"
+                                sx={{
+                                    fontWeight: 700,
+                                    color: theme.palette.text.primary,
+                                    fontSize: {
+                                        md: theme.typography.h2.fontSize,
+                                    },
+                                }}
+                            >
+                                {ticket.title}
+                            </Typography>
 
-                {/* Comments List */}
-                <Stack spacing={3}>
-                    {mainComments.map((comment) => (
-                        <Box key={comment.id}>
-                            <Divider />
-                            <CommentItem
-                                comment={comment}
-                                replies={getReplies(comment.id)}
-                                onReply={handleReply}
-                            />
+                            {/* Icon Box with Edit and Delete icons */}
+                            <Box>
+                                <IconButton
+                                    sx={{
+                                        backgroundColor: COLORS.GRAY.BACKGROUND,
+                                        '&:hover': {
+                                            backgroundColor:
+                                                COLORS.GRAY.SECONDARY,
+                                        },
+                                        padding: theme.spacing(1),
+                                    }}
+                                    onClick={() => setIsEditDialogOpen(true)} // Open edit dialog
+                                >
+                                    <EditIcon />
+                                </IconButton>
+
+                                <IconButton
+                                    sx={{
+                                        backgroundColor: COLORS.GRAY.BACKGROUND,
+                                        '&:hover': {
+                                            backgroundColor:
+                                                COLORS.GRAY.SECONDARY,
+                                        },
+                                        padding: theme.spacing(1),
+                                    }}
+                                    onClick={() => setIsDeleteDialogOpen(true)}
+                                >
+                                    <DeleteIcon />
+                                </IconButton>
+                            </Box>
                         </Box>
-                    ))}
-                </Stack>
-            </Card>
-        </Box>
+
+                        <Divider sx={{ margin: theme.spacing(4, 0) }} />
+
+                        {/* Description */}
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                marginBottom: theme.spacing(3),
+                            }}
+                        >
+                            <StyledLabel sx={{ marginTop: 0 }}>
+                                <strong>Description:</strong>
+                            </StyledLabel>
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    marginLeft: theme.spacing(1),
+                                    whiteSpace: 'pre-line',
+                                    wordBreak: 'break-word',
+                                    flexGrow: 1,
+                                    fontSize: {
+                                        xs: theme.typography.body2.fontSize,
+                                        sm: theme.typography.body2.fontSize,
+                                    },
+                                    color: COLORS.GRAY.SECONDARY,
+                                }}
+                            >
+                                {ticket.description ||
+                                    'No description provided.'}
+                            </Typography>
+                        </Box>
+
+                        {/* Chips for Type, Priority, and Status */}
+                        <Stack
+                            direction="row"
+                            spacing={2}
+                            mb={theme.spacing(3)}
+                        >
+                            <Chip
+                                label={`${TicketConstToTypeMap[ticket.ticket_type]}`}
+                                color="primary"
+                                size="small"
+                                variant="filled"
+                            />
+                            <Chip
+                                label={`${TicketConstToPriorityMap[ticket.priority]}`}
+                                color="warning"
+                                size="small"
+                                variant="filled"
+                            />
+                            <Chip
+                                label={`${TicketConstToStatusMap[ticket.status]}`}
+                                color="info"
+                                size="small"
+                                variant="filled"
+                            />
+                        </Stack>
+
+                        {/* Assignee, Reporter, Deadline, Created On */}
+                        <StyledLabel>
+                            <strong>Assignee:</strong>{' '}
+                            <span style={{ color: COLORS.GRAY.SECONDARY }}>
+                                {ticket.assignee}
+                            </span>
+                        </StyledLabel>
+
+                        <StyledLabel>
+                            <strong>Reporter:</strong>{' '}
+                            <span style={{ color: COLORS.GRAY.SECONDARY }}>
+                                {ticket.reporter}
+                            </span>
+                        </StyledLabel>
+
+                        <StyledLabel>
+                            <strong>Deadline:</strong>{' '}
+                            <span style={{ color: COLORS.GRAY.SECONDARY }}>
+                                {ticket.deadline
+                                    ? formatDate(ticket.deadline)
+                                    : 'N/A'}
+                            </span>
+                        </StyledLabel>
+
+                        <StyledLabel>
+                            <strong>Created On:</strong>{' '}
+                            <span style={{ color: COLORS.GRAY.SECONDARY }}>
+                                {formatDate(ticket.created_at)}
+                            </span>
+                        </StyledLabel>
+
+                        <Divider sx={{ margin: theme.spacing(5, 0) }} />
+
+                        {/* Labels */}
+                        <Stack
+                            direction="row"
+                            spacing={1}
+                            mb={theme.spacing(3)}
+                        >
+                            {ticket.labels.map((label, index) => (
+                                <Chip
+                                    key={index}
+                                    label={label}
+                                    size="small"
+                                    color="primary"
+                                    variant="outlined"
+                                    sx={{ textTransform: 'capitalize' }}
+                                />
+                            ))}
+                        </Stack>
+
+                        {/* Add Comment Button */}
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'flex-end',
+                                gap: 2,
+                            }}
+                        >
+                            <Button
+                                variant="outlined"
+                                sx={{
+                                    paddingX: theme.spacing(3),
+                                    paddingY: theme.spacing(1),
+                                    fontWeight: 600,
+                                }}
+                            >
+                                Add Comment
+                            </Button>
+                        </Box>
+                    </CardContent>
+
+                    {/* Delete Confirmation Dialog */}
+                    <DialogBox
+                        open={isDeleteDialogOpen}
+                        title="Confirm Delete"
+                        onClose={() => setIsDeleteDialogOpen(false)}
+                        onSubmit={handleDeleteTicket}
+                        submitText="Delete"
+                        cancelText="Cancel"
+                    >
+                        <Typography>
+                            Are you sure you want to delete?
+                        </Typography>
+                    </DialogBox>
+                </Card>
+            ) : (
+                <div>Ticket Not Found</div>
+            )}
+
+            {/* Edit Ticket Dialog */}
+            <DialogBox
+                open={isEditDialogOpen}
+                title="Edit Ticket"
+                onClose={() => setIsEditDialogOpen(false)}
+                onSubmit={handleSaveChanges}
+                submitText="Save"
+                cancelText="Cancel"
+                
+            >
+                {/* Description */}
+                <StyledErrorTextField
+                    label="Title"
+                    fullWidth
+                    value={updateFormData?.title || ''}
+                    onChange={(e) => handleFieldChange('title', e.target.value)}
+                    sx={{ marginBottom: theme.spacing(2) }}
+                    error={!!errors.title}
+                    helperText={errors.title}
+                />
+
+                <StyledErrorTextField
+                    label="Description"
+                    fullWidth
+                    multiline
+                    rows={4}
+                    value={updateFormData?.description || ''}
+                    onChange={(e) =>
+                        handleFieldChange('description', e.target.value)
+                    }
+                    sx={{ marginBottom: theme.spacing(2) }}
+                    error={!!errors.description}
+                    helperText={errors.description}
+                />
+
+                {/* Priority */}
+                <FormControl fullWidth sx={{ marginBottom: theme.spacing(2) }}>
+                    <InputLabel>Priority</InputLabel>
+                    <Select
+                        value={updateFormData?.priority || 1}
+                        onChange={(e) =>
+                            handleFieldChange('priority', Number(e.target.value))
+                        }
+                        label="Priority"
+                    >
+                        {Object.entries(TicketConstToPriorityMap).map(
+                            ([key, value]) => (
+                                <MenuItem key={key} value={Number(key)}>
+                                    {value}
+                                </MenuItem>
+                            ),
+                        )}
+                    </Select>
+                </FormControl>
+
+                {/* Status */}
+                <FormControl fullWidth sx={{ marginBottom: theme.spacing(2) }}>
+                    <InputLabel>Status</InputLabel>
+                    <Select
+                        value={updateFormData?.status || 1}
+                        onChange={(e) =>
+                            handleFieldChange('status', Number(e.target.value))
+                        }
+                        label="Status"
+                    >
+                        {Object.entries(TicketConstToStatusMap).map(
+                            ([key, value]) => (
+                                <MenuItem key={key} value={Number(key)}>
+                                    {value}
+                                </MenuItem>
+                            ),
+                        )}
+                    </Select>
+                </FormControl>
+
+                {/* Task Type */}
+                <FormControl fullWidth sx={{ marginBottom: theme.spacing(2) }}>
+                    <InputLabel>Task Type</InputLabel>
+                    <Select
+                        value={updateFormData?.ticket_type || 1}
+                        onChange={(e) =>
+                            handleFieldChange('ticket_type', Number(e.target.value))
+                        }
+                        label="Task Type"
+                    >
+                        {Object.entries(TicketConstToTypeMap).map(
+                            ([key, value]) => (
+                                <MenuItem key={key} value={Number(key)}>
+                                    {value}
+                                </MenuItem>
+                            ),
+                        )}
+                    </Select>
+                </FormControl>
+
+                {/* Deadline */}
+                <StyledLabel>
+                    <strong>Deadline:</strong>
+                    {/* <DatePicker
+                        value={editableTicket?.deadline ? new Date(editableTicket?.deadline) : null}
+                        onChange={(newDate) => handleFieldChange('deadline', newDate)}
+                        renderInput={(params) => <TextField {...params} />}
+                    /> */}
+                </StyledLabel>
+
+                {updateTicketMutation.isError && (
+                    <Typography
+                        variant="subtitle2"
+                        sx={{ color: theme.palette.error.contrastText }}
+                    >
+                        {updateTicketMutation.error.message}
+                    </Typography>
+                )}
+
+                {updateTicketMutation.isSuccess && (
+                    <Typography
+                        variant="subtitle2"
+                        sx={{ color: theme.palette.success.contrastText }}
+                    >
+                        Ticket Updated Successfully
+                    </Typography>
+                )}
+            </DialogBox>
+        </>
     );
 };

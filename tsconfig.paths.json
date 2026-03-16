@@ -3,6 +3,7 @@
         "baseUrl": "./src",
         "paths": {
             "@assets/*": ["assets/*"],
+            "@api/*": ["api/*"],
             "@api": ["api/index"],
             "@constant": ["constant/index"],
             "@theme": ["theme/index"],

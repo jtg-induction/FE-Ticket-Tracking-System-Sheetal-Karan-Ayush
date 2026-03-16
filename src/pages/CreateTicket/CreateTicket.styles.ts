@@ -18,6 +18,8 @@ export const StyledWrapper = styled(Card)(({ theme }) => {
     } = theme;
 
     return {
+        alignItems: 'center',
+        justifyContent: 'center',
         maxWidth: pxToRem(1024),
         margin: 'auto',
     };

@@ -1,4 +1,6 @@
 export {
     type InviteUserRequest,
-    type InviteUserResponse,
+    inviteUserRequestSchema,
 } from './inviteUser.schema';
+export { useInviteUserMutation } from './useInviteUserMutation';
+export { type InviteUserResponse } from './inviteUser.types';

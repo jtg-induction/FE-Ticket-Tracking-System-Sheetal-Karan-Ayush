@@ -5,32 +5,44 @@ import {
     CreateTicket,
     Login,
     PageNotFound,
+    ProjectCreationPage,
+    ProjectDashboardPage,
     Register,
     TicketDetails,
 } from '@pages';
 
+import { ProtectedRoute } from './ProtectedRoutes';
+
 const routes: RouteObject[] = [
     {
-        path: '/',
-        element: <Layout />,
-
+        element: <ProtectedRoute />,
         children: [
             {
-                path: 'project/:projectKey',
+                path: '/',
+                element: <Layout />,
+
                 children: [
                     {
-                        path: 'create',
+                        path: 'project/create',
+                        element: <ProjectCreationPage />,
+                    },
+                    {
+                        path: 'project/:projectKey',
+                        element: <ProjectDashboardPage />,
+                    },
+                    {
+                        path: 'project/:projectKey/ticket/create',
                         element: <CreateTicket />,
                     },
                     {
-                        path: ':ticketKey',
+                        path: 'project/:projectKey/ticket/:ticketKey',
                         element: <TicketDetails />,
                     },
+                    {
+                        path: '*',
+                        element: <PageNotFound />,
+                    },
                 ],
-            },
-            {
-                path: '*',
-                element: <PageNotFound />,
             },
         ],
     },
