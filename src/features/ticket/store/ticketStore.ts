@@ -13,20 +13,12 @@ type TicketStore = {
     tickets: TicketResponse[];
     ticket: TicketResponse | undefined;
     updateFormData: TicketUpdateFormData;
-    // projects: ProjectResponse[];
-    // project: ProjectResponse | null;
     setTicket: (newTicket: TicketResponse) => void;
-    // addProject: (project: ProjectResponse) => void;
-    // removeProject: (id: string) => void;
-    // deleteTarget: ProjectResponse | null;
     setCreateFormData: (data: Partial<TicketFormData>) => void;
     setTickets: (newTickets: TicketResponse[]) => void;
     addTickets: (newTickets: TicketResponse[]) => void;
     setUpdateFormData: (data: Partial<TicketUpdateFormData>) => void;
     reset: () => void;
-    // setProject: (project: ProjectResponse) => void;
-    // setDeleteTarget: (project: ProjectResponse) => void;
-    // clearDeleteTarget: () => void;
 };
 
 const initialCreateFormData: TicketFormData = {
@@ -38,7 +30,6 @@ const initialCreateFormData: TicketFormData = {
     assignee: '',
     labels: [],
     project_key: '',
-    // deadline: undefined,
 };
 
 const initialUpdateFormData: TicketUpdateFormData = {
@@ -52,12 +43,9 @@ const initialGetAllTicketsFormData: GetAllTicketsFormData = {
 };
 
 const storeCreator: StateCreator<TicketStore> = (set) => ({
-    // projects: [],
     createFormData: initialCreateFormData,
     getAllTicketsFormData: initialGetAllTicketsFormData,
     updateFormData: initialUpdateFormData,
-    // project: null,
-    // deleteTarget: null,
     tickets: [],
     ticket: undefined,
     setTicket: (newTicket) => set({ ticket: newTicket }),
@@ -73,28 +61,10 @@ const storeCreator: StateCreator<TicketStore> = (set) => ({
         set((state) => ({
             updateFormData: { ...state.updateFormData, ...data },
         })),
-    // setProjects: (projects) => set({ projects }),
-    // setProject: (project: ProjectResponse) => set({ project }),
-    // addProject: (project) =>
-    //     set((state) => ({
-    //         projects: [...state.projects, project],
-    //     })),
-
-    // removeProject: (id) =>
-    //     set((state) => ({
-    //         projects: state.projects.filter((p) => p.id !== id),
-    //     })),
-    // setDeleteTarget: (project: ProjectResponse) =>
-    //     set({ deleteTarget: project }),
-
-    // clearDeleteTarget: () => set({ deleteTarget: null }),
-
     reset: () =>
         set({
             createFormData: initialCreateFormData,
             updateFormData: initialUpdateFormData,
-            // project: null,
-            // deleteTarget: null,
         }),
 });
 

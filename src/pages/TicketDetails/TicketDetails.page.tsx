@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import dayjs from 'dayjs';
 import { useParams } from 'react-router-dom';
@@ -17,6 +17,7 @@ import {
     MenuItem,
     Select,
     Stack,
+    TextField,
     Typography,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -24,8 +25,11 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
+import { CommentItem } from '@components/CommentItem/CommentItem.component';
 import { DialogBox } from '@components/DialogBox';
 import { COLORS } from '@constant';
+import { useCreateCommentMutation } from '@features/comments/createComment/useCreateCommentMutation';
+import { useGetAllComments } from '@features/comments/getAllComments/useGetAllComments';
 import { useDeleteTicket } from '@features/ticket/deleteTicket/useDeleteTicketMutation';
 import { useGetTicket } from '@features/ticket/getTicket/useGetTicket';
 import { useTicketStore } from '@features/ticket/store/ticketStore';
@@ -37,6 +41,7 @@ import { useUpdateTicketMutation } from '@features/ticket/updateTicket/useUpdate
 
 import { StyledErrorTextField, StyledLabel } from './TicketDetails.style';
 import {
+    MAX_COMMENT_LENGTH,
     TicketConstToPriorityMap,
     TicketConstToStatusMap,
     TicketConstToTypeMap,
@@ -59,6 +64,7 @@ export const TicketDetails: React.FC = () => {
     const deleteTicketMutation = useDeleteTicket();
     const { updateFormData, setUpdateFormData } = useTicketStore();
     const updateTicketMutation = useUpdateTicketMutation();
+    const createCommentMutation = useCreateCommentMutation();
     const [deadline, setDeadline] = React.useState<dayjs.Dayjs | null>(null);
     const formatDate = (dateString: string) =>
         new Date(dateString).toLocaleDateString();
@@ -75,7 +81,30 @@ export const TicketDetails: React.FC = () => {
         );
     };
 
+    const [newComment, setNewComment] = useState('');
 
+    const { data: comments, fetchNextPage: fetchCommentsNextPage, hasNextPage: hasCommentsNextPage, isLoading } = useGetAllComments({
+        limit: 2,
+        ticket_key: ticketKey as string,
+        parent_comment_id: null,
+    });
+
+    const handleAddComment = () => {
+        const payload = {
+            content: newComment,
+            project_key: projectKey as string,
+            ticket_key: ticketKey as string,
+            parent_comment_id: null,
+        }
+        createCommentMutation.mutate(payload);
+    }
+
+    useEffect(() => {
+        if (ticket) {
+            setUpdateFormData({...ticket, deadline: ticket.deadline ?? undefined});
+        }
+    }, [ticket]);
+    
     const handleFieldChange = (
         field: keyof TicketUpdateFormData,
         value: TicketUpdateFormData[keyof TicketUpdateFormData],
@@ -103,7 +132,6 @@ export const TicketDetails: React.FC = () => {
             return;
         }
         updateTicketMutation.mutate(result.data);
-        // setIsEditDialogOpen(false);
     };
 
     return (
@@ -265,13 +293,14 @@ export const TicketDetails: React.FC = () => {
                             </span>
                         </StyledLabel>
 
-                        <Divider sx={{ margin: theme.spacing(5, 0) }} />
+                        
 
                         {/* Labels */}
                         <Stack
                             direction="row"
                             spacing={1}
-                            mb={theme.spacing(3)}
+                            mt={theme.spacing(5)}
+                            mb={theme.spacing(5)}
                         >
                             {ticket.labels.map((label, index) => (
                                 <Chip
@@ -286,24 +315,72 @@ export const TicketDetails: React.FC = () => {
                         </Stack>
 
                         {/* Add Comment Button */}
-                        <Box
+                        <Card
                             sx={{
+                                boxShadow: 'none',
                                 display: 'flex',
-                                justifyContent: 'flex-end',
-                                gap: 2,
+                                flexDirection: 'column',
+                                gap: '8px',
+                                border: 'none',
                             }}
                         >
-                            <Button
-                                variant="outlined"
-                                sx={{
-                                    paddingX: theme.spacing(3),
-                                    paddingY: theme.spacing(1),
-                                    fontWeight: 600,
-                                }}
-                            >
-                                Add Comment
-                            </Button>
-                        </Box>
+                            <Typography variant="h3">Comments</Typography>
+
+                            {/* comment box */}
+                            <Box display="flex" gap={2}>
+                                <TextField
+                                    fullWidth
+                                    size="small"
+                                    placeholder="Add a comment..."
+                                    value={newComment}
+                                    onChange={(e) => setNewComment(e.target.value)}
+                                    onKeyDown={(e) =>
+                                        e.key === 'Enter' && handleAddComment()
+                                    }
+                                />
+                                <Button
+                                    variant="contained"
+                                    size="small"
+                                    onClick={handleAddComment}
+                                    disabled={!newComment.trim() || newComment.length > MAX_COMMENT_LENGTH}
+                                >
+                                    Comment
+                                </Button>
+                            </Box>
+
+                            {/* Comments List */}
+                            <Stack spacing={3}>
+                                {
+                                    comments?.pages?.length? (
+                                    <>
+                                        {comments.pages.flatMap((page) => page.comments).map((comment) => (
+                                            <Box key={comment.id}>
+                                                <Divider />
+                                                <CommentItem
+                                                    comment={{
+                                                        id: comment.id,
+                                                        commentText: comment.comment_text,
+                                                        user: comment.email,
+                                                        ticketId: comment.ticket_id,
+                                                        parentComment: comment.parent_comment_id,
+                                                        time: comment.created_at,
+                                                    }}
+                                                />
+                                            </Box>
+                                        ))}
+                                        {hasCommentsNextPage &&
+                                            <Button size="small" onClick={() => void fetchCommentsNextPage()} disabled={isLoading}>
+                                                <Typography variant="caption">{isLoading ? 'Loading...' : 'Load More'}</Typography>
+                                            </Button>
+                                        }
+                                    </>
+                                )
+                                : (
+                                    <div>No comments</div>
+                                )
+                                }
+                            </Stack>
+                        </Card>
                     </CardContent>
 
                     {/* Delete Confirmation Dialog */}

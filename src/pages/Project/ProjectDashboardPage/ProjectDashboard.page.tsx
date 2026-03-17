@@ -34,7 +34,7 @@ import {
     useProjectStore,
     useUpdateProject,
 } from '@features/project';
-import { useGetAllTickets } from '@features/ticket/getAllTickets/usegetAllTickets'; // Custom hook
+import { useGetAllTickets } from '@features/ticket/getAllTickets/usegetAllTickets';
 import { importTicketRequestSchema } from '@features/ticket/importTicket/importTicket.schema';
 import { useImportTicketMutation } from '@features/ticket/importTicket/useImportTicket';
 import { StyledErrorTextField } from '@pages/Register/Register.styles';
