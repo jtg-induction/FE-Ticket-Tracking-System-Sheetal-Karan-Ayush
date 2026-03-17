@@ -108,7 +108,6 @@ export const TicketDetails: React.FC = () => {
             return;
         }
         updateTicketMutation.mutate(result.data);
-        // setIsEditDialogOpen(false);
     };
 
     return (
