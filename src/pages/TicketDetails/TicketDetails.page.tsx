@@ -28,6 +28,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { CommentItem } from '@components/CommentItem/CommentItem.component';
 import { DialogBox } from '@components/DialogBox';
 import { COLORS } from '@constant';
+import { MoveTicketContainer } from '@containers/MoveTicketDialogBox/MoveTicketDialogBox.container';
 import { useCreateCommentMutation } from '@features/comments/createComment/useCreateCommentMutation';
 import { useGetAllComments } from '@features/comments/getAllComments/useGetAllComments';
 import { useDeleteTicket } from '@features/ticket/deleteTicket/useDeleteTicketMutation';
@@ -68,6 +69,7 @@ export const TicketDetails: React.FC = () => {
     const [deadline, setDeadline] = React.useState<dayjs.Dayjs | null>(null);
     const formatDate = (dateString: string) =>
         new Date(dateString).toLocaleDateString();
+    const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
 
     const handleDeleteTicket = () => {
         if (!projectKey || !ticketKey) {
@@ -174,6 +176,14 @@ export const TicketDetails: React.FC = () => {
 
                             {/* Icon Box with Edit and Delete icons */}
                             <Box>
+                                <Button
+                                    variant="contained"
+                                    size="small"
+                                    onClick={() => setIsMoveDialogOpen(true)}
+                                >
+                                    Move
+                                </Button>
+
                                 <IconButton
                                     sx={{
                                         backgroundColor: COLORS.GRAY.BACKGROUND,
@@ -531,6 +541,7 @@ export const TicketDetails: React.FC = () => {
                     </Typography>
                 )}
             </DialogBox>
+            <MoveTicketContainer isMoveDialogOpen={isMoveDialogOpen} setIsMoveDialogOpen={setIsMoveDialogOpen} />
         </>
     );
 };

@@ -9,5 +9,6 @@ export type DialogBoxProps = {
     submitText?: string;
     cancelText?: string;
     isSubmitting?: boolean;
+    isSubmitDisabled?: boolean;
     maxWidth?: 'xs' | 'sm' | 'md' | 'lg';
 };

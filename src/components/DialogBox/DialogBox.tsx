@@ -19,6 +19,7 @@ export const DialogBox = ({
     isSubmitting = false,
     cancelText = 'Cancel',
     maxWidth = 'sm',
+    isSubmitDisabled=false,
 }: DialogBoxProps) => (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth={maxWidth}>
         <DialogTitle>{title}</DialogTitle>
@@ -31,7 +32,7 @@ export const DialogBox = ({
             </StyledDialogButton>
 
             {onSubmit && (
-                <StyledDialogButton onClick={onSubmit} variant="contained">
+                <StyledDialogButton onClick={onSubmit} variant="contained" disabled={isSubmitDisabled}>
                     {isSubmitting ? (
                         <CircularProgress size={22} color="inherit" />
                     ) : (
