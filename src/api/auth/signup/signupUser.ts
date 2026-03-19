@@ -20,18 +20,13 @@ import { type SignupInput } from "./signup.types";
  * @throws Will throw an error if the server response is invalid or if an error occurs during the API call.
  */
 
-export const signupUser = async (data: SignupInput): Promise<AuthResponse> => {
+export const signupUser = async (data: SignupInput) => {
     try {
         const payload = {
-            name: data.name, email: data.email, password: data.password, avatar_id: 1,
+            name: data.name, email: data.email, password: data.password
         }
-        const response = await api.post("/api/auth/signup", payload);
-        const parsed = authResponseSchema.safeParse(response.data);
-
-        if (!parsed.success) {
-            throw new Error("Invalid server response ");
-        }
-        return parsed.data
+        await api.post("/api/auth/signup", payload);
+        
     } catch (error: unknown) {
         return handleApiError(error);
     }
