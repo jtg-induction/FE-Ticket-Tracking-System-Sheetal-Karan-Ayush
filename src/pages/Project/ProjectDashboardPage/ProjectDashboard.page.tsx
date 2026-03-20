@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import dayjs from 'dayjs';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -7,6 +7,7 @@ import {
     Badge,
     Box,
     Button,
+    Chip,
     Divider,
     FormControl,
     FormControlLabel,
@@ -88,7 +89,7 @@ export const ProjectDashboardPage = () => {
     const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
     const [filters, setFilters] = useState<Filters>(defaultFilters);
     const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-    const [importTicketKey, setImportTicketKey] = useState('');
+    const [importTicketKeys, setImportTicketKeys] = useState<string[]>([]);
     const importTicketMutation = useImportTicketMutation();
 
     const handleFilterChange = (
@@ -119,11 +120,28 @@ export const ProjectDashboardPage = () => {
         } : undefined,
     );
 
-    useEffect(() => {
-        if (isError) {
-            void navigate('/*');
+    const handleImportKeyDelete = (key: string) => {
+        setImportTicketKeys(prev => prev.filter(k => k !== key));
+    };
+
+    const addTicketKey = (value: string) => {
+        const key = value.trim();
+        if (!key) return;
+
+        if (importTicketKeys.includes(key)) return;
+
+        setImportTicketKeys(prev => [...prev, key]);
+    };
+
+    const [inputTicketKeyValue, setInputTicketKeyValue] = useState<string>('');
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            addTicketKey(inputTicketKeyValue);
+            setInputTicketKeyValue("");
         }
-    }, [isError, navigate]);
+    };
 
     const handleOpenProjectDialog = () => {
         if (project) {
@@ -161,22 +179,18 @@ export const ProjectDashboardPage = () => {
         clearDeleteTarget();
     };
 
-    const [importErrors, setImportErrors] = useState<Record<string, string>>({});
+    const [importError, setImportError] = useState<string>('');
 
     const handleImportTicket = () => {
         const requestData = {
             projectKey: projectKey,
-            ticketKey: importTicketKey,
+            ticketKey: importTicketKeys,
         };
         const result = importTicketRequestSchema.safeParse(requestData);
 
         if (!result.success) {
-            const fieldErrors: Record<string, string> = {};
-            result.error.issues.forEach((err) => {
-                const field = err.path[0] as string;
-                fieldErrors[field] = err.message;
-            });
-            setImportErrors(fieldErrors);
+            const fieldError = result.error.issues[0].message
+            setImportError(fieldError);
             return;
         }
 
@@ -447,16 +461,29 @@ export const ProjectDashboardPage = () => {
                     submitText="Import"
                     cancelText="Cancel"
                 >
-                    <StyledErrorTextField
-                        label="Jira Ticket Key"
-                        variant="outlined"
-                        fullWidth
-                        value={importTicketKey}
-                        onChange={(e) => { setImportErrors({}); setImportTicketKey(e.target.value)}}
-                        sx={{ marginBottom: 2 }}
-                        error={!!importErrors.ticketKey}
-                        helperText={importErrors.ticketKey}
-                    />
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
+                        {importTicketKeys.map((key) => (
+                            <Chip
+                                key={key}
+                                label={key}
+                                onDelete={() => handleImportKeyDelete(key)}
+                                sx={{mb: 2}}
+                            />
+                        ))}
+
+                        {importTicketKeys.length <= 10 && 
+                            <StyledErrorTextField
+                                variant="outlined"
+                                placeholder="Type ticket key and press Enter"
+                                value={inputTicketKeyValue}
+                                onChange={(e) => setInputTicketKeyValue(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                sx={{width:"100%"}}
+                                error={!!importError}
+                                helperText={importError}
+                            />
+                        }
+                    </Box>
                     {importTicketMutation.isError && (
                         <Typography
                             variant="subtitle2"
