@@ -97,6 +97,24 @@ export const DownloadProjectReportDialog = () => {
                         <MenuItem value={3}>Low</MenuItem>
                     </TextField>
 
+                    <TextField
+                        sx={{ flex: 1 }}
+                        select
+                        label="Type"
+                        slotProps={{
+                            select: { multiple: true }
+                        }}
+                        value={filters.type || []}
+                        onChange={(e) => setFilter('type', e.target.value as unknown as number[])}
+                    >
+
+                        <MenuItem value={1}>Task</MenuItem>
+                        <MenuItem value={2}>Bug</MenuItem>
+                        <MenuItem value={3}>Story</MenuItem>
+                        <MenuItem value={4}>Epic</MenuItem>
+                        <MenuItem value={5}>SubTask</MenuItem>
+                    </TextField>
+
                     <DatePicker
                         sx={{ flex: 1 }}
                         label="Search by Deadline"

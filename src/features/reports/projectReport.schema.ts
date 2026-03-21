@@ -18,6 +18,7 @@ export const ticketFiltersSchema = z.object({
         .nullable(),
     status: z.array(z.number()).nullable(),
     priority: z.array(z.number()).nullable(),
+    type: z.array(z.number()).nullable(),
 
     deadline: dateString.nullable(),
 

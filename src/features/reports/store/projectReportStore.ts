@@ -17,6 +17,7 @@ const initialFilters: ProjectReportFilters = {
     assignee: null,
     status: null,
     priority: null,
+    type: null,
 
     deadline: null,
 
