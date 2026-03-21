@@ -48,21 +48,37 @@ export const DownloadProjectReportDialog = () => {
         <LocalizationProvider dateAdapter={AdapterDayjs}>
             <Box display={'flex'} flexDirection={'column'} gap={2} padding={2}>
 
-                <Autocomplete
-                    multiple
-                    freeSolo
-                    options={[]}
-                    value={filters.assignee || []}
-                    onChange={(_, newValue: string[]) => setFilter('assignee', newValue)}
-                    renderTags={(value, getTagProps) =>
-                        value.map((option, index) => (
-                            <Chip label={option} {...getTagProps({ index })} key={index} />
-                        ))
-                    }
-                    renderInput={(params) => (
-                        <TextField {...params} label="Search by Assignee" placeholder="Type email and hit Enter" />
-                    )}
-                />
+                <Box display={'flex'} gap={2}>
+                    <Autocomplete
+                        multiple
+                        freeSolo
+                        options={[]}
+                        value={filters.assignee || []}
+                        onChange={(_, newValue: string[]) => setFilter('assignee', newValue)}
+                        renderTags={(value, getTagProps) =>
+                            value.map((option, index) => (
+                                <Chip label={option} {...getTagProps({ index })} key={index} />
+                            ))
+                        }
+                        renderInput={(params) => (
+                            <TextField {...params} label="Search by Assignee" placeholder="Type email and hit Enter" />
+                        )}
+                        sx={{ flex: 5 }}
+                    />
+
+                    <TextField
+                        sx={{ flex: 1 }}
+                        select
+                        label="Group By User"
+                        value={String(filters.group_by_user) || ""}
+                        onChange={(e) => setFilter('group_by_user', e.target.value === 'true')}
+                    >
+
+                        <MenuItem value="false">No</MenuItem>
+                        <MenuItem value="true">Yes</MenuItem>
+                    </TextField>
+
+                </Box>
 
                 <Box display={'flex'} gap={2}>
                     <TextField
@@ -173,7 +189,7 @@ export const DownloadProjectReportDialog = () => {
                             {errorMessage}
                         </Alert>
                     )}
-                    
+
                 </Box>
 
             </Box>

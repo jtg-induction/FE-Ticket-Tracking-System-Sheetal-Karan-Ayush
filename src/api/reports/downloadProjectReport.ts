@@ -24,7 +24,7 @@ export const useDownloadProjectReport = () => useMutation({
             const params = buildQueryParams(filters);
 
             const response = await api.get(
-                `/api/project/${filters.project_key}/reports/download`,
+                `/project/${filters.project_key}/reports/download`,
                 {
                     params,
                     responseType: 'blob',
