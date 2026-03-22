@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import dayjs from 'dayjs';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -6,18 +6,21 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
     Badge,
     Box,
-    Button,
+    CircularProgress,
     Divider,
     FormControlLabel,
+    Grid2,
     Switch,
     TableCell,
     TableHead,
+    TablePagination,
     TableRow,
     TextField,
     Typography,
 } from '@mui/material';
 
 import {
+    ChartCard,
     ClampedTooltipText,
     DialogBox,
     Filters,
@@ -28,17 +31,26 @@ import {
     useDeleteProject,
     useGetProject,
     useProjectStore,
+    useTicketDeadlineStats,
+    useTicketPriorityStats,
+    useTicketStatusStats,
     useUpdateProject,
 } from '@features/project';
-import { useGetAllTickets } from '@features/ticket/getAllTickets/usegetAllTickets'; // Custom hook
-import { TicketConstToStatusMap } from '@pages/TicketDetails/TicketDetails.util';
 
-import { TICKET_TABLE_HEADER } from './ProjectDashboard.config';
 import {
+    ROW_PER_PAGE_OPTIONS,
+    TICKET_TABLE_HEADER,
+    ticketData,
+} from './ProjectDashboard.config';
+import {
+    ChartLoadingContainer,
+    ChartNoDataContainer,
     DeleteIcon,
     DesktopTableCell,
     EditIcon,
     IconBox,
+    LineChartLoadingContainer,
+    LineChartNoDataContainer,
     StatusBadge,
     StyledButton,
     StyledHeader,
@@ -62,25 +74,24 @@ export const ProjectDashboardPage = () => {
     } = useProjectStore();
 
     const defaultFilters = {
-        title: undefined,
-        assignee: undefined,
-        deadline: undefined,
-        status: undefined,
+        title: '',
+        assignee: '',
+        deadline: null,
+        status: '',
         sort: 'latest',
     };
-
     const navigate = useNavigate();
     const { projectKey } = useParams<{ projectKey: string }>();
     const { data: project, isError } = useGetProject(projectKey);
     const isDeveloper = project?.role === 2;
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(5);
 
     const { mutate: updateProject } = useUpdateProject();
     const { mutate: deleteProject } = useDeleteProject();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
     const [filters, setFilters] = useState(defaultFilters);
-    const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-    const [importTicketKey, setImportTicketKey] = useState('');
 
     const handleFilterChange = (
         field: keyof Filters,
@@ -91,24 +102,21 @@ export const ProjectDashboardPage = () => {
             [field]: value,
         }));
     };
+    const handleChangePage = (_event: unknown, newPage: number) => {
+        setPage(newPage);
+    };
 
-    const { data, fetchNextPage, hasNextPage, isLoading } = useGetAllTickets(
-        projectKey as string,
-        {
-            sort: filters.sort,
-            limit: 10,
-            title: filters.title,
-            status: filters.status,
-            assignee: filters.assignee,
-        },
-    );
-
+    const handleChangeRowsPerPage = (
+        event: React.ChangeEvent<HTMLInputElement>,
+    ) => {
+        setRowsPerPage(Number.parseInt(event.target.value, 10));
+        setPage(0);
+    };
     useEffect(() => {
         if (isError) {
             void navigate('/*');
         }
     }, [isError, navigate]);
-
     const handleOpenProjectDialog = () => {
         if (project) {
             setUpdateFormData({
@@ -119,6 +127,45 @@ export const ProjectDashboardPage = () => {
         }
         setIsProjectDialogOpen(true);
     };
+
+    const filteredTickets = useMemo(() => {
+        const filtered = ticketData.filter((ticket) => {
+            const matchesTitle = ticket.title
+                .toLowerCase()
+                .includes(filters.title.toLowerCase());
+
+            const matchesAssignee = ticket.assignee
+                .toLowerCase()
+                .includes(filters.assignee.toLowerCase());
+
+            const matchesStatus = filters.status
+                ? ticket.Status === filters.status
+                : true;
+
+            const matchesDeadline = filters.deadline
+                ? dayjs(ticket.Deadline).isSame(filters.deadline, 'day')
+                : true;
+
+            return (
+                matchesTitle &&
+                matchesAssignee &&
+                matchesStatus &&
+                matchesDeadline
+            );
+        });
+
+        filtered.sort((a, b) => {
+            const dateA = dayjs(a.Deadline);
+            const dateB = dayjs(b.Deadline);
+
+            if (filters.sort === 'latest') {
+                return dateB.valueOf() - dateA.valueOf();
+            }
+            return dateA.valueOf() - dateB.valueOf();
+        });
+
+        return filtered;
+    }, [filters]);
 
     const handleReset = () => {
         setFilters(defaultFilters);
@@ -144,7 +191,28 @@ export const ProjectDashboardPage = () => {
         setIsDeleteDialogOpen(false);
         clearDeleteTarget();
     };
+    const { data: statusCounts, isLoading: statusLoading } =
+        useTicketStatusStats(projectKey);
+    const { data: priorityCounts, isLoading: priorityLoading } =
+        useTicketPriorityStats(projectKey);
+    const { data: deadlineCounts, isLoading: deadlineLoading } =
+        useTicketDeadlineStats(projectKey);
 
+    const statusChartData = useMemo(() => {
+        if (!statusCounts) return null;
+        return statusCounts.map((item) => ({
+            status: item.status,
+            count: item.count,
+        }));
+    }, [statusCounts]);
+
+    const priorityChartData = useMemo(() => {
+        if (!priorityCounts) return null;
+        return priorityCounts.map((item) => ({
+            priority: item.priority,
+            count: item.count,
+        }));
+    }, [priorityCounts]);
     return (
         <>
             <StyledHeader>
@@ -182,16 +250,10 @@ export const ProjectDashboardPage = () => {
                     </StyledLeftBox>
                     {!isDeveloper && (
                         <StyledRightBox>
-                            <StyledButton
-                                variant="contained"
-                                onClick={() => setIsImportDialogOpen(true)}
-                            >
+                            <StyledButton variant="contained">
                                 Import ticket
                             </StyledButton>
-                            <StyledButton
-                                variant="contained"
-                                onClick={() => void navigate('ticket/create')}
-                            >
+                            <StyledButton variant="contained">
                                 Create ticket
                             </StyledButton>
                         </StyledRightBox>
@@ -205,6 +267,74 @@ export const ProjectDashboardPage = () => {
             </StyledHeader>
             <Divider />
             <SectionLayout>
+                <Grid2 container spacing={3} sx={{ mt: 1 }}>
+                    <Grid2 size={{ xs: 12, sm: 6, md: 6, lg: 4 }}>
+                        {statusLoading ? (
+                            <ChartLoadingContainer>
+                                <CircularProgress />
+                            </ChartLoadingContainer>
+                        ) : statusChartData ? (
+                            <ChartCard
+                                title="Ticket by Status"
+                                type="pie"
+                                data={statusChartData}
+                                dataKey="count"
+                                xKey="status"
+                            />
+                        ) : (
+                            <ChartNoDataContainer>
+                                <Typography color="textSecondary">
+                                    No data available
+                                </Typography>
+                            </ChartNoDataContainer>
+                        )}
+                    </Grid2>
+
+                    <Grid2 size={{ xs: 12, sm: 12, md: 12, lg: 12 }}>
+                        {deadlineLoading ? (
+                            <LineChartLoadingContainer>
+                                <CircularProgress />
+                            </LineChartLoadingContainer>
+                        ) : deadlineCounts && deadlineCounts.length > 0 ? (
+                            <ChartCard
+                                title="Ticket Deadline Performance"
+                                type="line"
+                                data={deadlineCounts}
+                                dataKey="count"
+                                xKey="day_difference"
+                                xAxisLabel="Days difference (negative = early, positive = late)"
+                            />
+                        ) : (
+                            <LineChartNoDataContainer>
+                                <Typography color="textSecondary">
+                                    No deadline data available
+                                </Typography>
+                            </LineChartNoDataContainer>
+                        )}
+                    </Grid2>
+
+                    <Grid2 size={{ xs: 12, sm: 6, md: 6, lg: 4 }}>
+                        {priorityLoading ? (
+                            <ChartLoadingContainer>
+                                <CircularProgress />
+                            </ChartLoadingContainer>
+                        ) : priorityChartData ? (
+                            <ChartCard
+                                title="Ticket by Priority"
+                                type="pie"
+                                data={priorityChartData}
+                                dataKey="count"
+                                xKey="priority"
+                            />
+                        ) : (
+                            <ChartNoDataContainer>
+                                <Typography color="textSecondary">
+                                    No data available
+                                </Typography>
+                            </ChartNoDataContainer>
+                        )}
+                    </Grid2>
+                </Grid2>
                 <ProjectTicketFilters
                     filters={filters}
                     onChange={handleFilterChange}
@@ -220,7 +350,7 @@ export const ProjectDashboardPage = () => {
                                             <DesktopTableCell key={idx}>
                                                 <Typography
                                                     variant="subtitle1"
-                                                    color="text.primary"
+                                                    color="text.secondary"
                                                 >
                                                     {headerCell.title}
                                                 </Typography>
@@ -231,7 +361,7 @@ export const ProjectDashboardPage = () => {
                                         <TableCell key={idx}>
                                             <Typography
                                                 variant="subtitle1"
-                                                color="text.primary"
+                                                color="text.secondary"
                                             >
                                                 {headerCell.title}
                                             </Typography>
@@ -241,96 +371,46 @@ export const ProjectDashboardPage = () => {
                             </StyledTableRow>
                         </TableHead>
                         <StyledTableBody>
-                            {isLoading ? (
-                                <TableRow>
-                                    <TableCell colSpan={4} align="center">
-                                        Loading tickets...
+                            {filteredTickets?.map((ticket) => (
+                                <TableRow key={ticket.id}>
+                                    <TableCell component="th" scope="row">
+                                        {ticket.title}
                                     </TableCell>
-                                </TableRow>
-                            ) : isError ? (
-                                <TableRow>
-                                    <TableCell colSpan={4} align="center">
-                                        Error loading tickets. Please try again
-                                        later.
-                                    </TableCell>
-                                </TableRow>
-                            ) : data?.pages?.length > 0 ? (
-                                data.pages
-                                    .flatMap((page) => page.tickets)
-                                    .map((ticket) => (
-                                        <TableRow
-                                            key={ticket.id}
-                                            onClick={() => {
-                                                void navigate(
-                                                    `ticket/${ticket.jira_ticket_key}`,
-                                                );
-                                            }}
-                                            style={{ cursor: 'pointer' }}
+                                    <TableCell>
+                                        <Typography
+                                            variant="body2"
+                                            color="text.secondary"
                                         >
-                                            <TableCell
-                                                component="th"
-                                                scope="row"
-                                            >
-                                                {ticket.title}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography
-                                                    variant="body2"
-                                                    color="text.secondary"
-                                                >
-                                                    {ticket.assignee}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography variant="body2">
-                                                    {ticket.deadline
-                                                        ? dayjs(
-                                                              ticket.deadline,
-                                                          ).format(
-                                                              'MMM DD, YYYY',
-                                                          )
-                                                        : 'N/A'}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography
-                                                    variant="body2"
-                                                    color="text.secondary"
-                                                >
-                                                    {
-                                                        TicketConstToStatusMap[
-                                                            ticket.status
-                                                        ]
-                                                    }
-                                                </Typography>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={4} align="center">
-                                        No tickets available.
+                                            {ticket.assignee}
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Typography variant="body2">
+                                            {ticket.Deadline}
+                                        </Typography>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Typography
+                                            variant="body2"
+                                            color="text.secondary"
+                                        >
+                                            {ticket.Status}
+                                        </Typography>
                                     </TableCell>
                                 </TableRow>
-                            )}
+                            ))}
                         </StyledTableBody>
                     </StyledTable>
+                    <TablePagination
+                        rowsPerPageOptions={ROW_PER_PAGE_OPTIONS}
+                        component="div"
+                        count={filteredTickets?.length ?? 0}
+                        rowsPerPage={rowsPerPage}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                    />
                 </StyledTableContainer>
-
-                {/* Load More Button */}
-                {hasNextPage && (
-                    <Box display="flex" my={2}>
-                        <Button
-                            variant="outlined"
-                            onClick={() => void fetchNextPage()}
-                            disabled={isLoading}
-                        >
-                            {isLoading ? 'Loading...' : 'Load More'}
-                        </Button>
-                    </Box>
-                )}
-
-                {/* Dialogs for Project Update and Delete */}
                 <DialogBox
                     open={isProjectDialogOpen}
                     title="Edit Project"
@@ -396,29 +476,6 @@ export const ProjectDashboardPage = () => {
                     cancelText="Cancel"
                 >
                     <Typography>Are you sure you want to delete?</Typography>
-                </DialogBox>
-                <DialogBox
-                    open={isImportDialogOpen}
-                    title="Import Ticket"
-                    onClose={() => setIsImportDialogOpen(false)}
-                    // onSubmit={handleImportTicket}
-                    submitText="Import"
-                    cancelText="Cancel"
-                >
-                    <TextField
-                        label="Jira Ticket Key"
-                        variant="outlined"
-                        fullWidth
-                        value={importTicketKey}
-                        onChange={(e) => setImportTicketKey(e.target.value)}
-                        sx={{ marginBottom: 2 }}
-                    />
-
-                    {/* {ticketImportError && (
-            <Typography color="error" variant="body2">
-                {ticketImportError}
-            </Typography>
-            )} */}
                 </DialogBox>
             </SectionLayout>
         </>

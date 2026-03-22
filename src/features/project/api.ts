@@ -1,4 +1,5 @@
-import { api, handleApiError } from '@api';
+import { handleApiError } from '@api/apiErrorHandling';
+import { api } from '@api/axios';
 
 import {
     projectCreateSchema,
@@ -12,6 +13,19 @@ type CheckKeyResponse = {
     valid: boolean;
 };
 
+export type DeadlineStatsResponse = {
+    day_difference: number;
+    count: number;
+};
+export interface TicketStatusCount {
+    status: string;
+    count: number;
+}
+
+export interface TicketPriorityCount {
+    priority: string;
+    count: number;
+}
 export const createProject = async (
     data: ProjectFormData,
 ): Promise<ProjectResponse> => {
@@ -156,4 +170,32 @@ export const getProject = async (
     } catch (error: unknown) {
         return handleApiError(error);
     }
+};
+
+
+export const getTicketDeadlineStats = async (
+    projectKey: string,
+): Promise<DeadlineStatsResponse[]> => {
+    const response = await api.get<DeadlineStatsResponse[]>(
+        `api/reports/project/${projectKey}/ticket/deadline`,
+    );
+    return response.data;
+};
+
+export const getTicketStatusStats = async (
+    projectKey: string,
+): Promise<TicketStatusCount[]> => {
+    const response = await api.get<TicketStatusCount[]>(
+        `api/reports/project/${projectKey}/ticket/status`,
+    );
+    return response.data;
+};
+
+export const getTicketPriorityStats = async (
+    projectKey: string,
+): Promise<TicketPriorityCount[]> => {
+    const response = await api.get<TicketPriorityCount[]>(
+        `api/reports/project/${projectKey}/ticket/priority`,
+    );
+    return response.data;
 };

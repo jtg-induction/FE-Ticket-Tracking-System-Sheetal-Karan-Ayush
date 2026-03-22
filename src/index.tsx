@@ -5,6 +5,7 @@ import { RouterProvider } from 'react-router-dom';
 
 import { CssBaseline, ThemeProvider } from '@mui/material';
 
+import { useUserBasicDetails } from '@features/user/useUserBasicDetails';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { theme } from '@theme';
 
@@ -24,13 +25,21 @@ const queryClient = new QueryClient({
     },
 });
 
+const AuthInitializer = () => {
+    const accessToken = localStorage.getItem('access_token');
+    useUserBasicDetails(!!accessToken);
+    return null;
+};
+
 createRoot(rootElement).render(
     <StrictMode>
         <ThemeProvider theme={theme}>
             <CssBaseline />
             <QueryClientProvider client={queryClient}>
+                <AuthInitializer />
                 <RouterProvider router={Router} />
             </QueryClientProvider>
         </ThemeProvider>
     </StrictMode>,
 );
+<AuthInitializer />;

@@ -157,3 +157,31 @@ export const StatusBadge = styled(Chip, {
         ? theme.palette.grey[100]
         : theme.palette.common.white,
 }));
+
+export const ChartLoadingContainer = styled(Box)({
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 350,
+});
+
+export const LineChartLoadingContainer = styled(Box)({
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: 350,
+});
+
+export const ChartNoDataContainer = styled(Box)({
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 350,
+});
+
+export const LineChartNoDataContainer = styled(Box)({
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: 350,
+});

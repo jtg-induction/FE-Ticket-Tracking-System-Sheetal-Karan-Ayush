@@ -6,3 +6,4 @@ export { useUpdateProject } from './useUpdateProjectMutation';
 export { useDeleteProject } from './useDeleteProjectMutation';
 export { useGetMyProjects } from './useGetAllProjects';
 export { useGetProject } from './useGetProjectMutation';
+export { useTicketDeadlineStats, useTicketStatusStats, useTicketPriorityStats } from './useTicketStats';
