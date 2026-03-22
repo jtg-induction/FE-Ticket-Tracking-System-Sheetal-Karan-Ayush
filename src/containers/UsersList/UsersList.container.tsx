@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 
 import { debounce } from "lodash";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
@@ -31,6 +31,7 @@ import { UserSidebarProps } from "./UserList.types";
 
 export const UserSidebar = ({ open, onClose }: UserSidebarProps) => {
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+    const navigate = useNavigate();
     const { projectKey } = useParams<{
         projectKey: string;
     }>();
@@ -96,7 +97,7 @@ export const UserSidebar = ({ open, onClose }: UserSidebarProps) => {
                     ) : (
                         <List>
                             {users.map((user) => (
-                                <ListItem key={user.user_id}>
+                                <ListItem key={user.user_id} sx={{cursor: "pointer"}} onClick={() => void navigate(`/project/${projectKey}/users/${user.user_id}`)}>
                                     <ListItemAvatar>
                                         <Avatar>{user.user_name[0]}</Avatar>
                                     </ListItemAvatar>
