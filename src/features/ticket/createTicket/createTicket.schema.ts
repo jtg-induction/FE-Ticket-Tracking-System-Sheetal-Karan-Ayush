@@ -53,7 +53,7 @@ export const ticketCreateSchema = z.object({
         .min(1, 'At least one label is required.')
         .max(10, 'You can assign a maximum of 10 labels.')
         .refine((labels) => labels.every((label) => label.length <= 20), {
-            message: 'Each label must be at most 50 characters long.',
+            message: 'Each label must be at most 20 characters long.',
         }),
     project_key: z.string(),
     deadline: z.string().optional(),

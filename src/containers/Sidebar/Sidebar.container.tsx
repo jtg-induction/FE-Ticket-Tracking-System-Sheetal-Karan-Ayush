@@ -7,7 +7,7 @@ import { Drawer, Toolbar, useMediaQuery, useTheme } from '@mui/material';
 import { SidebarItemList } from '@components';
 import { useGetMyProjects } from '@features/project';
 
-import { iconMap, sidebarList } from './Sidebar.config';
+import { iconMap, myProjects, sidebarList } from './Sidebar.config';
 import { SideBarStyled } from './Sidebar.styles';
 import { SidebarItem, SideBarProps } from './Sidebar.types';
 
@@ -18,7 +18,7 @@ export const SideBar = ({ isMenuOpen, toggleDrawer }: SideBarProps) => {
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const drawerVariant = isMobile ? 'temporary' : 'permanent';
     const [expandedItems, setExpandedItems] = useState<string[]>([]);
-    const projectChildren: SidebarItem[] =
+    const projectList: SidebarItem[] =
         projects?.map((project) => ({
             title: project.title,
             url: `project/${project.jira_project_key}`,
@@ -26,11 +26,11 @@ export const SideBar = ({ isMenuOpen, toggleDrawer }: SideBarProps) => {
         })) ?? [];
 
     const sidebarItems: SidebarItem[] = sidebarList.map((item) => {
-        if (item.title === 'My Projects') {
+        if (item.title === myProjects) {
             return {
                 ...item,
-                children: projectChildren,
-                count: projectChildren.length,
+                children: projectList,
+                count: projectList.length,
             };
         }
         return item;

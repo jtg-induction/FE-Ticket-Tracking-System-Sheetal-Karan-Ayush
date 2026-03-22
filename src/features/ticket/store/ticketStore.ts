@@ -11,7 +11,7 @@ import { TicketUpdateFormData } from '../updateTicket/updateTicket.schema';
 type TicketStore = {
     createFormData: TicketFormData;
     tickets: TicketResponse[];
-    ticket: TicketResponse | undefined;
+    ticket?: TicketResponse;
     updateFormData: TicketUpdateFormData;
     setTicket: (newTicket: TicketResponse) => void;
     setCreateFormData: (data: Partial<TicketFormData>) => void;

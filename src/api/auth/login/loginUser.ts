@@ -1,9 +1,8 @@
-import { handleApiError } from 'api/apiErrorHandling/handleApiError';
-
 import { api } from '@api';
 import { AuthResponse, authResponseSchema } from '@features/auth';
 
 import { LoginInput } from './login.types';
+import { handleApiError } from '../../apiErrorHandling/handleApiError';
 
 /**
  * Logs in a user by sending their email and password to the authentication API.
@@ -19,17 +18,13 @@ import { LoginInput } from './login.types';
  * @throws Will throw an error if the server response is invalid or if an error occurs during the API call.
  */
 
-export const loginUser = async (data: LoginInput): Promise<AuthResponse> => {
+export const loginUser = async (payload: LoginInput): Promise<AuthResponse> => {
     try {
-        const payload = {
-            email: data.email,
-            password: data.password,
-        };
         const response = await api.post('/api/auth/login', payload);
         const parsed = authResponseSchema.safeParse(response.data);
 
         if (!parsed.success) {
-            throw new Error('Invalid server response ');
+            throw new Error('Invalid server response');
         }
         return parsed.data;
     } catch (error: unknown) {
