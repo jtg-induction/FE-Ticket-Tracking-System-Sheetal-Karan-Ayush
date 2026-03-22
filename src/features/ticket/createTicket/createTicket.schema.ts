@@ -10,8 +10,7 @@ export const ticketCreateSchema = z.object({
 
     description: z
         .string()
-        .max(1000, 'Description can be at most 1000 characters long.')
-        .optional(),
+        .max(1000, 'Description can be at most 1000 characters long.'),
 
     ticket_type: z
         .union([
@@ -56,7 +55,7 @@ export const ticketCreateSchema = z.object({
             message: 'Each label must be at most 50 characters long.',
         }),
     project_key: z.string(),
-    deadline: z.string().optional(),
+    deadline: z.string().nullable(),
 });
 
 export const ticketResponseSchema = z.object({
@@ -64,7 +63,6 @@ export const ticketResponseSchema = z.object({
     title: z.string(),
     description: z.string(),
     ticket_type: z.number().int(),
-    status: z.number().int(),
     jira_ticket_key: z.string(),
     priority: z.number().int(),
     assignee: z.email(),

@@ -11,7 +11,7 @@ export const getAllTickets = async (
     params: GetAllTicketsFormData,
 ): Promise<GetAllTicketsResponse> => {
     try {
-        const response = await api.get(`/project/${projectKey}/ticket`, {
+        const response = await api.get(`/projects/${projectKey}/tickets`, {
             params
         });
 

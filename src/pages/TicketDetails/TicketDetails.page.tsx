@@ -47,6 +47,7 @@ import {
     TicketConstToStatusMap,
     TicketConstToTypeMap,
 } from './TicketDetails.util';
+import { useQueryClient } from '@tanstack/react-query';
 
 export const TicketDetails: React.FC = () => {
     const theme = useTheme();
@@ -103,10 +104,10 @@ export const TicketDetails: React.FC = () => {
 
     useEffect(() => {
         if (ticket) {
-            setUpdateFormData({...ticket, deadline: ticket.deadline ?? undefined});
+            setUpdateFormData({ ...ticket, deadline: ticket.deadline ?? undefined });
         }
     }, [ticket]);
-    
+
     const handleFieldChange = (
         field: keyof TicketUpdateFormData,
         value: TicketUpdateFormData[keyof TicketUpdateFormData],
@@ -115,12 +116,32 @@ export const TicketDetails: React.FC = () => {
         setErrors((prev) => ({ ...prev, [field]: '' }));
     };
 
+
+    // const queryClient = useQueryClient();
+
+
+    // const handleAddComment = () => {
+    //     const payload = {
+    //         content: newComment,
+    //         project_key: projectKey as string,
+    //         ticket_key: ticketKey as string,
+    //         parent_comment_id: null,
+    //     };
+
+    //     createCommentMutation.mutate(payload, {
+    //     onSuccess: () => {
+    //         setNewComment('');
+    //         queryClient.invalidateQueries({ queryKey: ['comments'] });
+    //     },
+    // });
+    // };
+
     const handleSaveChanges = () => {
         const payload = {
             ...updateFormData,
             project_key: projectKey,
             ticket_key: ticketKey,
-            deadline: deadline ? deadline.toISOString(): undefined,
+            deadline: deadline ? deadline.toISOString() : undefined,
         }
         const result = ticketUpdateRequestSchema.safeParse(payload);
 
@@ -303,7 +324,7 @@ export const TicketDetails: React.FC = () => {
                             </span>
                         </StyledLabel>
 
-                        
+
 
                         {/* Labels */}
                         <Stack
@@ -361,33 +382,33 @@ export const TicketDetails: React.FC = () => {
                             {/* Comments List */}
                             <Stack spacing={3}>
                                 {
-                                    comments?.pages?.length? (
-                                    <>
-                                        {comments.pages.flatMap((page) => page.comments).map((comment) => (
-                                            <Box key={comment.id}>
-                                                <Divider />
-                                                <CommentItem
-                                                    comment={{
-                                                        id: comment.id,
-                                                        commentText: comment.comment_text,
-                                                        user: comment.email,
-                                                        ticketId: comment.ticket_id,
-                                                        parentComment: comment.parent_comment_id,
-                                                        time: comment.created_at,
-                                                    }}
-                                                />
-                                            </Box>
-                                        ))}
-                                        {hasCommentsNextPage &&
-                                            <Button size="small" onClick={() => void fetchCommentsNextPage()} disabled={isLoading}>
-                                                <Typography variant="caption">{isLoading ? 'Loading...' : 'Load More'}</Typography>
-                                            </Button>
-                                        }
-                                    </>
-                                )
-                                : (
-                                    <div>No comments</div>
-                                )
+                                    comments?.pages?.length ? (
+                                        <>
+                                            {comments.pages.flatMap((page) => page.comments).map((comment) => (
+                                                <Box key={comment.id}>
+                                                    <Divider />
+                                                    <CommentItem
+                                                        comment={{
+                                                            id: comment.id,
+                                                            commentText: comment.comment_text,
+                                                            user: comment.email,
+                                                            ticketId: comment.ticket_id,
+                                                            parentComment: comment.parent_comment_id,
+                                                            time: comment.created_at,
+                                                        }}
+                                                    />
+                                                </Box>
+                                            ))}
+                                            {hasCommentsNextPage &&
+                                                <Button size="small" onClick={() => void fetchCommentsNextPage()} disabled={isLoading}>
+                                                    <Typography variant="caption">{isLoading ? 'Loading...' : 'Load More'}</Typography>
+                                                </Button>
+                                            }
+                                        </>
+                                    )
+                                        : (
+                                            <div>No comments</div>
+                                        )
                                 }
                             </Stack>
                         </Card>

@@ -11,7 +11,7 @@ export const getTicket = async (
 ): Promise<GetTicketResponse> => {
     try {
         const response = await api.get(
-            `/project/${projectKey}/ticket/${ticketKey}`,
+            `/projects/${projectKey}/tickets/${ticketKey}`,
         );
 
         const parsed = ticketsResponseSchema.safeParse(response.data);

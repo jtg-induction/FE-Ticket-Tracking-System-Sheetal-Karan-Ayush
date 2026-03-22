@@ -7,7 +7,7 @@ export const deleteTicket = async (
 ): Promise<void> => {
     try {
         await api.delete(
-            `/project/${data.projectKey}/ticket/${data.ticketKey}`,
+            `/projects/${data.projectKey}/tickets/${data.ticketKey}`,
         );
     } catch (error: unknown) {
         return handleApiError(error);

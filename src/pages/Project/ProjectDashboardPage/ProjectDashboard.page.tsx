@@ -232,7 +232,7 @@ export const ProjectDashboardPage = () => {
                             </StyledButton>
                             <StyledButton
                                 variant="contained"
-                                onClick={() => void navigate('ticket/create')}
+                                onClick={() => void navigate('tickets')}
                             >
                                 Create ticket
                             </StyledButton>

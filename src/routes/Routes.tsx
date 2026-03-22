@@ -31,7 +31,7 @@ const routes: RouteObject[] = [
                         element: <ProjectDashboardPage />,
                     },
                     {
-                        path: 'project/:projectKey/ticket/create',
+                        path: 'project/:projectKey/tickets',
                         element: <CreateTicket />,
                     },
                     {
