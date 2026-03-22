@@ -12,6 +12,7 @@ import { useGetAllComments } from '@features/comments/getAllComments/useGetAllCo
 import { useUpdateCommentMutation } from '@features/comments/updateComment/useUpdateCommentMutation';
 import { MAX_COMMENT_LENGTH } from '@pages/TicketDetails/TicketDetails.util';
 
+import { DATE_FORMAT } from './CommentItem.constants';
 import { CommentItemProps } from './CommentItem.types';
 
 export const CommentItem = ({
@@ -82,7 +83,7 @@ export const CommentItem = ({
                         {comment.user}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                        {dayjs(comment.time).format('DD-MM-YYYY')}
+                        {dayjs(comment.time).format(DATE_FORMAT)}
                     </Typography>
                 </Box>
                 <Box display="flex" alignItems="center" gap={1}>
@@ -149,7 +150,7 @@ export const CommentItem = ({
             {showReply && 
                 <Stack spacing={3} paddingLeft={8} mt={4} width='100%'>
                     {
-                        replies?.pages?.length? (
+                        replies?.pages?.length && (
                             <>
                                 {replies.pages.flatMap((page) => page.comments).map((reply) => (
                                     <Box key={reply.id}>
@@ -172,9 +173,6 @@ export const CommentItem = ({
                                     </Button>
                                 }
                             </>
-                        )
-                        : (
-                            <div></div>
                         )
                     }
                 </Stack>

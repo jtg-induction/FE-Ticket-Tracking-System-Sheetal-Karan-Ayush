@@ -17,8 +17,8 @@ export const MoveTicketContainer = ({isMoveDialogOpen, setIsMoveDialogOpen}: Mov
     const [targetProjectKey, setTargetProjectKey] = useState('');
 
     const { projectKey, ticketKey } = useParams<{
-        projectKey: string;
-        ticketKey: string;
+        projectKey?: string;
+        ticketKey?: string;
     }>();
 
     const trimmedKey = targetProjectKey.trim();
@@ -26,12 +26,18 @@ export const MoveTicketContainer = ({isMoveDialogOpen, setIsMoveDialogOpen}: Mov
                                trimmedKey.length > MAX_PROJECT_KEY_LENGTH;
 
     const handleMoveTicket = () => {
-        moveTicketMutation.mutate(
-            {   
-                project_key: projectKey as string, 
-                ticket_key: ticketKey as string, 
-                target_project_key: targetProjectKey
-            })
+        // Guard: ensure required route params exist
+        if (!projectKey || !ticketKey) {
+            // If params are missing, do not proceed with API call
+            return;
+        }
+
+        // Trigger mutation to move the ticket
+        moveTicketMutation.mutate({
+            project_key: projectKey,          // Source project key (current project)
+            ticket_key: ticketKey,            // Ticket identifier
+            target_project_key: targetProjectKey, // Destination project key
+        });
     }
 
     return (
