@@ -21,6 +21,23 @@ export const projectUpdateSchema = z.object({
     status: z.number().optional(),
 });
 
+export const getAllProjectUsersRequestSchema = z.object({
+    projectKey: z.string(),
+    userName: z.string().optional(),
+    offset: z.int().optional(),
+    limit: z.int().optional(),
+});
+
+export const projectUserSchema = z.object({
+  user_id: z.number(),
+  user_name: z.string(),
+  user_email: z.email(),
+  role: z.string(),
+  joined_at: z.string().nullable(),
+});
+
+export const getAllProjectUsersResponseSchema = z.array(projectUserSchema);
+
 export type ProjectResponse = {
     id: string;
     title: string;
@@ -33,3 +50,5 @@ export type ProjectResponse = {
 
 export type ProjectFormData = z.infer<typeof projectCreateSchema>;
 export type ProjectUpdateData = z.infer<typeof projectUpdateSchema>;
+export type GetAllUsersRequest = z.infer<typeof getAllProjectUsersRequestSchema>;
+export type GetAllUsersResponse = z.infer<typeof getAllProjectUsersResponseSchema>;

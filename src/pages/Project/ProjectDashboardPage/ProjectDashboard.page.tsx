@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import dayjs from 'dayjs';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import UserSidebarIcon from '@mui/icons-material/PeopleAlt';
 import {
     Badge,
     Box,
@@ -28,6 +29,7 @@ import {
     ProjectTicketFilters,
     SectionLayout,
 } from '@components';
+import { UserSidebar } from '@containers/UsersList/UsersList.container';
 import {
     useDeleteProject,
     useGetProject,
@@ -119,11 +121,7 @@ export const ProjectDashboardPage = () => {
         } : undefined,
     );
 
-    useEffect(() => {
-        if (isError) {
-            void navigate('/*');
-        }
-    }, [isError, navigate]);
+    const [userSidebarOpen, setUserSidebarOpen] = useState(false);
 
     const handleOpenProjectDialog = () => {
         if (project) {
@@ -222,22 +220,31 @@ export const ProjectDashboardPage = () => {
                         )}
                         <Badge />
                     </StyledLeftBox>
-                    {!isDeveloper && (
+                    
                         <StyledRightBox>
+                            {!isDeveloper && (
+                                <>
+                                    <StyledButton
+                                        variant="contained"
+                                        onClick={() => setIsImportDialogOpen(true)}
+                                    >
+                                        Import ticket
+                                    </StyledButton>
+                                    <StyledButton
+                                        variant="contained"
+                                        onClick={() => void navigate('ticket/create')}
+                                    >
+                                        Create ticket
+                                    </StyledButton>
+                                </>
+                            )}
                             <StyledButton
-                                variant="contained"
-                                onClick={() => setIsImportDialogOpen(true)}
+                                onClick={() => setUserSidebarOpen((prev) => !prev)}
                             >
-                                Import ticket
-                            </StyledButton>
-                            <StyledButton
-                                variant="contained"
-                                onClick={() => void navigate('ticket/create')}
-                            >
-                                Create ticket
-                            </StyledButton>
+                                <UserSidebarIcon />
+                            </StyledButton>                            
                         </StyledRightBox>
-                    )}
+
                 </StyledUpperBox>
                 <StyledLowerBox>
                     <Typography variant="body2">{project?.description}</Typography>
@@ -246,6 +253,10 @@ export const ProjectDashboardPage = () => {
             <Divider />
 
             <SectionLayout>
+                <UserSidebar
+                    open={userSidebarOpen}
+                    onClose={() => setUserSidebarOpen(false)}
+                />
                 <Box sx={{
                     display: 'flex',
                     flexDirection: { xs: 'column', md: 'row' }, 
