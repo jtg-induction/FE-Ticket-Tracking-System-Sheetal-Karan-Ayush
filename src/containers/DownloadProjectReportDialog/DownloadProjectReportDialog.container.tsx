@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 import { useParams } from 'react-router-dom';
 
-import { Alert, Autocomplete, Box, Button, Chip, MenuItem, TextField } from '@mui/material';
+import { Alert, Autocomplete, Box, Button, Chip, MenuItem, TextField, Typography } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -46,6 +46,12 @@ export const DownloadProjectReportDialog = () => {
 
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <Box padding={2}>
+
+                <Typography variant='h3' >Download report for</Typography>
+                <Typography variant='h2' >Project key: {projectKey}</Typography>
+            </Box>
+
             <Box display={'flex'} flexDirection={'column'} gap={2} padding={2}>
 
                 <Box display={'flex'} gap={2}>

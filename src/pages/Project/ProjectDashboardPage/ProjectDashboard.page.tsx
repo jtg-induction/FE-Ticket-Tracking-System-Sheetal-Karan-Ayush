@@ -106,17 +106,17 @@ export const ProjectDashboardPage = () => {
     const { data, fetchNextPage, hasNextPage, isLoading } = useGetAllTickets(
         projectKey as string,
         (filterType == 'JQL'),
-        (filterType != 'JQL') ?  
-        {
-            ...filters,
-            deadline: filters.deadline ? filters.deadline.toISOString() : undefined,
-            limit: 10,
-        } : undefined,
-        (filterType == 'JQL') ?  
-        {
-            jql: jqlQuery,
-            limit: 10,
-        } : undefined,
+        (filterType != 'JQL') ?
+            {
+                ...filters,
+                deadline: filters.deadline ? filters.deadline.toISOString() : undefined,
+                limit: 10,
+            } : undefined,
+        (filterType == 'JQL') ?
+            {
+                jql: jqlQuery,
+                limit: 10,
+            } : undefined,
     );
 
     useEffect(() => {
@@ -184,7 +184,7 @@ export const ProjectDashboardPage = () => {
     };
 
     // New state for filter type (JQL or Custom)
-    
+
     const handleJqlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setJqlQuery(event.target.value);
     };
@@ -236,6 +236,12 @@ export const ProjectDashboardPage = () => {
                             >
                                 Create ticket
                             </StyledButton>
+                            <StyledButton
+                                variant="contained"
+                                onClick={() => void navigate('reports/download')}
+                            >
+                                Download Report
+                            </StyledButton>
                         </StyledRightBox>
                     )}
                 </StyledUpperBox>
@@ -248,7 +254,7 @@ export const ProjectDashboardPage = () => {
             <SectionLayout>
                 <Box sx={{
                     display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' }, 
+                    flexDirection: { xs: 'column', md: 'row' },
                     alignItems: 'center',
                     justifyContent: 'center',
                     marginBottom: 2,
@@ -266,7 +272,7 @@ export const ProjectDashboardPage = () => {
                         </Select>
                     </FormControl>
 
-                    {filterType === 'JQL' ? ( <>
+                    {filterType === 'JQL' ? (<>
                         <TextField
                             label="Enter JQL(Project Key is pre included)"
                             variant="outlined"
@@ -274,7 +280,7 @@ export const ProjectDashboardPage = () => {
                             value={jqlQuery}
                             onChange={handleJqlChange}
                             sx={{
-                                marginBottom: 2,  
+                                marginBottom: 2,
                                 minWidth: theme.spacing(75),
                                 maxWidth: theme.spacing(200),
                             }}
@@ -326,7 +332,7 @@ export const ProjectDashboardPage = () => {
                                         Error loading tickets. Please try again later.
                                     </TableCell>
                                 </TableRow>
-                            ) : data?.pages?.length? (
+                            ) : data?.pages?.length ? (
                                 data.pages
                                     .flatMap((page) => page.tickets)
                                     .map((ticket) => (
@@ -452,7 +458,7 @@ export const ProjectDashboardPage = () => {
                         variant="outlined"
                         fullWidth
                         value={importTicketKey}
-                        onChange={(e) => { setImportErrors({}); setImportTicketKey(e.target.value)}}
+                        onChange={(e) => { setImportErrors({}); setImportTicketKey(e.target.value) }}
                         sx={{ marginBottom: 2 }}
                         error={!!importErrors.ticketKey}
                         helperText={importErrors.ticketKey}
