@@ -93,14 +93,14 @@ export const Register = () => {
             return;
         }
         signupMutation.mutate(
-            { name, email, password, avatarId: 1 },
+            { name, email, password},
             { onSuccess: () => setOtpOpen(true) },
         );
     };
     const navigate = useNavigate();
     const handleVerify = (otp: number) => {
         verifyMutation.mutate(
-            { name, email, password, avatarId: 1, otp },
+            { email, otp },
             {
                 onSuccess: (data) => {
                     setAuth(data);

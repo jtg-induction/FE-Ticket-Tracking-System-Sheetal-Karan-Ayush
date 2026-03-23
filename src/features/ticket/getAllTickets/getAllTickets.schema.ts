@@ -35,6 +35,23 @@ export const ticketsResponseSchema = z.object({
     labels: z.array(z.string()),
 });
 
+export const getTicketResponseSchema = z.object({
+    id: z.int().nullable(),
+    title: z.string(),
+    description: z.string(),
+    ticket_type: z.number().int(),
+    status: z.number().int(),
+    jira_ticket_key: z.string(),
+    priority: z.number().int(),
+    assignee: z.email(),
+    reporter: z.email(),
+    deadline: z.string().nullable(),
+    created_at: z.string(),
+    labels: z.array(z.string()),
+    role: z.int(),
+    is_subscribed: z.boolean(),
+});
+
 export const getAllTicketsJqlRequestSchema = z.object({
     jql: z.string(),
     cursor: z.string().optional(),
@@ -47,6 +64,7 @@ export const getAllTicketsResponseSchema = z.object({
 });
 
 export type GetTicketResponse = z.infer<typeof ticketsResponseSchema>;
+export type GetTicketDetailsResponse = z.infer<typeof getTicketResponseSchema>;
 export type GetAllTicketsFormData = z.infer<typeof getAllTicketsRequestSchema>;
 export type GetAllTicketsResponse = z.infer<typeof getAllTicketsResponseSchema>;
 export type GetAllTicketsJqlFormData =  z.infer<typeof getAllTicketsJqlRequestSchema>;

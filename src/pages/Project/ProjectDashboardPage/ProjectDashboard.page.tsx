@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import dayjs from 'dayjs';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -35,11 +35,13 @@ import {
     useProjectStore,
     useUpdateProject,
 } from '@features/project';
-import { useGetAllTickets } from '@features/ticket/getAllTickets/usegetAllTickets'; // Custom hook
+import { useGetAllTickets } from '@features/ticket/getAllTickets/usegetAllTickets';
 import { importTicketRequestSchema } from '@features/ticket/importTicket/importTicket.schema';
 import { useImportTicketMutation } from '@features/ticket/importTicket/useImportTicket';
+import { useJqlSearchTickets } from '@features/ticket/jqlSearch/useJqlSearchTicket';
 import { StyledErrorTextField } from '@pages/Register/Register.styles';
 import { TicketConstToStatusMap } from '@pages/TicketDetails/TicketDetails.util';
+import { useQueryClient } from '@tanstack/react-query';
 import { theme } from '@theme';
 
 import { TICKET_TABLE_HEADER } from './ProjectDashboard.config';
@@ -82,7 +84,7 @@ export const ProjectDashboardPage = () => {
     const { projectKey } = useParams<{ projectKey: string }>();
     const { data: project, isError } = useGetProject(projectKey);
     const isDeveloper = project?.role === 2;
-
+    const queryClient = useQueryClient();
     const { mutate: updateProject } = useUpdateProject();
     const { mutate: deleteProject } = useDeleteProject();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -104,21 +106,34 @@ export const ProjectDashboardPage = () => {
     const [filterType, setFilterType] = useState('Custom');
     const [jqlQuery, setJqlQuery] = useState('');
 
-    const { data, fetchNextPage, hasNextPage, isLoading } = useGetAllTickets(
+    const getAllTickets = useGetAllTickets(
         projectKey as string,
-        (filterType == 'JQL'),
-        (filterType != 'JQL') ?  
         {
             ...filters,
             deadline: filters.deadline ? filters.deadline.toISOString() : undefined,
             limit: 10,
-        } : undefined,
-        (filterType == 'JQL') ?  
+        },
+        {
+            enabled: filterType !== 'JQL'
+        }
+    );
+
+    const jqlSearchTickets = useJqlSearchTickets(
+        projectKey as string,
         {
             jql: jqlQuery,
             limit: 10,
-        } : undefined,
+        },
+        {
+            enabled: filterType === 'JQL'
+        }
     );
+    const {
+        data,
+        fetchNextPage,
+        hasNextPage,
+        isLoading,
+    } = (filterType == 'JQL') ? jqlSearchTickets : getAllTickets;
 
     const handleImportKeyDelete = (key: string) => {
         setImportTicketKeys(prev => prev.filter(k => k !== key));
@@ -196,13 +211,19 @@ export const ProjectDashboardPage = () => {
 
         importTicketMutation.mutate(result.data);
     };
-
-    // New state for filter type (JQL or Custom)
     
     const handleJqlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setJqlQuery(event.target.value);
     };
 
+    useEffect(() => {
+        if (filterType == 'JQL') {
+            queryClient.removeQueries({ queryKey: ['tickets', 'list', projectKey] });
+        } else {
+            queryClient.removeQueries({ queryKey: ['tickets', 'jql', projectKey] });
+        }
+    }, [filterType, projectKey, queryClient]);
+    
     return (
         <>
             <StyledHeader>

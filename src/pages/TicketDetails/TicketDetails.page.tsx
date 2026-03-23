@@ -37,6 +37,7 @@ import { useUpdateTicketMutation } from '@features/ticket/updateTicket/useUpdate
 
 import { StyledErrorTextField, StyledLabel } from './TicketDetails.style';
 import {
+    ADMIN,
     TicketConstToPriorityMap,
     TicketConstToStatusMap,
     TicketConstToTypeMap,
@@ -150,6 +151,8 @@ export const TicketDetails: React.FC = () => {
 
                             {/* Icon Box with Edit and Delete icons */}
                             <Box>
+                                {ticket.role == ADMIN && 
+                                <>
                                 <IconButton
                                     sx={{
                                         backgroundColor: COLORS.GRAY.BACKGROUND,
@@ -177,6 +180,7 @@ export const TicketDetails: React.FC = () => {
                                 >
                                     <DeleteIcon />
                                 </IconButton>
+                                </>}
                             </Box>
                         </Box>
 

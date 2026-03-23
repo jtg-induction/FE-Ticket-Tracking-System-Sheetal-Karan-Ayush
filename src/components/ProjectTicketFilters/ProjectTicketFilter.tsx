@@ -52,7 +52,7 @@ export const ProjectTicketFilters = ({
                     value={filters.status}
                     onChange={(e) => onChange('status', e.target.value)}
                 >
-                    <MenuItem value="">All</MenuItem>
+                    <MenuItem value={undefined}>All</MenuItem>
                     <MenuItem value={1}>Open</MenuItem>
                     <MenuItem value={2}>In Progress</MenuItem>
                     <MenuItem value={3}>Closed</MenuItem>
