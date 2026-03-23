@@ -2,6 +2,7 @@ import {
     Box,
     Container,
     Stack,
+    StackProps,
     styled,
     TextField,
 } from '@mui/material';
@@ -47,7 +48,7 @@ export const StyledContent = styled(Box)(({ theme }) => {
     };
 });
 
-export const StyledStackWrapper = styled(Stack)(({ theme }) => {
+export const StyledStackWrapper = styled(Stack)<StackProps>(({ theme }) => {
     const {
         typography: { pxToRem },
     } = theme;

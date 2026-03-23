@@ -1,4 +1,4 @@
-import { Box, Container, Stack, styled } from '@mui/material';
+import { Box, Container, Stack, styled, TextField } from '@mui/material';
 
 export const StyledWrapper = styled(Container)({
     height: '100vh',
@@ -6,21 +6,44 @@ export const StyledWrapper = styled(Container)({
     alignItems: 'center',
 });
 
+export const StyledErrorTextField = styled(TextField)(({ theme }) => ({
+        '& .MuiInputLabel-root.Mui-error': {
+            color: theme.palette.error.contrastText,
+        },
+        '& .MuiFormHelperText-root.Mui-error': {
+            color: theme.palette.error.contrastText,
+        },
+        '& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline': {
+            borderColor: theme.palette.error.contrastText,
+        },
+    }));
+
+export const StyledHeading = styled(Box)(({ theme }) => {
+    const {
+        typography: { pxToRem },
+    } = theme;
+    return {
+        display: 'flex',
+        gap: pxToRem(12),
+        alignItems: 'center',
+        justifyContent: 'center',
+    };
+});
+
 export const StyledContent = styled(Box)(({ theme }) => {
     const {
-        spacing
+        typography: { pxToRem },
     } = theme;
     return {
         display: 'flex',
         flexDirection: 'column',
-        gap: spacing(4),
+        gap: pxToRem(16),
     };
 });
 
 export const StyledStackWrapper = styled(Stack)(({ theme }) => {
     const {
         typography: { pxToRem },
-        shadow,
     } = theme;
     return {
         maxWidth: pxToRem(1000),
@@ -29,20 +52,19 @@ export const StyledStackWrapper = styled(Stack)(({ theme }) => {
         justifyContent: 'center',
         alignItems: 'center',
         margin: 'auto',
-        boxShadow: shadow.md,
+        boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px',
     };
 });
 
 export const StyledRegisterCard = styled(Box)(({ theme }) => {
     const {
         typography: { pxToRem },
-        spacing
     } = theme;
     return {
-        padding: spacing(6),
+        padding: pxToRem(24),
         maxWidth: pxToRem(500),
         display: 'flex',
         flexDirection: 'column',
-        gap: spacing(4),
+        gap: pxToRem(16),
     };
 });
