@@ -146,19 +146,6 @@ export const ProjectDashboardPage = () => {
 
         filtered.sort((a, b) => {
             const dateA = dayjs(a.Deadline);
-            <IconBox>
-                <IconBox>
-                    <EditIcon onClick={handleOpenProjectDialog} />
-                    <DeleteIcon
-                        onClick={() => {
-                            if (project) {
-                                setDeleteTarget(project);
-                                setIsDeleteDialogOpen(true);
-                            }
-                        }}
-                    />
-                </IconBox>
-            </IconBox>;
             const dateB = dayjs(b.Deadline);
 
             if (filters.sort === 'latest') {

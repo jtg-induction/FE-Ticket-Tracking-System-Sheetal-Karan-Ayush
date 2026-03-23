@@ -1,5 +1,7 @@
 import { Box, styled } from '@mui/material';
 
+import { CONTAINER_MAX_WIDTH } from '@constant';
+
 export const LayoutStyled = styled(Box)(({ theme }) => {
     const { palette } = theme;
 
@@ -29,7 +31,7 @@ export const StyledMainContent = styled(Box)(({ theme }) => {
         height: '100%',
         overflowY: 'auto',
         flex: '1',
-        maxWidth: pxToRem(2000),
+        maxWidth: pxToRem(CONTAINER_MAX_WIDTH),
         marginInline: 'auto',
         marginLeft: pxToRem(SIDEBAR_WIDTH),
         marginTop: pxToRem(HEADER_HEIGHT),

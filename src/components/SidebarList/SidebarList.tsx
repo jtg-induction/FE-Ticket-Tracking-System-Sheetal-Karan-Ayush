@@ -15,7 +15,6 @@ export const SidebarItemList = ({
     item,
     IconComponent,
     isActive,
-    isExpanded,
     hasChildren,
     count,
     onClick,
@@ -25,7 +24,6 @@ export const SidebarItemList = ({
         return (
             <StyledAccordion
                 elevation={0}
-                expanded={isExpanded}
                 onChange={onClick}
             >
                 <StyledAccordionSummary

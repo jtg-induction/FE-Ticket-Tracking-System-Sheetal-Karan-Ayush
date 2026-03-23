@@ -32,10 +32,23 @@ export const COLORS = {
 };
 
 /**
+ * Font Types
+ * @constant
+ */
+export const PRIMARY_FONT = `'Inter'`;
+export const FALLBACK_FONTS = 'sans-serif';
+
+/**
+ * Base font size percentage
+ * @constant
+ */
+export const HTML_FONT_SIZE_PERCENTAGE = 62.5;
+
+/**
  * Base font size in pixels.
  * @constant
  */
-export const HTML_FONT_SIZE = 10;
+export const HTML_FONT_SIZE = (HTML_FONT_SIZE_PERCENTAGE / 100) * 16;
 
 /**
  * Scaling factor used for spacing.
@@ -66,4 +79,17 @@ export const FONT_SIZES = {
     FONT_XL: 20,
     FONT_3XL: 30,
     FONT_5XL: 48,
+};
+
+/**
+ * Shadows
+ * @constant
+ */
+export const SHADOWS = {
+    none: 'none',
+    xs: '0px 2px 4px rgba(0, 0, 0, 0.05)',
+    sm: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+    md: '0px 8px 16px rgba(0, 0, 0, 0.12)',
+    lg: '0px 16px 24px rgba(0, 0, 0, 0.14)',
+    xl: '0px 24px 48px rgba(0, 0, 0, 0.16)',
 };
