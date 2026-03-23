@@ -157,7 +157,7 @@ export const CommentItem = ({
                                         <CommentItem
                                             comment={{
                                                 id: reply.id,
-                                                commentText: reply.comment_text,
+                                                commentText: reply.comment,
                                                 user: reply.email,
                                                 ticketId: reply.ticket_id,
                                                 parentComment: reply.parent_comment_id,

@@ -13,7 +13,7 @@ export const commentCreateSchema = z.object({
 
 export const commentResponseSchema = z.object({
     id: z.int(),
-    comment_text: z.string(),
+    comment: z.string(),
     user_id: z.int(),
     ticket_id: z.int(),
     parent_comment_id: z.int().nullable(),

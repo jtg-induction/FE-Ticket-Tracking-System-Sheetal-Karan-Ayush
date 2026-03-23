@@ -47,7 +47,6 @@ import {
     TicketConstToStatusMap,
     TicketConstToTypeMap,
 } from './TicketDetails.util';
-import { useQueryClient } from '@tanstack/react-query';
 
 export const TicketDetails: React.FC = () => {
     const theme = useTheme();
@@ -87,7 +86,7 @@ export const TicketDetails: React.FC = () => {
     const [newComment, setNewComment] = useState('');
 
     const { data: comments, fetchNextPage: fetchCommentsNextPage, hasNextPage: hasCommentsNextPage, isLoading } = useGetAllComments({
-        limit: 2,
+        limit: 5,
         ticket_key: ticketKey as string,
         parent_comment_id: null,
     });
@@ -116,25 +115,6 @@ export const TicketDetails: React.FC = () => {
         setErrors((prev) => ({ ...prev, [field]: '' }));
     };
 
-
-    // const queryClient = useQueryClient();
-
-
-    // const handleAddComment = () => {
-    //     const payload = {
-    //         content: newComment,
-    //         project_key: projectKey as string,
-    //         ticket_key: ticketKey as string,
-    //         parent_comment_id: null,
-    //     };
-
-    //     createCommentMutation.mutate(payload, {
-    //     onSuccess: () => {
-    //         setNewComment('');
-    //         queryClient.invalidateQueries({ queryKey: ['comments'] });
-    //     },
-    // });
-    // };
 
     const handleSaveChanges = () => {
         const payload = {
@@ -358,8 +338,9 @@ export const TicketDetails: React.FC = () => {
                             <Typography variant="h3">Comments</Typography>
 
                             {/* comment box */}
-                            <Box display="flex" gap={2}>
+                            <Box display="flex" gap={2} alignItems={'flex-start'}>
                                 <TextField
+                                    multiline
                                     fullWidth
                                     size="small"
                                     placeholder="Add a comment..."
@@ -371,7 +352,6 @@ export const TicketDetails: React.FC = () => {
                                 />
                                 <Button
                                     variant="contained"
-                                    size="small"
                                     onClick={handleAddComment}
                                     disabled={!newComment.trim() || newComment.length > MAX_COMMENT_LENGTH}
                                 >
@@ -390,7 +370,7 @@ export const TicketDetails: React.FC = () => {
                                                     <CommentItem
                                                         comment={{
                                                             id: comment.id,
-                                                            commentText: comment.comment_text,
+                                                            commentText: comment.comment,
                                                             user: comment.email,
                                                             ticketId: comment.ticket_id,
                                                             parentComment: comment.parent_comment_id,

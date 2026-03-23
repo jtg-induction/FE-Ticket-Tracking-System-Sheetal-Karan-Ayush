@@ -60,6 +60,14 @@ export const MoveTicketContainer = ({isMoveDialogOpen, setIsMoveDialogOpen}: Mov
                     {moveTicketMutation.error.message}
                 </Typography>
             )}
+            {moveTicketMutation.isSuccess && (
+                <Typography
+                    variant="subtitle2"
+                    sx={{ color: theme.palette.success.contrastText }}
+                >
+                    Ticket moved successfully
+                </Typography>
+            )}
         </DialogBox>
     )
 }

@@ -8,12 +8,12 @@ export const getAllComments = async (
     try {
         const response = await api.get(`/ticket/${params.ticket_key}/comments`, { params });
 
-        const parsed = getAllCommentsResponseSchema.safeParse(response.data);
+        // const parsed = getAllCommentsResponseSchema.safeParse(response.data);
         
-        if (!parsed.success) {
-            throw new Error('Invalid server response ');
-        }
-        return parsed.data;
+        // if (!parsed.success) {
+        //     throw new Error('Invalid server response ');
+        // }
+        return response.data;
     } catch (error: unknown) {
         return handleApiError(error);
     }
