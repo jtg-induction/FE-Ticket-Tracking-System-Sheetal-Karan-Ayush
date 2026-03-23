@@ -84,7 +84,7 @@ export const Register = () => {
             // console.log('Submission blocked: Fix validation errors first.');
             return;
         }
-        signupMutation.mutate({ name, email, password, avatarId: 1 });
+        signupMutation.mutate({ name, email, password});
     };
 
     return (
