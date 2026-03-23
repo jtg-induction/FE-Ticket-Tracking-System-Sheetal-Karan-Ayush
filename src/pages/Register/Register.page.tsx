@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { NavLink } from 'react-router-dom';
 
-import { BugReport } from '@mui/icons-material';
 import {
-    Avatar,
     Button,
     Stack,
     Typography,
@@ -12,13 +10,12 @@ import {
     useTheme,
 } from '@mui/material';
 
-import { HeroCard } from '@components';
+import { HeroCard, Logo } from '@components';
+import { StyledErrorTextField } from '@containers/RegisterForm/RegisterForm.styles';
 import { useSignupMutation } from '@features/auth';
 
 import {
     StyledContent,
-    StyledErrorTextField,
-    StyledHeading,
     StyledRegisterCard,
     StyledStackWrapper,
     StyledWrapper,
@@ -66,20 +63,20 @@ export const Register = () => {
     };
 
     const isFormValid =
-        name.length > 2 && name.length < 256 && 
-        email.length > 0 && email.length < 256 && 
-        password.length > 7 && password.length < 256 && 
+        name.length > 2 &&
+        name.length < 256 &&
+        email.length > 0 &&
+        email.length < 256 &&
+        password.length > 7 &&
+        password.length < 256 &&
         confirmPassword.length > 7 &&
         !isInvalidName &&
         !isInvalidEmail &&
         !isInvalidPassword &&
         password === confirmPassword;
 
-    
-
     const signupMutation = useSignupMutation();
 
-    
     const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
         e.preventDefault();
 
@@ -87,24 +84,14 @@ export const Register = () => {
             // console.log('Submission blocked: Fix validation errors first.');
             return;
         }
-        signupMutation.mutate({name, email, password, avatarId: 1})
+        signupMutation.mutate({ name, email, password, avatarId: 1 });
     };
 
     return (
         <StyledWrapper>
             <StyledStackWrapper direction={'row'}>
                 <StyledRegisterCard>
-                    <StyledHeading>
-                        <Avatar
-                            alt="TaskVault"
-                            sx={{ bgcolor: 'primary.main' }}
-                        >
-                            <BugReport />
-                        </Avatar>
-                        <Typography variant="h2" color="primary">
-                            TaskVault
-                        </Typography>
-                    </StyledHeading>
+                    <Logo />
 
                     <StyledContent>
                         <Typography variant="h2"> Welcome !</Typography>
@@ -174,7 +161,10 @@ export const Register = () => {
                             }
                         />
                         {signupMutation.isError && (
-                            <Typography variant='subtitle2' sx={{ color: theme.palette.error.contrastText }}>
+                            <Typography
+                                variant="subtitle2"
+                                sx={{ color: theme.palette.error.contrastText }}
+                            >
                                 {signupMutation.error.message}
                             </Typography>
                         )}
@@ -192,6 +182,7 @@ export const Register = () => {
                         Have an account? <NavLink to="/login">Login</NavLink>
                     </Typography>
                 </StyledRegisterCard>
+
                 {isDesktop && <HeroCard />}
             </StyledStackWrapper>
         </StyledWrapper>

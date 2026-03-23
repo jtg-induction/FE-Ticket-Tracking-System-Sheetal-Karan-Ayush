@@ -1,6 +1,6 @@
 import { createBrowserRouter, RouteObject } from 'react-router-dom';
 
-import { Layout } from '@containers';
+import { DashboardLayout } from '@containers';
 import {
     Login,
     PageNotFound,
@@ -12,7 +12,7 @@ import {
 const routes: RouteObject[] = [
     {
         path: '/',
-        element: <Layout />,
+        element: <DashboardLayout />,
 
         children: [
             {

@@ -98,9 +98,7 @@ export const updateProject = async (
 
 export const deleteProject = async (projectKey: string): Promise<void> => {
     try {
-        await api.delete(`/projects/`, {
-            params: { project_key: projectKey },
-        });
+        await api.delete(`/projects/${projectKey}`);
     } catch (error: unknown) {
         return handleApiError(error);
     }
@@ -108,7 +106,7 @@ export const deleteProject = async (projectKey: string): Promise<void> => {
 
 export const getAllProjects = async (): Promise<ProjectResponse[]> => {
     try {
-        const response = await api.get<ProjectResponse[]>('/projects/my');
+        const response = await api.get<ProjectResponse[]>('/projects');
 
         const projects = response.data;
 

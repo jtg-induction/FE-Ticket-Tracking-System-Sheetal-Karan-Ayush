@@ -19,13 +19,14 @@ export const Header = ({ isMenuOpen, setMenuOpen }: HeaderProps) => {
      * Handles the selection of a product from the search results
      * @param product - The product object or null
      */
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     useEffect(() => {
-        if (isDesktop) {
-            setMenuOpen(true);
-        } else {
+        if (isMobile) {
             setMenuOpen(false);
+        } else {
+            setMenuOpen(true);
         }
-    }, [isDesktop, setMenuOpen]);
+    }, [isMobile, setMenuOpen]);
 
     return (
         <HeaderStyled component={'header'} elevation={1}>
