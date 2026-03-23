@@ -16,7 +16,7 @@ let theme = createTheme({
     mixins,
     components,
     typography: {
-        fontFamily: 'Inter, sans-serif',
+        fontFamily: "'Inter', sans-serif",
         ...typography.typographyUtil,
     },
     spacing: (factor: number) =>

@@ -32,7 +32,9 @@ export const SidebarItemList = ({
                     expandIcon={<ExpandMore fontSize="large" />}
                 >
                     {IconComponent && <IconComponent />}
-                    <Typography variant="body1">{item.title}</Typography>
+                    <Typography variant='body1'>
+                        {item.title}
+                    </Typography>
                 </StyledAccordionSummary>
 
                 <StyledAccordionDetails>

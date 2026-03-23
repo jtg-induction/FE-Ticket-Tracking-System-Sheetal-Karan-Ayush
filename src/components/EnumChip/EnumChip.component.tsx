@@ -1,4 +1,5 @@
 import { Chip } from '@mui/material';
+
 import { EnumChipProps } from './EnumChip.types';
 
 export const EnumChip = ({ value, map }: EnumChipProps) => {

@@ -1,7 +1,11 @@
 import { useEffect } from 'react';
 
+import { useNavigate } from 'react-router-dom';
+
 import { BugReport, Menu } from '@mui/icons-material';
 import { Avatar, Typography, useMediaQuery, useTheme } from '@mui/material';
+
+import { useAuthStore } from '@features/auth';
 
 import {
     HamburgerButton,
@@ -15,6 +19,9 @@ import { HeaderProps } from './Header.types';
 export const Header = ({ isMenuOpen, setMenuOpen }: HeaderProps) => {
     const theme = useTheme();
     const isDesktop = useMediaQuery(theme.breakpoints.up('sm'));
+    const { user } = useAuthStore();
+    const username = user?.name;
+    const navigate = useNavigate();
     /**
      * Handles the selection of a product from the search results
      * @param product - The product object or null
@@ -58,7 +65,13 @@ export const Header = ({ isMenuOpen, setMenuOpen }: HeaderProps) => {
                     )}
                 </StyledLeftBox>
                 <StyledRightBox>
-                    <Avatar alt="TaskVault"></Avatar>
+                    <Avatar
+                        alt="TaskVault"
+                        sx={{ bgcolor: 'primary.main' }}
+                        onClick={() => void navigate('/user')}
+                    >
+                        {username?.substring(0, 2).toUpperCase()}
+                    </Avatar>
                 </StyledRightBox>
             </StyledToolbar>
         </HeaderStyled>

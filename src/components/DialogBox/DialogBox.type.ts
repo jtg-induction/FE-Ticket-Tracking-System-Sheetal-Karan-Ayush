@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode } from "react";
 
 export type DialogBoxProps = {
     open: boolean;
@@ -11,4 +11,4 @@ export type DialogBoxProps = {
     isSubmitting?: boolean;
     isSubmitDisabled?: boolean;
     maxWidth?: 'xs' | 'sm' | 'md' | 'lg';
-};
+}

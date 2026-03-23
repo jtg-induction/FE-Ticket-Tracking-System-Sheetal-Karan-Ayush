@@ -6,7 +6,7 @@ export const getAllComments = async (
     params: GetAllCommentsFormData,
 ): Promise<GetAllCommentsResponse> => {
     try {
-        const response = await api.get(`/ticket/${params.ticket_key}/comments`, { params });
+        const response = await api.get(`/api/tickets/${params.ticket_key}/comments`, { params });
 
         const parsed = getAllCommentsResponseSchema.safeParse(response.data);
         

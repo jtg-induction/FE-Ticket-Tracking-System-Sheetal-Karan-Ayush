@@ -50,10 +50,20 @@ export const UserSidebar = ({ open, onClose }: UserSidebarProps) => {
         []
     );
     return (
-        <Drawer anchor="right" open={open} onClose={onClose} variant={isMobile ? "temporary" : "persistent"}>
+        <Drawer
+            anchor="right"
+            open={open}
+            onClose={onClose}
+            variant={isMobile ? 'temporary' : 'persistent'}
+        >
             <Toolbar />
-            <Box display="flex" flexDirection="column" height='100%'>
-                <Box display="flex" justifyContent="space-between" alignItems="center" padding={theme.spacing(2)}>
+            <Box display="flex" flexDirection="column" height="100%">
+                <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    padding={theme.spacing(2)}
+                >
                     <Typography variant="h6">Project Users</Typography>
                     <IconButton onClick={onClose}>
                         <CloseIcon />
@@ -76,42 +86,61 @@ export const UserSidebar = ({ open, onClose }: UserSidebarProps) => {
                                         <SearchIcon />
                                     </InputAdornment>
                                 ),
-                            }
+                            },
                         }}
                     />
                 </Box>
 
                 {/* User List */}
-                <Box flex={1} paddingInline={theme.spacing(0.5)} sx={{ overflowY: "auto" }} onScroll={() => {
-                    if (
-                        hasNextPage &&
-                        !isFetchingNextPage
-                    ) {
-                        void fetchNextPage();
-                    }
-                }}>
+                <Box
+                    flex={1}
+                    paddingInline={theme.spacing(0.5)}
+                    sx={{ overflowY: 'auto' }}
+                    onScroll={() => {
+                        if (hasNextPage && !isFetchingNextPage) {
+                            void fetchNextPage();
+                        }
+                    }}
+                >
                     {users.length === 0 ? (
-                        <Typography padding={theme.spacing(0.5)} color={theme.palette.text.secondary}>
+                        <Typography
+                            padding={theme.spacing(0.5)}
+                            color={theme.palette.text.secondary}
+                        >
                             No users found
                         </Typography>
                     ) : (
                         <List>
                             {users.map((user) => (
-                                <ListItem key={user.user_id} sx={{cursor: "pointer"}} onClick={() => void navigate(`/project/${projectKey}/users/${user.user_id}`)}>
+                                <ListItem
+                                    key={user.user_id}
+                                    sx={{ cursor: 'pointer' }}
+                                    onClick={() =>
+                                        void navigate(
+                                            `/project/${projectKey}/users?email=${encodeURIComponent(user.user_email)}`,
+                                        )
+                                    }
+                                >
                                     <ListItemAvatar>
                                         <Avatar>{user.user_name[0]}</Avatar>
                                     </ListItemAvatar>
                                     <ListItemText
                                         primary={
-                                            <Box display="flex" justifyContent='space-between'>
+                                            <Box
+                                                display="flex"
+                                                justifyContent="space-between"
+                                            >
                                                 <Typography
                                                     variant="body1"
                                                     sx={() => ({
-                                                        ...theme.mixins.lineClamp(1),
-                                                        maxWidth: theme.spacing(40),
+                                                        ...theme.mixins.lineClamp(
+                                                            1,
+                                                        ),
+                                                        maxWidth:
+                                                            theme.spacing(40),
                                                     })}
                                                 >
-                                                    {user.user_name}  {" "}
+                                                    {user.user_name}{' '}
                                                 </Typography>
 
                                                 {user.role && (
@@ -121,25 +150,28 @@ export const UserSidebar = ({ open, onClose }: UserSidebarProps) => {
                                                         color="primary"
                                                         variant="outlined"
                                                         sx={{
-                                                            fontSize: theme.spacing(2.5),
+                                                            fontSize:
+                                                                theme.spacing(
+                                                                    2.5,
+                                                                ),
                                                         }}
                                                     />
                                                 )}
                                             </Box>
                                         }
-
                                         secondary={
                                             <Typography
                                                 variant="body2"
                                                 color="textSecondary"
                                                 sx={() => ({
-                                                    ...theme.mixins.lineClamp(1),
+                                                    ...theme.mixins.lineClamp(
+                                                        1,
+                                                    ),
                                                     maxWidth: theme.spacing(50),
                                                 })}
                                             >
                                                 {user.user_email}
                                             </Typography>
-
                                         }
                                     />
                                 </ListItem>

@@ -11,7 +11,7 @@ export const createTicket = async (
 ): Promise<TicketResponse> => {
     try {
         const response = await api.post(
-            `/project/${data.project_key}/ticket`,
+            `/projects/${data.project_key}/tickets`,
             data,
         );
         const parsed = ticketResponseSchema.safeParse(response.data);

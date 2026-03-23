@@ -5,7 +5,10 @@ import { ProjectFormData } from './schema';
 
 type CheckKeyVariables = {
     key: string;
-    formData: Pick<ProjectFormData, 'jira_url' | 'access_token' | 'lead_email'>;
+    formData: Pick<
+        ProjectFormData,
+        'jira_url' | 'access_token' | 'lead_email'
+    >;
 };
 
 type CheckKeyResponse = { valid: boolean };

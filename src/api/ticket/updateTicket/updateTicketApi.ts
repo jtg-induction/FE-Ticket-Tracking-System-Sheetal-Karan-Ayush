@@ -1,5 +1,5 @@
-import { api } from '@api';
 import { handleApiError } from '@api/apiErrorHandling/handleApiError';
+import { api } from '@api/axios';
 import {
     TicketResponse,
     ticketResponseSchema,
@@ -11,7 +11,7 @@ export const updateTicket = async (
 ): Promise<TicketResponse> => {
     try {
         const response = await api.patch(
-            `/project/${requestBody.project_key}/ticket/${requestBody.ticket_key}`,
+            `/projects/${requestBody.project_key}/tickets/${requestBody.ticket_key}`,
             requestBody,
         );
 

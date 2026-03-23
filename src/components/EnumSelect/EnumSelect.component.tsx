@@ -1,4 +1,5 @@
 import { Box, Chip, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+
 import { EnumSelectProps } from './EnumSelect.types';
 
 export const EnumSelect = ({ value, map, onChange }: EnumSelectProps) => {

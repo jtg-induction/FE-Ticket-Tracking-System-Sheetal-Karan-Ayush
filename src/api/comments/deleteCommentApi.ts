@@ -7,7 +7,7 @@ export const deleteComment = async (
 ) => {
     try {
         await api.delete(
-            `/ticket/comments/${commentId}`,
+            `/api/tickets/comments/${commentId}`,
         );
     } catch (error: unknown) {
         return handleApiError(error);

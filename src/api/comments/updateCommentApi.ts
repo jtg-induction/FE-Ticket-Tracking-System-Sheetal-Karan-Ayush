@@ -7,7 +7,7 @@ export const updateComment = async (
 ) => {
     try {
         await api.patch(
-            `/ticket/comments/${data.comment_id}`,
+            `/api/tickets/comments/${data.comment_id}`,
             data,
         );
     } catch (error: unknown) {

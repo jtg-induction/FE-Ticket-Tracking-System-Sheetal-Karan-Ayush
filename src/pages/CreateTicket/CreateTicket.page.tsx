@@ -6,11 +6,14 @@ import { NavLink } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 
 import {
+    Autocomplete,
     Box,
     Button,
+    Chip,
     CircularProgress,
     FormControl,
     Stack,
+    TextField,
     Typography,
     useTheme,
 } from '@mui/material';
@@ -42,6 +45,7 @@ export const CreateTicket = () => {
     const createTicketMutation = useCreateTicketMutation();
     const isSubmitting = createTicketMutation.isPending;
     const { projectKey } = useParams<{ projectKey: string }>();
+    const [labels, setLabels] = useState([])
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -159,6 +163,36 @@ export const CreateTicket = () => {
                         onChange={handleChange}
                         error={!!errors.assignee}
                         helperText={errors.assignee}
+                    />
+
+                    <Autocomplete
+                        multiple
+                        freeSolo
+                        options={[]}
+                        value={labels}
+                        onChange={(_, newValue) => setLabels(newValue)}
+                        renderTags={(value, getTagProps) =>
+                            value.map((option, index) => {
+                                const { key, ...tagProps } = getTagProps({
+                                    index,
+                                });
+                                return (
+                                    <Chip
+                                        key={key}
+                                        label={option}
+                                        {...tagProps}
+                                        color="success"
+                                    />
+                                );
+                            })
+                        }
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                label="Add Labels"
+                                placeholder="Type and press Enter"
+                            />
+                        )}
                     />
 
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
