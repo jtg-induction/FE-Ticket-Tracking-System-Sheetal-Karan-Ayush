@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 import { NavLink, useNavigate } from 'react-router-dom';
 
-import { BugReport } from '@mui/icons-material';
 import {
-    Avatar,
     Button,
     Stack,
     Typography,
@@ -12,13 +10,12 @@ import {
     useTheme,
 } from '@mui/material';
 
-import { HeroCard } from '@components';
+import { HeroCard, Logo } from '@components';
+import { StyledErrorTextField } from '@containers/LoginForm/LoginForm.styles';
 import { useLoginMutation } from '@features/auth';
 
 import {
     StyledContent,
-    StyledErrorTextField,
-    StyledHeading,
     StyledLoginCard,
     StyledStackWrapper,
     StyledWrapper,
@@ -53,7 +50,7 @@ export const Login = () => {
         !isInvalidPassword;
 
     const loginMutation = useLoginMutation();
-     const navigate = useNavigate();
+    const navigate = useNavigate();
     const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
         e.preventDefault();
 
@@ -67,7 +64,7 @@ export const Login = () => {
                     localStorage.setItem('access_token', data.access_token);
                     localStorage.setItem('refresh_token', data.refresh_token);
                     void navigate('/');
-                }
+                },
             },
         );
     };
@@ -76,17 +73,7 @@ export const Login = () => {
         <StyledWrapper>
             <StyledStackWrapper direction={'row'}>
                 <StyledLoginCard>
-                    <StyledHeading>
-                        <Avatar
-                            alt="TaskVault"
-                            sx={{ bgcolor: 'primary.main' }}
-                        >
-                            <BugReport />
-                        </Avatar>
-                        <Typography variant="h2" color="primary">
-                            TaskVault
-                        </Typography>
-                    </StyledHeading>
+                    <Logo />
 
                     <StyledContent>
                         <Typography variant="h2"> Welcome Back !</Typography>
@@ -131,7 +118,10 @@ export const Login = () => {
                         />
 
                         {loginMutation.isError && (
-                            <Typography variant='subtitle2' sx={{ color: theme.palette.error.contrastText }}>
+                            <Typography
+                                variant="subtitle2"
+                                sx={{ color: theme.palette.error.contrastText }}
+                            >
                                 {loginMutation.error.message}
                             </Typography>
                         )}
@@ -147,9 +137,11 @@ export const Login = () => {
                     </Stack>
 
                     <Typography textAlign={'center'}>
-                        {"Don't have an account?" }<NavLink to="/register">Register</NavLink>
+                        {"Don't have an account?"}
+                        <NavLink to="/register">Register</NavLink>
                     </Typography>
                 </StyledLoginCard>
+
                 {isDesktop && <HeroCard />}
             </StyledStackWrapper>
         </StyledWrapper>

@@ -1,6 +1,6 @@
 import { createTheme } from '@mui/material/styles';
 
-import { SCALING_FACTOR } from '@constant';
+import { PRIMARY_FONT, SCALING_FACTOR, SHADOWS } from '@constant';
 
 /* Customized MUI components themes */
 import { components } from './components';
@@ -10,22 +10,23 @@ import { breakpoints, mixins, palette, typography } from './foundations';
 /* 
 Initialize the theme with base theme elements (excluding typography styles and spacing to ensure the theme has correct breakpoints and pxToRem function set.)
 */
-let theme = createTheme({
+const baseTheme = createTheme({
     palette,
     breakpoints,
     mixins,
     components,
     typography: {
-        fontFamily: "'Inter', sans-serif",
+        fontFamily: `${PRIMARY_FONT}`,
         ...typography.typographyUtil,
     },
     spacing: (factor: number) =>
         theme.typography.pxToRem(factor * SCALING_FACTOR),
+    shadow: SHADOWS,
 });
 
-theme = createTheme(theme, {
+const theme = createTheme(baseTheme, {
     typography: {
-        ...typography.typographyStyle(theme),
+        ...typography.typographyStyle(baseTheme),
     },
 });
 

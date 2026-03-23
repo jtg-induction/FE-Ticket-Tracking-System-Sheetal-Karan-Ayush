@@ -88,7 +88,7 @@ export const SideBar = ({ isMenuOpen, toggleDrawer }: SideBarProps) => {
             onClose={toggleDrawer}
         >
             <Toolbar />
-            {drawerContent}
+            <SideBarStyled component={'aside'}>{drawerContent}</SideBarStyled>;
         </Drawer>
     );
 };

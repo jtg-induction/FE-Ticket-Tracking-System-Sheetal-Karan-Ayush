@@ -4,16 +4,17 @@ export const StyledHeroCard = styled(Box)(({ theme }) => {
     const {
         typography: { pxToRem },
         palette,
+        spacing
     } = theme;
     return {
-        padding: pxToRem(24),
+        padding: spacing(6),
         height: '100%',
         background: palette.gradients.primary,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        gap: pxToRem(24),
+        gap: spacing(6),
         maxWidth: pxToRem(450),
     };
 });

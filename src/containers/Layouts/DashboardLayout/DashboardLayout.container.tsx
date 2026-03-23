@@ -8,9 +8,9 @@ import {
     ContentWrapper,
     LayoutStyled,
     StyledMainContent,
-} from './Layout.styles';
+} from './DashboardLayout.styles';
 
-export const Layout = () => {
+export const DashboardLayout = () => {
     const [isMenuOpen, setMenuOpen] = useState(false);
 
     const toggleDrawer = () => {
