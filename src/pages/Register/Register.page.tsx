@@ -68,48 +68,58 @@ export const Register = () => {
     };
 
     const isFormValid =
-        name.length > 2 && name.length < 256 && 
-        email.length > 0 && email.length < 256 && 
-        password.length > 7 && password.length < 256 && 
+        name.length > 2 &&
+        name.length < 256 &&
+        email.length > 0 &&
+        email.length < 256 &&
+        password.length > 7 &&
+        password.length < 256 &&
         confirmPassword.length > 7 &&
         !isInvalidName &&
         !isInvalidEmail &&
         !isInvalidPassword &&
         password === confirmPassword;
 
-    
     const [otpOpen, setOtpOpen] = useState<boolean>(false);
     const signupMutation = useSignupMutation();
     const verifyMutation = useVerifyMutation();
 
     const setAuth = useAuthStore((s) => s.setAuth);
-    
+
     const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
         e.preventDefault();
 
         if (!isFormValid) {
             return;
         }
-        signupMutation.mutate({name, email, password, avatarId: 1}, { onSuccess: () => setOtpOpen(true)})
+        signupMutation.mutate(
+            { name, email, password},
+            { onSuccess: () => setOtpOpen(true) },
+        );
     };
     const navigate = useNavigate();
     const handleVerify = (otp: number) => {
-        verifyMutation.mutate({name, email, password, avatarId: 1, otp}, 
-        { 
-            onSuccess: (data) => {
-                setAuth(data);
-                setOtpOpen(false);
-                localStorage.setItem('access_token', data.access_token);
-                localStorage.setItem('refresh_token', data.refresh_token);
-                void navigate('/project/create')
+        verifyMutation.mutate(
+            { email, otp },
+            {
+                onSuccess: (data) => {
+                    setAuth(data);
+                    setOtpOpen(false);
+                    localStorage.setItem('access_token', data.access_token);
+                    localStorage.setItem('refresh_token', data.refresh_token);
+                    void navigate('/project/create');
+                },
+                onError: () => {
+                    <Typography
+                        variant="subtitle2"
+                        sx={{ color: theme.palette.error.contrastText }}
+                    >
+                        {verifyMutation.error?.message}
+                    </Typography>;
+                },
             },
-            onError: () => {
-                <Typography variant='subtitle2' sx={{ color: theme.palette.error.contrastText }}>
-                    {verifyMutation.error?.message}
-                </Typography>
-            }
-        })
-    }
+        );
+    };
 
     return (
         <StyledWrapper>
@@ -195,7 +205,10 @@ export const Register = () => {
                             }
                         />
                         {signupMutation.isError && (
-                            <Typography variant='subtitle2' sx={{ color: theme.palette.error.contrastText }}>
+                            <Typography
+                                variant="subtitle2"
+                                sx={{ color: theme.palette.error.contrastText }}
+                            >
                                 {signupMutation.error.message}
                             </Typography>
                         )}
@@ -208,7 +221,12 @@ export const Register = () => {
                             Submit
                         </Button>
                     </Stack>
-                    <VerifyOtpDialog open={otpOpen} handleVerify={handleVerify} setOpen={setOtpOpen} errorMsg = {verifyMutation.error?.message || ""}/>
+                    <VerifyOtpDialog
+                        open={otpOpen}
+                        handleVerify={handleVerify}
+                        setOpen={setOtpOpen}
+                        errorMsg={verifyMutation.error?.message || ''}
+                    />
                     <Typography textAlign={'center'}>
                         Have an account? <NavLink to="/login">Login</NavLink>
                     </Typography>

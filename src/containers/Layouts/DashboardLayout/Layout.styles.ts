@@ -20,13 +20,13 @@ export const ContentWrapper = styled(Box)({
 
 export const StyledMainContent = styled(Box)(({ theme }) => {
     const {
-        typography: { pxToRem }, breakpoints
+        typography: { pxToRem },
+        breakpoints,
     } = theme;
     const HEADER_HEIGHT = 64;
     const SIDEBAR_WIDTH = 250;
     return {
         position: 'relative',
-        height: '100%',
         overflowY: 'auto',
         flex: '1',
         maxWidth: pxToRem(2000),

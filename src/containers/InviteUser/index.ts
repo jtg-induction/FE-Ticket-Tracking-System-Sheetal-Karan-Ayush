@@ -1,1 +1,1 @@
-export { InviteUser } from './InviteUser.container'
+export { InviteUser } from './InviteUser.container';

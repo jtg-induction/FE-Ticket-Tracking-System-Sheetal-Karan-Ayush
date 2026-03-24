@@ -3,7 +3,8 @@ import { Box, BoxProps, styled } from '@mui/material';
 export const CardBox = styled(Box)<BoxProps>(({ theme }) => {
     const {
         typography: { pxToRem },
-        shadows, spacing
+        shadows,
+        spacing,
     } = theme;
 
     return {

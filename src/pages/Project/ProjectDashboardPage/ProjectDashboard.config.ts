@@ -1,4 +1,4 @@
-export const  TICKET_TABLE_HEADER = [
+export const TICKET_TABLE_HEADER = [
     {
         title: 'TITLE',
         isHiddenInMobile: false,

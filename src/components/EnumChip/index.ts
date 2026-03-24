@@ -1,0 +1,1 @@
+export { EnumChip } from './EnumChip.component';

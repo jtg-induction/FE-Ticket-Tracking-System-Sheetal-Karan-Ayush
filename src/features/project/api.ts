@@ -32,6 +32,7 @@ export const createProject = async (
             jira_project_key: project.jira_project_key.toUpperCase(),
             jira_url: `${project.jira_url.replace(/\/$/, '')}/browse/${project.jira_project_key}`,
             status: 1,
+            role: 1,
         };
 
         return formattedProject;
@@ -88,6 +89,7 @@ export const updateProject = async (
             jira_project_key: project.jira_project_key.toUpperCase(),
             jira_url: `${project.jira_url.replace(/\/$/, '')}/browse/${project.jira_project_key}`,
             status: 1,
+            role: 1,
         };
 
         return formattedProject;
@@ -101,6 +103,56 @@ export const deleteProject = async (projectKey: string): Promise<void> => {
         await api.delete(`/projects/`, {
             params: { project_key: projectKey },
         });
+    } catch (error: unknown) {
+        return handleApiError(error);
+    }
+};
+
+export const getAllProjects = async (): Promise<ProjectResponse[]> => {
+    try {
+        const response = await api.get<ProjectResponse[]>('/projects');
+
+        const projects = response.data;
+
+        const formattedProjects: ProjectResponse[] = projects.map(
+            (project) => ({
+                id: project.id,
+                title: project.title,
+                description: project.description || '',
+                jira_project_key: project.jira_project_key.toUpperCase(),
+                jira_url: `${project.jira_url.replace(/\/$/, '')}/browse/${project.jira_project_key}`,
+                status: project.status ?? 1,
+                role: project.role,
+            }),
+        );
+
+        return formattedProjects;
+    } catch (error: unknown) {
+        return handleApiError(error);
+    }
+};
+
+export const getProject = async (
+    projectKey: string,
+): Promise<ProjectResponse> => {
+    try {
+        const response = await api.get<ProjectResponse>(
+            `/projects/${projectKey}`,
+        );
+
+        const project = response.data;
+
+        const formattedProject: ProjectResponse = {
+            id: project.id,
+            title: project.title,
+            description: project.description || '',
+            jira_project_key: project.jira_project_key.toUpperCase(),
+            jira_url: `${project.jira_url.replace(/\/$/, '')}/browse/${project.jira_project_key}`,
+            status: project.status,
+            role: project.role,
+        };
+
+        return formattedProject;
     } catch (error: unknown) {
         return handleApiError(error);
     }

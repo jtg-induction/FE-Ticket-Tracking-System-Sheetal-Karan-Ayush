@@ -1,12 +1,12 @@
 import dayjs from 'dayjs';
 
 export type Filters = {
-    title: string;
-    assignee: string;
-    deadline: dayjs.Dayjs | null;
-    status: string;
+    title?: string;
+    assignee?: string;
+    deadline?: dayjs.Dayjs;
+    status?: number;
     sort: string;
-}
+};
 
 export type ProjectTicketFilterProps = {
     filters: Filters;

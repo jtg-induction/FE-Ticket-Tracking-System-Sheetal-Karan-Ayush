@@ -1,1 +1,1 @@
-export { VerifyOtpDialog } from './VerifyOtp.container'
+export { VerifyOtpDialog } from './VerifyOtp.container';

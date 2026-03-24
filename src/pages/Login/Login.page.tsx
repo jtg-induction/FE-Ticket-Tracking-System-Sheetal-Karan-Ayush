@@ -53,7 +53,7 @@ export const Login = () => {
         !isInvalidPassword;
 
     const loginMutation = useLoginMutation();
-     const navigate = useNavigate();
+    const navigate = useNavigate();
     const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
         e.preventDefault();
 
@@ -67,7 +67,7 @@ export const Login = () => {
                     localStorage.setItem('access_token', data.access_token);
                     localStorage.setItem('refresh_token', data.refresh_token);
                     void navigate('/project/create');
-                }
+                },
             },
         );
     };
@@ -131,7 +131,10 @@ export const Login = () => {
                         />
 
                         {loginMutation.isError && (
-                            <Typography variant='subtitle2' sx={{ color: theme.palette.error.contrastText }}>
+                            <Typography
+                                variant="subtitle2"
+                                sx={{ color: theme.palette.error.contrastText }}
+                            >
                                 {loginMutation.error.message}
                             </Typography>
                         )}
@@ -147,7 +150,8 @@ export const Login = () => {
                     </Stack>
 
                     <Typography textAlign={'center'}>
-                        {"Don't have an account?" }<NavLink to="/register">Register</NavLink>
+                        {"Don't have an account?"}
+                        <NavLink to="/register">Register</NavLink>
                     </Typography>
                 </StyledLoginCard>
                 {isDesktop && <HeroCard />}

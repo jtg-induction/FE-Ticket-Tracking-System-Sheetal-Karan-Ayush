@@ -28,11 +28,13 @@ import { CardBox } from './projectCreationPage.style';
 export const ProjectCreationPage = () => {
     const theme = useTheme();
     const navigate = useNavigate();
+    const [apiError, setApiError] = useState(false);
     const { createFormData, setCreateFormData, reset } = useProjectStore();
     const [errors, setErrors] = useState<Record<string, string>>({});
-    const [isUnique, setIsUnique] = useState<boolean | null>(null);
+    const [isUnique, setIsUnique] = useState<boolean>(false);
     const [showPassword, setShowPassword] = useState(false);
     const createProjectMutation = useCreateProject();
+    const isSubmitting = createProjectMutation.isPending;
     const checkKeyMutation = useCheckProjectKey();
     const [loading, setLoading] = useState(false);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -51,6 +53,7 @@ export const ProjectCreationPage = () => {
             });
             setIsUnique(res.valid);
         } catch (error: unknown) {
+            setApiError(true);
             if (axios.isAxiosError(error)) {
                 if (error.response && error.response.status === 502) {
                     setSnackbarMessage(
@@ -62,10 +65,12 @@ export const ProjectCreationPage = () => {
                     );
                 }
             } else {
-                setSnackbarMessage('An unexpected error occurred.');
+                setSnackbarMessage(
+                    'Unauthorized: Invalid Jira URL, Access Token, or Admin Email',
+                );
             }
             setSnackbarOpen(true);
-            setIsUnique(null);
+            setIsUnique(false);
         } finally {
             setLoading(false);
         }
@@ -81,7 +86,7 @@ export const ProjectCreationPage = () => {
 
         setCreateFormData({ [name]: value });
         setErrors((prev) => ({ ...prev, [name]: '' }));
-
+        setApiError(false);
         if (name === 'jira_project_key' && value.length >= 2) {
             void debouncedCheckKey(value);
         }
@@ -90,15 +95,18 @@ export const ProjectCreationPage = () => {
         createFormData.jira_project_key.length > 0 &&
         !/^[A-Za-z]{2,10}$/.test(createFormData.jira_project_key);
 
-    const isSubmitDisabled =
-        !createFormData.jira_project_key ||
-        isInvalidFormat ||
-        isUnique === false;
-
     const isKeyDisabled =
         !createFormData.jira_url ||
         !createFormData.access_token ||
         !createFormData.lead_email;
+
+    const isSubmitDisabled =
+        !createFormData.jira_project_key ||
+        isInvalidFormat ||
+        isUnique === false ||
+        apiError ||
+        isKeyDisabled ||
+        isSubmitting;
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -117,7 +125,7 @@ export const ProjectCreationPage = () => {
         createProjectMutation.mutate(result.data, {
             onSuccess: (newProject) => {
                 reset();
-                setIsUnique(null);
+                setIsUnique(false);
                 setErrors({});
                 useProjectStore.getState().setProject(newProject);
                 void navigate(`/project/${newProject.jira_project_key}`);
@@ -254,7 +262,11 @@ export const ProjectCreationPage = () => {
                     size="large"
                     disabled={isSubmitDisabled}
                 >
-                    Submit
+                    {isSubmitting ? (
+                        <CircularProgress size={22} color="inherit" />
+                    ) : (
+                        'Submit'
+                    )}
                 </Button>
                 <Snackbar
                     open={snackbarOpen}

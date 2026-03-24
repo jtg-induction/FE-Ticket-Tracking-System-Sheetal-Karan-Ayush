@@ -1,4 +1,4 @@
-import { AuthResponse } from "../schema";
+import { AuthResponse } from '../schema';
 
 export type AuthStore = {
     user: {
@@ -13,4 +13,4 @@ export type AuthStore = {
 
     setAuth: (data: AuthResponse) => void;
     clearAuth: () => void;
-} 
+};

@@ -4,3 +4,5 @@ export { useCheckProjectKey } from './useCheckKeyMutation';
 export { useProjectStore } from './projectStore';
 export { useUpdateProject } from './useUpdateProjectMutation';
 export { useDeleteProject } from './useDeleteProjectMutation';
+export { useGetMyProjects } from './useGetAllProjects';
+export { useGetProject } from './useGetProjectMutation';

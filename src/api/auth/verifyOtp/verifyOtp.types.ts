@@ -1,3 +1,4 @@
-import type { SignupInput } from "@api";
-
-export type OtpInput = SignupInput & {otp: number;}
+export type OtpInput = { 
+    otp: number;
+    email: string;
+};

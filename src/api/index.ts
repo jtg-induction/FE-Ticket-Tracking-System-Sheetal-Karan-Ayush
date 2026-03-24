@@ -1,4 +1,4 @@
 export { api } from './axios';
-export { inviteUserApi } from './inviteUser/inviteUserApi'
-export { loginUser, signupUser, type SignupInput } from './auth'
-export { handleApiError } from './apiErrorHandling'
+export { handleApiError } from './apiErrorHandling';
+export { inviteUserApi } from './inviteUser';
+export { loginUser, signupUser, type SignupInput } from './auth';
