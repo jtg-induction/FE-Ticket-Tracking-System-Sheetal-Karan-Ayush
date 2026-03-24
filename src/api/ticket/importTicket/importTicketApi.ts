@@ -1,20 +1,22 @@
 import { handleApiError } from '@api/apiErrorHandling';
 import { api } from '@api/axios';
 import {
-    GetTicketResponse,
-    ticketsResponseSchema,
+    GetTicketImportResponse,
+    ticketsImportResponseSchema,
 } from '@features/ticket/getAllTickets/getAllTickets.schema';
 import { TicketImportFormData } from '@features/ticket/importTicket/importTicket.schema';
 
 export const importTicket = async (
     data: TicketImportFormData,
-): Promise<GetTicketResponse> => {
+): Promise<GetTicketImportResponse> => {
     try {
         const response = await api.post(
-            `project/${data.projectKey}/ticket/${data.ticketKey}`,
+            `projects/${data.projectKey}/multiple-import`, {
+                ticket_keys: data.ticketKey
+            }
         );
 
-        const parsed = ticketsResponseSchema.safeParse(response.data);
+        const parsed = ticketsImportResponseSchema.safeParse(response.data);
 
         if (!parsed.success) {
             throw new Error('Invalid server response ');

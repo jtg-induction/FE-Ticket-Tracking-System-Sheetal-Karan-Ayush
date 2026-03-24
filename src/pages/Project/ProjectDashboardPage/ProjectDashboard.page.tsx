@@ -151,6 +151,7 @@ export const ProjectDashboardPage = () => {
     const [inputTicketKeyValue, setInputTicketKeyValue] = useState<string>('');
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        setImportError('')
         if (e.key === "Enter") {
             e.preventDefault();
             addTicketKey(inputTicketKeyValue);
@@ -511,6 +512,14 @@ export const ProjectDashboardPage = () => {
                             sx={{ color: theme.palette.error.contrastText }}
                         >
                             {importTicketMutation.error.message}
+                        </Typography>
+                    )}
+                    {importTicketMutation.isSuccess && (
+                        <Typography
+                            variant="subtitle2"
+                            sx={{ color: theme.palette.success.contrastText }}
+                        >
+                            {importTicketMutation.data.success_count} imported Successfully
                         </Typography>
                     )}
                 </DialogBox>

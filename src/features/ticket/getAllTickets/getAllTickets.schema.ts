@@ -35,6 +35,13 @@ export const ticketsResponseSchema = z.object({
     labels: z.array(z.string()),
 });
 
+export const ticketsImportResponseSchema = z.object({
+    total: z.int(),
+    success_count: z.int(),
+    failed_count: z.int(),
+    results: z.array(ticketsResponseSchema)
+})
+
 export const getTicketResponseSchema = z.object({
     id: z.int().nullable(),
     title: z.string(),
@@ -64,6 +71,7 @@ export const getAllTicketsResponseSchema = z.object({
 });
 
 export type GetTicketResponse = z.infer<typeof ticketsResponseSchema>;
+export type GetTicketImportResponse = z.infer<typeof ticketsImportResponseSchema>;
 export type GetTicketDetailsResponse = z.infer<typeof getTicketResponseSchema>;
 export type GetAllTicketsFormData = z.infer<typeof getAllTicketsRequestSchema>;
 export type GetAllTicketsResponse = z.infer<typeof getAllTicketsResponseSchema>;
