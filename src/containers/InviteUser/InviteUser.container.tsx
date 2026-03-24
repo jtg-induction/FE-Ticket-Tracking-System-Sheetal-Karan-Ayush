@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+import { useParams } from 'react-router-dom';
+
 import {
     Button,
     FormControl,
@@ -20,17 +22,18 @@ import { theme } from '@theme';
 
 import { InviteUserProps, UserRole } from './InviteUser.types';
 
-export const InviteUser = ({open, onClose} : InviteUserProps) => {
+export const InviteUser = ({open, onClose, projectId} : InviteUserProps) => {
     const [email, setEmail] = useState('');
     const [role, setRole] = useState<UserRole>(1);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const inviteMutation = useInviteUserMutation();
+    const { projectKey } = useParams<{ projectKey: string }>();
     const inviteOnClick = () => {
         const formData = {
             email,
             role,
             project_id: projectId,
-            project
+            project_key: projectKey as string,
         };
 
         const result = inviteUserRequestSchema.safeParse(formData);
@@ -97,6 +100,16 @@ export const InviteUser = ({open, onClose} : InviteUserProps) => {
                         />
                     </RadioGroup>
                 </FormControl>
+                {inviteMutation.isError && (
+                    <Typography variant='subtitle2' sx={{ color: theme.palette.error.contrastText }}>
+                        {inviteMutation.error.message}
+                    </Typography>
+                )}
+                {inviteMutation.isSuccess && (
+                    <Typography variant='subtitle2' sx={{ color: theme.palette.success.contrastText }}>
+                        {inviteMutation.data.message}
+                    </Typography>
+                )}
             </AppDialog>
         </>
     );

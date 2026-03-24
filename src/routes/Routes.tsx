@@ -1,6 +1,6 @@
-import { createBrowserRouter, RouteObject } from 'react-router-dom';
+import { createBrowserRouter, Navigate, RouteObject } from 'react-router-dom';
 
-import { Layout } from '@containers';
+import { DownloadProjectReportDialog, Layout } from '@containers';
 import {
     CreateTicket,
     Login,
@@ -24,11 +24,15 @@ const routes: RouteObject[] = [
 
                 children: [
                     {
-                        path: '/user',
+                        path: 'user',
                         element: <UserReportPage />,
                     },
                     {
                         index: true,
+                        element: <Navigate to="project/create" />,
+                    },
+                    {
+                        path: 'project/create',
                         element: <ProjectCreationPage />,
                     },
                     {
@@ -42,6 +46,11 @@ const routes: RouteObject[] = [
                     {
                         path: 'project/:projectKey/ticket/:ticketKey',
                         element: <TicketDetails />,
+                    },
+                    // just adding route temporarily else it would be shown in dialog box in project dashboard page itself
+                    {
+                        path: 'project/:projectKey/reports/download',
+                        element: <DownloadProjectReportDialog />,
                     },
                     {
                         path: 'project/:projectKey/user/:userId',

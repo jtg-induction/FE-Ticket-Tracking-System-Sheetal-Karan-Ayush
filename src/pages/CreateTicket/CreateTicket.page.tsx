@@ -232,13 +232,6 @@ export const CreateTicket = () => {
                         )}
                     </Button>
                 </FormControl>
-                <Typography align="center">
-                    Click{' '}
-                    <NavLink to="/ticket/import" color="inherit">
-                        here
-                    </NavLink>{' '}
-                    to import ticket from Jira.
-                </Typography>
             </Stack>
         </StyledWrapper>
     );

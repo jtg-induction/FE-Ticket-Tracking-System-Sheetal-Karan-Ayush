@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import DownloadIcon from '@mui/icons-material/Download';
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import {
     Badge,
@@ -33,6 +34,7 @@ import {
     ProjectTicketFilters,
     SectionLayout,
 } from '@components';
+import { InviteUser } from '@containers/InviteUser';
 import {
     useDeleteProject,
     useGetProject,
@@ -75,7 +77,7 @@ import {
     StyledTableRow,
     StyledUpperBox,
 } from './ProjectDashboardPage.style';
-import { InviteUser } from '@containers/InviteUser';
+import { Delete } from '@mui/icons-material';
 
 export const ProjectDashboardPage = () => {
     const {
@@ -311,11 +313,18 @@ export const ProjectDashboardPage = () => {
                                 Create ticket
                             </StyledButton>
                             <StyledButton
+                                sx={{padding: theme.spacing(0)}}
                                 onClick={() => void setIsInviteDialogOpen(true)}
-                            >
-                                
+                            >    
                                 <PersonAddAltIcon/>
                             </StyledButton>
+                            <StyledButton
+                                sx={{padding: theme.spacing(0)}}
+                                onClick={() => void navigate(`/project/${projectKey}/reports/download`)}
+                            >    
+                                <DownloadIcon />
+                            </StyledButton>
+                            
                         </StyledRightBox>
                     )}
                 </StyledUpperBox>
@@ -642,7 +651,7 @@ export const ProjectDashboardPage = () => {
                         </Typography>
                     )}
                 </DialogBox>
-                <InviteUser open={isInviteDialogOpen} onClose={() => setIsInviteDialogOpen(false)} />
+                <InviteUser open={isInviteDialogOpen} onClose={() => setIsInviteDialogOpen(false)} projectId={project?.id}/>
             </SectionLayout>
         </>
     );
