@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 
-import { deleteTicket } from '@api/ticket/deleteTicket.Api.ts/deleteTicketApi';
+import { deleteTicket } from '@api/ticket/deleteTicket/deleteTicketApi';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { TicketDeleteRequest } from './deleteTicket.schema';

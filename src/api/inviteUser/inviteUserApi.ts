@@ -22,7 +22,7 @@ export const inviteUserApi = async (
 ): Promise<InviteUserResponse> => {
     try {
         const response = await api.post<InviteUserResponse>(
-            '/api/project/invite',
+            '/projects/invite',
             data,
         );
         return response.data;

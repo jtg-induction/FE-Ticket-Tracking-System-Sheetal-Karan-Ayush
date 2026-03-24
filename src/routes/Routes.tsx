@@ -28,7 +28,7 @@ const routes: RouteObject[] = [
                         element: <UserReportPage />,
                     },
                     {
-                        path: 'project/create',
+                        index: true,
                         element: <ProjectCreationPage />,
                     },
                     {

@@ -7,7 +7,6 @@ type AuthStore = {
         id: number;
         name: string;
         email: string;
-        avatarId: number;
     } | null;
 
     accessToken: string | null;
@@ -27,7 +26,6 @@ export const useAuthStore = create<AuthStore>((set) => ({
                 id: data.id,
                 name: data.name,
                 email: data.email,
-                avatarId: data.avatar_id,
             },
             accessToken: data.access_token,
             refreshToken: data.refresh_token,

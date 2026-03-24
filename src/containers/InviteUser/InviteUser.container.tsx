@@ -18,20 +18,19 @@ import {
 } from '@features/inviteUser';
 import { theme } from '@theme';
 
-import { UserRole } from './InviteUser.types';
+import { InviteUserProps, UserRole } from './InviteUser.types';
 
-export const InviteUser = () => {
-    const [open, setOpen] = useState(true);
+export const InviteUser = ({open, onClose} : InviteUserProps) => {
     const [email, setEmail] = useState('');
     const [role, setRole] = useState<UserRole>(1);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const inviteMutation = useInviteUserMutation();
-    const projectId = 1;
     const inviteOnClick = () => {
         const formData = {
             email,
             role,
             project_id: projectId,
+            project
         };
 
         const result = inviteUserRequestSchema.safeParse(formData);
@@ -53,7 +52,7 @@ export const InviteUser = () => {
         <>
             <AppDialog
                 open={open}
-                onClose={() => setOpen(false)}
+                onClose={onClose}
                 title="Invite User"
                 actions={
                     <Button variant="contained" onClick={inviteOnClick}>

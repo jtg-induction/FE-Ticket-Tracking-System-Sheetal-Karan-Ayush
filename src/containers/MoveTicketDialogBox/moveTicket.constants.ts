@@ -1,0 +1,2 @@
+export const MIN_PROJECT_KEY_LENGTH = 2
+export const MAX_PROJECT_KEY_LENGTH = 10

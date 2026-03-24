@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import {
     Badge,
     Box,
@@ -74,6 +75,7 @@ import {
     StyledTableRow,
     StyledUpperBox,
 } from './ProjectDashboardPage.style';
+import { InviteUser } from '@containers/InviteUser';
 
 export const ProjectDashboardPage = () => {
     const {
@@ -100,6 +102,7 @@ export const ProjectDashboardPage = () => {
     const { mutate: deleteProject } = useDeleteProject();
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
+    const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
     const [filters, setFilters] = useState<Filters>(defaultFilters);
     const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
     const [importTicketKeys, setImportTicketKeys] = useState<string[]>([]);
@@ -306,6 +309,12 @@ export const ProjectDashboardPage = () => {
                                 onClick={() => void navigate('ticket/create')}
                             >
                                 Create ticket
+                            </StyledButton>
+                            <StyledButton
+                                onClick={() => void setIsInviteDialogOpen(true)}
+                            >
+                                
+                                <PersonAddAltIcon/>
                             </StyledButton>
                         </StyledRightBox>
                     )}
@@ -633,6 +642,7 @@ export const ProjectDashboardPage = () => {
                         </Typography>
                     )}
                 </DialogBox>
+                <InviteUser open={isInviteDialogOpen} onClose={() => setIsInviteDialogOpen(false)} />
             </SectionLayout>
         </>
     );
