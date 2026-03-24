@@ -55,9 +55,7 @@ import { TicketConstToStatusMap } from '@pages/TicketDetails/TicketDetails.util'
 import { useQueryClient } from '@tanstack/react-query';
 import { theme } from '@theme';
 
-import {
-    TICKET_TABLE_HEADER,
-} from './ProjectDashboard.config';
+import { TICKET_TABLE_HEADER } from './ProjectDashboard.config';
 import {
     ChartLoadingContainer,
     ChartNoDataContainer,
@@ -120,7 +118,7 @@ export const ProjectDashboardPage = () => {
             [field]: value,
         }));
     };
-    
+
     const [filterType, setFilterType] = useState('Custom');
     const [jqlQuery, setJqlQuery] = useState('');
 
@@ -128,12 +126,14 @@ export const ProjectDashboardPage = () => {
         projectKey as string,
         {
             ...filters,
-            deadline: filters.deadline ? filters.deadline.toISOString() : undefined,
+            deadline: filters.deadline
+                ? filters.deadline.toISOString()
+                : undefined,
             limit: 10,
         },
         {
-            enabled: filterType !== 'JQL'
-        }
+            enabled: filterType !== 'JQL',
+        },
     );
 
     const jqlSearchTickets = useJqlSearchTickets(
@@ -143,19 +143,15 @@ export const ProjectDashboardPage = () => {
             limit: 10,
         },
         {
-            enabled: filterType === 'JQL'
-        }
+            enabled: filterType === 'JQL',
+        },
     );
-    
-    const {
-        data,
-        fetchNextPage,
-        hasNextPage,
-        isLoading,
-    } = (filterType == 'JQL') ? jqlSearchTickets : getAllTickets;
+
+    const { data, fetchNextPage, hasNextPage, isLoading } =
+        filterType == 'JQL' ? jqlSearchTickets : getAllTickets;
 
     const handleImportKeyDelete = (key: string) => {
-        setImportTicketKeys(prev => prev.filter(k => k !== key));
+        setImportTicketKeys((prev) => prev.filter((k) => k !== key));
     };
 
     const addTicketKey = (value: string) => {
@@ -164,21 +160,22 @@ export const ProjectDashboardPage = () => {
 
         if (importTicketKeys.includes(key)) return;
 
-        setImportTicketKeys(prev => [...prev, key]);
+        setImportTicketKeys((prev) => [...prev, key]);
     };
 
     const [inputTicketKeyValue, setInputTicketKeyValue] = useState<string>('');
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        setImportError('')
-        if (e.key === "Enter") {
+        setImportError('');
+        if (e.key === 'Enter') {
             e.preventDefault();
             addTicketKey(inputTicketKeyValue);
-            setInputTicketKeyValue("");
+            setInputTicketKeyValue('');
         }
     };
     const [userSidebarOpen, setUserSidebarOpen] = useState(false);
 
+  
     const handleOpenProjectDialog = () => {
         if (project) {
             setUpdateFormData({
@@ -216,11 +213,10 @@ export const ProjectDashboardPage = () => {
     };
     const { data: statusCounts, isLoading: statusLoading } =
         useTicketStatusStats(projectKey);
-
     const { data: priorityCounts, isLoading: priorityLoading } =
-        useTicketPriorityStats(projectKey);
+              useTicketPriorityStats(projectKey);
     const { data: deadlineCounts, isLoading: deadlineLoading } =
-        useTicketDeadlineStats(projectKey);
+                  useTicketDeadlineStats(projectKey);
 
     const statusChartData = useMemo(() => {
         if (!statusCounts) return null;
@@ -229,7 +225,7 @@ export const ProjectDashboardPage = () => {
             count: item.count,
         }));
     }, [statusCounts]);
-
+    
     const priorityChartData = useMemo(() => {
         if (!priorityCounts) return null;
         return priorityCounts.map((item) => ({
@@ -238,6 +234,15 @@ export const ProjectDashboardPage = () => {
         }));
     }, [priorityCounts]);
 
+    const deadlineChartData = useMemo(() => {
+        if (!deadlineCounts) return null;
+        return deadlineCounts.map((item) => ({
+            day_difference: item.day_difference,
+            count: item.count,
+        }));
+    }, [deadlineCounts]);
+
+    
     const [importError, setImportError] = useState<string>('');
 
     const handleImportTicket = () => {
@@ -248,26 +253,30 @@ export const ProjectDashboardPage = () => {
         const result = importTicketRequestSchema.safeParse(requestData);
 
         if (!result.success) {
-            const fieldError = result.error.issues[0].message
+            const fieldError = result.error.issues[0].message;
             setImportError(fieldError);
             return;
         }
 
         importTicketMutation.mutate(result.data);
     };
-    
+
     const handleJqlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setJqlQuery(event.target.value);
     };
 
     useEffect(() => {
         if (filterType == 'JQL') {
-            queryClient.removeQueries({ queryKey: ['tickets', 'list', projectKey] });
+            queryClient.removeQueries({
+                queryKey: ['tickets', 'list', projectKey],
+            });
         } else {
-            queryClient.removeQueries({ queryKey: ['tickets', 'jql', projectKey] });
+            queryClient.removeQueries({
+                queryKey: ['tickets', 'jql', projectKey],
+            });
         }
     }, [filterType, projectKey, queryClient]);
-    
+
     return (
         <>
             <StyledHeader>
@@ -277,7 +286,9 @@ export const ProjectDashboardPage = () => {
                             {project?.title}
                         </ClampedTooltipText>
                         <StatusBadge
-                            label={project?.status === 2 ? 'Archived' : 'Active'}
+                            label={
+                                project?.status === 2 ? 'Archived' : 'Active'
+                            }
                             ownerState={{
                                 archived: project?.status === 2,
                             }}
@@ -301,49 +312,56 @@ export const ProjectDashboardPage = () => {
                         )}
                         <Badge />
                     </StyledLeftBox>
-                    
-                        <StyledRightBox>
-                        {!isDeveloper && project?.status!=2 && (
-                                <>
-                                    <StyledButton
-                                        variant="contained"
-                                        onClick={() => setIsImportDialogOpen(true)}
-                                    >
-                                        Import ticket
-                                    </StyledButton>
-                                    <StyledButton
-                                        variant="contained"
-                                        onClick={() => void navigate('ticket/create')}
-                                    >
-                                        Create ticket
-                                    </StyledButton>
-                                    <StyledButton
-                                        sx={{padding: theme.spacing(0)}}
-                                        onClick={() => void setIsInviteDialogOpen(true)}
-                                    >    
-                                        <PersonAddAltIcon/>
-                                    </StyledButton>
 
-                                </>
-                                
-                            )} 
-                                    <StyledButton
-                                        sx={{padding: theme.spacing(0)}}
-                                        onClick={() => void navigate(`/project/${projectKey}/reports/download`)}
-                                    >    
-                                        <DownloadIcon />
-                                    </StyledButton>
-                            <StyledButton
-                                sx={{padding: theme.spacing(0)}}
-                                onClick={() => setUserSidebarOpen((prev) => !prev)}
-                            >  
-                                <UserSidebarIcon />
-                            </StyledButton>                           
-                        </StyledRightBox>
-
+                    <StyledRightBox>
+                        {!isDeveloper && project?.status != 2 && (
+                            <>
+                                <StyledButton
+                                    variant="contained"
+                                    onClick={() => setIsImportDialogOpen(true)}
+                                >
+                                    Import ticket
+                                </StyledButton>
+                                <StyledButton
+                                    variant="contained"
+                                    onClick={() =>
+                                        void navigate('ticket/create')
+                                    }
+                                >
+                                    Create ticket
+                                </StyledButton>
+                                <StyledButton
+                                    sx={{ padding: theme.spacing(0) }}
+                                    onClick={() =>
+                                        void setIsInviteDialogOpen(true)
+                                    }
+                                >
+                                    <PersonAddAltIcon />
+                                </StyledButton>
+                            </>
+                        )}
+                        <StyledButton
+                            sx={{ padding: theme.spacing(0) }}
+                            onClick={() =>
+                                void navigate(
+                                    `/project/${projectKey}/reports/download`,
+                                )
+                            }
+                        >
+                            <DownloadIcon />
+                        </StyledButton>
+                        <StyledButton
+                            sx={{ padding: theme.spacing(0) }}
+                            onClick={() => setUserSidebarOpen((prev) => !prev)}
+                        >
+                            <UserSidebarIcon />
+                        </StyledButton>
+                    </StyledRightBox>
                 </StyledUpperBox>
                 <StyledLowerBox>
-                    <Typography variant="body2">{project?.description}</Typography>
+                    <Typography variant="body2">
+                        {project?.description}
+                    </Typography>
                 </StyledLowerBox>
             </StyledHeader>
             <Divider />
@@ -372,7 +390,6 @@ export const ProjectDashboardPage = () => {
                         )}
                     </Grid2>
 
-
                     <Grid2 size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
                         {priorityLoading ? (
                             <ChartLoadingContainer>
@@ -399,11 +416,12 @@ export const ProjectDashboardPage = () => {
                             <LineChartLoadingContainer>
                                 <CircularProgress />
                             </LineChartLoadingContainer>
-                        ) : deadlineCounts && deadlineCounts.length > 0 ? (
+                        ) : deadlineChartData &&
+                          deadlineChartData.length > 0 ? (
                             <ChartCard
                                 title="Ticket Deadline Performance"
                                 type="line"
-                                data={deadlineCounts}
+                                data={deadlineChartData}
                                 dataKey="count"
                                 xKey="day_difference"
                                 xAxisLabel="Days difference (negative = early, positive = late)"
@@ -421,15 +439,20 @@ export const ProjectDashboardPage = () => {
                     open={userSidebarOpen}
                     onClose={() => setUserSidebarOpen(false)}
                 />
-                <Box sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' }, 
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: 2,
-                    width: '100%'
-                }}>
-                    <FormControl variant="outlined" sx={{ minWidth: 120, marginBottom: 2, marginRight: 2 }}>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexDirection: { xs: 'column', md: 'row' },
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: 2,
+                        width: '100%',
+                    }}
+                >
+                    <FormControl
+                        variant="outlined"
+                        sx={{ minWidth: 120, marginBottom: 2, marginRight: 2 }}
+                    >
                         <InputLabel>Filter Type</InputLabel>
                         <Select
                             value={filterType}
@@ -441,20 +464,21 @@ export const ProjectDashboardPage = () => {
                         </Select>
                     </FormControl>
 
-                    {filterType === 'JQL' ? ( <>
-                        <TextField
-                            label="Enter JQL(Project Key is pre included)"
-                            variant="outlined"
-                            fullWidth
-                            value={jqlQuery}
-                            onChange={handleJqlChange}
-                            sx={{
-                                marginBottom: 2,  
-                                minWidth: theme.spacing(75),
-                                maxWidth: theme.spacing(200),
-                            }}
-                        />
-                    </>
+                    {filterType === 'JQL' ? (
+                        <>
+                            <TextField
+                                label="Enter JQL(Project Key is pre included)"
+                                variant="outlined"
+                                fullWidth
+                                value={jqlQuery}
+                                onChange={handleJqlChange}
+                                sx={{
+                                    marginBottom: 2,
+                                    minWidth: theme.spacing(75),
+                                    maxWidth: theme.spacing(200),
+                                }}
+                            />
+                        </>
                     ) : (
                         <ProjectTicketFilters
                             filters={filters}
@@ -494,7 +518,7 @@ export const ProjectDashboardPage = () => {
                                 })}
                             </StyledTableRow>
                         </TableHead>
-                         <StyledTableBody>
+                        <StyledTableBody>
                             {isLoading ? (
                                 <TableRow>
                                     <TableCell colSpan={4} align="center">
@@ -504,38 +528,58 @@ export const ProjectDashboardPage = () => {
                             ) : isError ? (
                                 <TableRow>
                                     <TableCell colSpan={4} align="center">
-                                        Error loading tickets. Please try again later.
+                                        Error loading tickets. Please try again
+                                        later.
                                     </TableCell>
                                 </TableRow>
-                            ) : data?.pages?.length? (
+                            ) : data?.pages?.length ? (
                                 data.pages
                                     .flatMap((page) => page.tickets)
                                     .map((ticket) => (
                                         <TableRow
                                             key={ticket.id}
                                             onClick={() => {
-                                                void navigate(`ticket/${ticket.jira_ticket_key}`);
+                                                void navigate(
+                                                    `ticket/${ticket.jira_ticket_key}`,
+                                                );
                                             }}
                                             style={{ cursor: 'pointer' }}
                                         >
-                                            <TableCell component="th" scope="row">
+                                            <TableCell
+                                                component="th"
+                                                scope="row"
+                                            >
                                                 {ticket.title}
                                             </TableCell>
                                             <TableCell>
-                                                <Typography variant="body2" color="text.secondary">
+                                                <Typography
+                                                    variant="body2"
+                                                    color="text.secondary"
+                                                >
                                                     {ticket.assignee}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell>
                                                 <Typography variant="body2">
                                                     {ticket.deadline
-                                                        ? dayjs(ticket.deadline).format('MMM DD, YYYY')
+                                                        ? dayjs(
+                                                              ticket.deadline,
+                                                          ).format(
+                                                              'MMM DD, YYYY',
+                                                          )
                                                         : 'N/A'}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell>
-                                                <Typography variant="body2" color="text.secondary">
-                                                    {TicketConstToStatusMap[ticket.status]}
+                                                <Typography
+                                                    variant="body2"
+                                                    color="text.secondary"
+                                                >
+                                                    {
+                                                        TicketConstToStatusMap[
+                                                            ticket.status
+                                                        ]
+                                                    }
                                                 </Typography>
                                             </TableCell>
                                         </TableRow>
@@ -548,14 +592,17 @@ export const ProjectDashboardPage = () => {
                                 </TableRow>
                             )}
                         </StyledTableBody>
-                
                     </StyledTable>
                 </StyledTableContainer>
 
                 {/* Load More Button */}
                 {hasNextPage && (
                     <Box display="flex" my={2}>
-                        <Button variant="outlined" onClick={() => void fetchNextPage()} disabled={isLoading}>
+                        <Button
+                            variant="outlined"
+                            onClick={() => void fetchNextPage()}
+                            disabled={isLoading}
+                        >
                             {isLoading ? 'Loading...' : 'Load More'}
                         </Button>
                     </Box>
@@ -599,7 +646,9 @@ export const ProjectDashboardPage = () => {
                                 <Switch
                                     checked={updateFormData?.status === 2}
                                     onChange={(e) => {
-                                        const newStatus = e.target.checked ? 2 : 1;
+                                        const newStatus = e.target.checked
+                                            ? 2
+                                            : 1;
                                         setUpdateFormData({
                                             status: newStatus,
                                         });
@@ -607,7 +656,11 @@ export const ProjectDashboardPage = () => {
                                     color="error"
                                 />
                             }
-                            label={updateFormData?.status === 2 ? 'Archived' : 'Active'}
+                            label={
+                                updateFormData?.status === 2
+                                    ? 'Archived'
+                                    : 'Active'
+                            }
                         />
                     </Box>
                 </DialogBox>
@@ -629,28 +682,37 @@ export const ProjectDashboardPage = () => {
                     submitText="Import"
                     cancelText="Cancel"
                 >
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: 1,
+                            mb: 2,
+                        }}
+                    >
                         {importTicketKeys.map((key) => (
                             <Chip
                                 key={key}
                                 label={key}
                                 onDelete={() => handleImportKeyDelete(key)}
-                                sx={{mb: 2}}
+                                sx={{ mb: 2 }}
                             />
                         ))}
 
-                        {importTicketKeys.length <= 10 && 
+                        {importTicketKeys.length <= 10 && (
                             <StyledErrorTextField
                                 variant="outlined"
                                 placeholder="Type ticket key and press Enter"
                                 value={inputTicketKeyValue}
-                                onChange={(e) => setInputTicketKeyValue(e.target.value)}
+                                onChange={(e) =>
+                                    setInputTicketKeyValue(e.target.value)
+                                }
                                 onKeyDown={handleKeyDown}
-                                sx={{width:"100%"}}
+                                sx={{ width: '100%' }}
                                 error={!!importError}
                                 helperText={importError}
                             />
-                        }
+                        )}
                     </Box>
                     {importTicketMutation.isError && (
                         <Typography
@@ -665,11 +727,16 @@ export const ProjectDashboardPage = () => {
                             variant="subtitle2"
                             sx={{ color: theme.palette.success.contrastText }}
                         >
-                            {importTicketMutation.data.success_count} imported Successfully
+                            {importTicketMutation.data.success_count} imported
+                            Successfully
                         </Typography>
                     )}
                 </DialogBox>
-                <InviteUser open={isInviteDialogOpen} onClose={() => setIsInviteDialogOpen(false)} projectId={project?.id}/>
+                <InviteUser
+                    open={isInviteDialogOpen}
+                    onClose={() => setIsInviteDialogOpen(false)}
+                    projectId={project?.id}
+                />
             </SectionLayout>
         </>
     );

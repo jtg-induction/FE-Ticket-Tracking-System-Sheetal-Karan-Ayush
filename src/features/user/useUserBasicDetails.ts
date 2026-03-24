@@ -13,13 +13,15 @@ export const useUserBasicDetails = (enabled = true) => {
         enabled,
         staleTime: 5 * 60 * 1000, 
     });
-
+    
     useEffect(() => {
         if (query.isSuccess && query.data) {
             setAuth({
                 id: query.data.id,
                 name: query.data.name,
                 email: query.data.email,
+                access_token: localStorage.getItem("access_token") as string,
+                refresh_token: localStorage.getItem("refresh_token") as string
             });
         }
     }, [query.isSuccess, query.data, setAuth]);

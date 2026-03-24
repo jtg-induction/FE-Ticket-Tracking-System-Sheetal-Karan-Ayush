@@ -71,7 +71,7 @@ export type UserReportFilters = {
 }
 
 export type UserBasicDetails = {
-    id: string;
+    id: number;
     email: string;
     name: string;
 };

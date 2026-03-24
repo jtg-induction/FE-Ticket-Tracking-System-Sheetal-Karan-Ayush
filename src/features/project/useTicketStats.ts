@@ -15,7 +15,7 @@ export const useTicketDeadlineStats = (projectKey?: string) =>
 
 export const useTicketStatusStats = (projectKey?: string) =>
     useQuery({
-        queryKey: ['ticket-deadline-stats', projectKey],
+        queryKey: ['ticket-status-stats', projectKey],
         queryFn: () => getTicketStatusStats(projectKey!),
         enabled: !!projectKey,
     });

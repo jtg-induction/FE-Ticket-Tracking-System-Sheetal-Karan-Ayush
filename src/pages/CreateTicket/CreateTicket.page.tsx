@@ -26,7 +26,6 @@ import { useTicketStore } from '@features/ticket/store/ticketStore';
 
 import {
     ticketPriorityOptions,
-    ticketStatusOptions,
     ticketTypeOptions,
 } from './CreateTicket.config';
 import { StyledErrorTextField, StyledWrapper } from './CreateTicket.styles';
@@ -35,7 +34,6 @@ export const CreateTicket = () => {
     const theme = useTheme();
 
     const [ticketType, setTicketType] = useState(1);
-    const [ticketStatus, setTicketStatus] = useState(1);
     const [ticketPriority, setTicketPriority] = useState(1);
     const [deadline, setDeadline] = React.useState<dayjs.Dayjs | null>(null);
     const { createFormData, setCreateFormData } = useTicketStore();
@@ -129,16 +127,6 @@ export const CreateTicket = () => {
                             onChange={setTicketType}
                             error={!!errors.ticket_type}
                             helperText={errors.ticket_type}
-                        />
-
-                        {/* status */}
-                        <SelectInput
-                            label="Ticket Status"
-                            name="status"
-                            value={ticketStatus}
-                            options={ticketStatusOptions}
-                            error={!!errors.status}
-                            onChange={setTicketStatus}
                         />
 
                         {/* priority*/}

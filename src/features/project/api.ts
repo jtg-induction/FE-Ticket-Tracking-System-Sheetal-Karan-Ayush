@@ -117,9 +117,7 @@ export const updateProject = async (
 
 export const deleteProject = async (projectKey: string): Promise<void> => {
     try {
-        await api.delete(`/projects/`, {
-            params: { project_key: projectKey },
-        });
+        await api.delete(`/projects/${projectKey}`);
     } catch (error: unknown) {
         return handleApiError(error);
     }

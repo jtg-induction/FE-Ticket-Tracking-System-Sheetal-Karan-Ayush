@@ -9,7 +9,7 @@ type UseUserReportPdfProps = {
 }
 type UseUserReportPdfVariables = {
     filters: UserReportFilters;
-    email: string;
+    email?: string;
     projectKey?: string;
 }
 export const useUserReportPdf = (options?: UseUserReportPdfProps) => {
@@ -19,7 +19,7 @@ export const useUserReportPdf = (options?: UseUserReportPdfProps) => {
             email,
             projectKey,
         }: UseUserReportPdfVariables) =>
-            getUserReportPdf(filters, email, projectKey),
+            getUserReportPdf(filters, email as string, projectKey),
         onSuccess: (blob: Blob, variables) => {
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
