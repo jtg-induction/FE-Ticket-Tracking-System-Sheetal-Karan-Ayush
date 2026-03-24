@@ -56,7 +56,7 @@ export const ticketCreateSchema = z.object({
             message: 'Each label must be at most 20 characters long.',
         }),
     project_key: z.string(),
-    deadline: z.string().optional(),
+    deadline: z.string().nullable(),
 });
 
 export const ticketResponseSchema = z.object({

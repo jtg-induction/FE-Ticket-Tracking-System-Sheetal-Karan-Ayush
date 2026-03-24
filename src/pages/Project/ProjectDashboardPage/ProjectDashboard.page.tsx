@@ -3,7 +3,9 @@ import { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { Delete } from '@mui/icons-material';
 import DownloadIcon from '@mui/icons-material/Download';
+import UserSidebarIcon from '@mui/icons-material/PeopleAlt';
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import {
     Badge,
@@ -35,6 +37,7 @@ import {
     SectionLayout,
 } from '@components';
 import { InviteUser } from '@containers/InviteUser';
+import { UserSidebar } from '@containers/UsersList/UsersList.container';
 import {
     useDeleteProject,
     useGetProject,
@@ -77,7 +80,6 @@ import {
     StyledTableRow,
     StyledUpperBox,
 } from './ProjectDashboardPage.style';
-import { Delete } from '@mui/icons-material';
 
 export const ProjectDashboardPage = () => {
     const {
@@ -145,6 +147,7 @@ export const ProjectDashboardPage = () => {
             enabled: filterType === 'JQL'
         }
     );
+    
     const {
         data,
         fetchNextPage,
@@ -175,6 +178,7 @@ export const ProjectDashboardPage = () => {
             setInputTicketKeyValue("");
         }
     };
+    const [userSidebarOpen, setUserSidebarOpen] = useState(false);
 
     const handleOpenProjectDialog = () => {
         if (project) {
@@ -298,35 +302,46 @@ export const ProjectDashboardPage = () => {
                         )}
                         <Badge />
                     </StyledLeftBox>
-                    {!isDeveloper && (
+                    
                         <StyledRightBox>
-                            <StyledButton
-                                variant="contained"
-                                onClick={() => setIsImportDialogOpen(true)}
-                            >
-                                Import ticket
-                            </StyledButton>
-                            <StyledButton
-                                variant="contained"
-                                onClick={() => void navigate('ticket/create')}
-                            >
-                                Create ticket
-                            </StyledButton>
+                            {!isDeveloper && (
+                                <>
+                                    <StyledButton
+                                        variant="contained"
+                                        onClick={() => setIsImportDialogOpen(true)}
+                                    >
+                                        Import ticket
+                                    </StyledButton>
+                                    <StyledButton
+                                        variant="contained"
+                                        onClick={() => void navigate('ticket/create')}
+                                    >
+                                        Create ticket
+                                    </StyledButton>
+                                    <StyledButton
+                                        sx={{padding: theme.spacing(0)}}
+                                        onClick={() => void setIsInviteDialogOpen(true)}
+                                    >    
+                                        <PersonAddAltIcon/>
+                                    </StyledButton>
+                                    <StyledButton
+                                        sx={{padding: theme.spacing(0)}}
+                                        onClick={() => void navigate(`/project/${projectKey}/reports/download`)}
+                                    >    
+                                        <DownloadIcon />
+                                    </StyledButton>
+
+                                </>
+                                
+                            )} 
                             <StyledButton
                                 sx={{padding: theme.spacing(0)}}
-                                onClick={() => void setIsInviteDialogOpen(true)}
-                            >    
-                                <PersonAddAltIcon/>
-                            </StyledButton>
-                            <StyledButton
-                                sx={{padding: theme.spacing(0)}}
-                                onClick={() => void navigate(`/project/${projectKey}/reports/download`)}
-                            >    
-                                <DownloadIcon />
-                            </StyledButton>
-                            
+                                onClick={() => setUserSidebarOpen((prev) => !prev)}
+                            >  
+                                <UserSidebarIcon />
+                            </StyledButton>                           
                         </StyledRightBox>
-                    )}
+
                 </StyledUpperBox>
                 <StyledLowerBox>
                     <Typography variant="body2">{project?.description}</Typography>
@@ -403,6 +418,10 @@ export const ProjectDashboardPage = () => {
                         )}
                     </Grid2>
                 </Grid2>
+                <UserSidebar
+                    open={userSidebarOpen}
+                    onClose={() => setUserSidebarOpen(false)}
+                />
                 <Box sx={{
                     display: 'flex',
                     flexDirection: { xs: 'column', md: 'row' }, 

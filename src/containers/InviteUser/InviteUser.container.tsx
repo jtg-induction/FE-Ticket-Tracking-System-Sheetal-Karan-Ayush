@@ -32,7 +32,7 @@ export const InviteUser = ({open, onClose, projectId} : InviteUserProps) => {
         const formData = {
             email,
             role,
-            project_id: projectId,
+            project_id: projectId as number,
             project_key: projectKey as string,
         };
 
