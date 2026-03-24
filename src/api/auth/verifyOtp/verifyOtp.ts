@@ -17,12 +17,8 @@ import { OtpInput } from './verifyOtp.types';
  * @throws Will throw an error if the server response is invalid or if an API request error occurs.
  */
 
-export const verifyOtp = async (data: OtpInput): Promise<AuthResponse> => {
+export const verifyOtp = async (payload: OtpInput): Promise<AuthResponse> => {
     try {
-        const payload = {
-            email: data.email,
-            otp: data.otp,
-        };
         const response = await api.post('/api/auth/verify-email', payload);
         const parsed = authResponseSchema.safeParse(response.data);
 

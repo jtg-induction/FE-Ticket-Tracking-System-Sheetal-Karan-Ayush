@@ -3,7 +3,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { TicketImportFormData } from './importTicket.schema';
 
-
 export const useImportTicketMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({

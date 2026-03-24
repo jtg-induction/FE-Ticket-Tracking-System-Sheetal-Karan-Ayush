@@ -53,7 +53,7 @@ export const ticketCreateSchema = z.object({
         .min(1, 'At least one label is required.')
         .max(10, 'You can assign a maximum of 10 labels.')
         .refine((labels) => labels.every((label) => label.length <= 20), {
-            message: 'Each label must be at most 50 characters long.',
+            message: 'Each label must be at most 20 characters long.',
         }),
     project_key: z.string(),
     deadline: z.string().optional(),
@@ -61,15 +61,15 @@ export const ticketCreateSchema = z.object({
 
 export const ticketResponseSchema = z.object({
     id: z.number().int(),
-    title: z.string().min(1),
+    title: z.string(),
     description: z.string(),
     ticket_type: z.number().int(),
     status: z.number().int(),
-    jira_ticket_key: z.string().min(1),
+    jira_ticket_key: z.string(),
     priority: z.number().int(),
     assignee: z.email(),
     reporter: z.email(),
-    labels: z.array(z.string()).min(1),
+    labels: z.array(z.string()),
     deadline: z.string().nullable(),
     created_at: z.string(),
 });

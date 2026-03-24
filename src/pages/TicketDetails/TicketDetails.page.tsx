@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
+import dayjs from 'dayjs';
 import { useParams } from 'react-router-dom';
 
 import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
@@ -19,21 +20,29 @@ import {
     Typography,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
 import { DialogBox } from '@components/DialogBox';
 import { COLORS } from '@constant';
 import { useDeleteTicket } from '@features/ticket/deleteTicket/useDeleteTicketMutation';
 import { useGetTicket } from '@features/ticket/getTicket/useGetTicket';
 import { useTicketStore } from '@features/ticket/store/ticketStore';
-import { TicketUpdateFormData, ticketUpdateRequestSchema } from '@features/ticket/updateTicket/updateTicket.schema';
+import {
+    TicketUpdateFormData,
+    ticketUpdateRequestSchema,
+} from '@features/ticket/updateTicket/updateTicket.schema';
 import { useUpdateTicketMutation } from '@features/ticket/updateTicket/useUpdateTicketMutation';
 
 import { StyledErrorTextField, StyledLabel } from './TicketDetails.style';
 import {
+    ADMIN,
     TicketConstToPriorityMap,
     TicketConstToStatusMap,
     TicketConstToTypeMap,
 } from './TicketDetails.util';
+
 
 export const TicketDetails: React.FC = () => {
     const theme = useTheme();
@@ -52,6 +61,7 @@ export const TicketDetails: React.FC = () => {
     const deleteTicketMutation = useDeleteTicket();
     const { updateFormData, setUpdateFormData } = useTicketStore();
     const updateTicketMutation = useUpdateTicketMutation();
+    const [deadline, setDeadline] = React.useState<dayjs.Dayjs | null>(null);
     const formatDate = (dateString: string) =>
         new Date(dateString).toLocaleDateString();
 
@@ -72,16 +82,23 @@ export const TicketDetails: React.FC = () => {
             setUpdateFormData({...ticket, deadline: ticket.deadline ?? undefined});
         }
     }, [ticket]);
-
-    const handleFieldChange = (field: keyof TicketUpdateFormData, value: TicketUpdateFormData[keyof TicketUpdateFormData]) => {
+    
+    const handleFieldChange = (
+        field: keyof TicketUpdateFormData,
+        value: TicketUpdateFormData[keyof TicketUpdateFormData],
+    ) => {
         setUpdateFormData({ [field]: value });
         setErrors((prev) => ({ ...prev, [field]: '' }));
     };
 
     const handleSaveChanges = () => {
-        setUpdateFormData({ project_key: projectKey });
-        setUpdateFormData({ ticket_key: ticketKey });
-        const result = ticketUpdateRequestSchema.safeParse(updateFormData);
+        const payload = {
+            ...updateFormData,
+            project_key: projectKey,
+            ticket_key: ticketKey,
+            deadline: deadline ? deadline.toISOString(): undefined,
+        }
+        const result = ticketUpdateRequestSchema.safeParse(payload);
 
         if (!result.success) {
             const fieldErrors: Record<string, string> = {};
@@ -92,8 +109,7 @@ export const TicketDetails: React.FC = () => {
             setErrors(fieldErrors);
             return;
         }
-        updateTicketMutation.mutate(result.data)
-        // setIsEditDialogOpen(false);
+        updateTicketMutation.mutate(result.data);
     };
 
     return (
@@ -136,6 +152,8 @@ export const TicketDetails: React.FC = () => {
 
                             {/* Icon Box with Edit and Delete icons */}
                             <Box>
+                                {ticket.role == ADMIN && 
+                                <>
                                 <IconButton
                                     sx={{
                                         backgroundColor: COLORS.GRAY.BACKGROUND,
@@ -163,6 +181,7 @@ export const TicketDetails: React.FC = () => {
                                 >
                                     <DeleteIcon />
                                 </IconButton>
+                                </>}
                             </Box>
                         </Box>
 
@@ -322,7 +341,6 @@ export const TicketDetails: React.FC = () => {
                 onSubmit={handleSaveChanges}
                 submitText="Save"
                 cancelText="Cancel"
-                
             >
                 {/* Description */}
                 <StyledErrorTextField
@@ -355,7 +373,10 @@ export const TicketDetails: React.FC = () => {
                     <Select
                         value={updateFormData?.priority || 1}
                         onChange={(e) =>
-                            handleFieldChange('priority', Number(e.target.value))
+                            handleFieldChange(
+                                'priority',
+                                Number(e.target.value),
+                            )
                         }
                         label="Priority"
                     >
@@ -395,7 +416,10 @@ export const TicketDetails: React.FC = () => {
                     <Select
                         value={updateFormData?.ticket_type || 1}
                         onChange={(e) =>
-                            handleFieldChange('ticket_type', Number(e.target.value))
+                            handleFieldChange(
+                                'ticket_type',
+                                Number(e.target.value),
+                            )
                         }
                         label="Task Type"
                     >
@@ -411,12 +435,14 @@ export const TicketDetails: React.FC = () => {
 
                 {/* Deadline */}
                 <StyledLabel>
-                    <strong>Deadline:</strong>
-                    {/* <DatePicker
-                        value={editableTicket?.deadline ? new Date(editableTicket?.deadline) : null}
-                        onChange={(newDate) => handleFieldChange('deadline', newDate)}
-                        renderInput={(params) => <TextField {...params} />}
-                    /> */}
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                            label="Deadline"
+                            name="deadline"
+                            value={deadline}
+                            onChange={(value) => setDeadline(value)}
+                        />
+                    </LocalizationProvider>
                 </StyledLabel>
 
                 {updateTicketMutation.isError && (

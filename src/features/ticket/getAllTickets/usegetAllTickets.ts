@@ -2,30 +2,28 @@ import { getAllTickets } from '@api/ticket/getAllTickets/getAllTicketsApi';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
 import {
-    GetAllTicketsFormData,
     GetAllTicketsResponse,
+    QueryParams,
 } from './getAllTickets.schema';
+
 
 export const useGetAllTickets = (
     projectKey: string,
-    params: Omit<GetAllTicketsFormData, 'cursor'>,
-) =>
-    useInfiniteQuery<
-        GetAllTicketsResponse,
-        Error,
-        GetAllTicketsResponse,
-        (string | object)[],
-        string | undefined
-    >({
-        queryKey: ['tickets', projectKey, params],
+    params: QueryParams,
+    options: { enabled: boolean },
+) => useInfiniteQuery<GetAllTicketsResponse, Error>({
+        queryKey: ['tickets', 'list', projectKey, params],
 
-        queryFn: ({ pageParam }) =>
-            getAllTickets(projectKey, {
+        queryFn: async ({ pageParam }) => {
+            const data = await getAllTickets(projectKey, {
                 ...params,
-                cursor: pageParam,
-            }),
+                cursor: pageParam as string | undefined,
+            });
+            return data;
+        },
 
         initialPageParam: undefined,
 
         getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
-    });
+        ...options,
+    })

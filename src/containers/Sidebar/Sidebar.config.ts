@@ -18,3 +18,5 @@ export const sidebarList: SidebarItem[] = [
         icon: 'listAlt',
     },
 ];
+
+export const myProjects = "My Projects"

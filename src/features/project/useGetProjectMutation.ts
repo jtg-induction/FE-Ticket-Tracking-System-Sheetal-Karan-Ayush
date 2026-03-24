@@ -7,7 +7,9 @@ export const useGetProject = (projectKey?: string) =>
     useQuery<ProjectResponse>({
         queryKey: ['project', projectKey],
         queryFn: async () => {
-            if (!projectKey) throw new Error('Project key is required');
+            if (!projectKey) {
+                throw new Error('Project key is required');
+            }
             return getProject(projectKey);
         },
         enabled: !!projectKey,

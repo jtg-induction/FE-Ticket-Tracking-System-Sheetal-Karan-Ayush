@@ -9,6 +9,7 @@ import {
     Autocomplete,
     Box,
     Button,
+    Chip,
     CircularProgress,
     FormControl,
     Stack,
@@ -43,7 +44,7 @@ export const CreateTicket = () => {
     const createTicketMutation = useCreateTicketMutation();
     const isSubmitting = createTicketMutation.isPending;
     const { projectKey } = useParams<{ projectKey: string }>();
-
+     const [labels, setLabels] = useState<string[]>([]);
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     ): void => {
@@ -53,13 +54,18 @@ export const CreateTicket = () => {
         };
 
         setCreateFormData({ [name]: value });
-        setErrors((prev) => ({ ...prev, [name]: '' }));
+        setErrors({});
     };
 
     const handleCreateSubmit = () => {
-        setCreateFormData({ project_key: projectKey });
-        setCreateFormData({ labels: ['hii', 'hello'] });
-        const result = ticketCreateSchema.safeParse(createFormData);
+        const payload = {
+            ...createFormData,
+            project_key: projectKey,
+            labels: labels,
+            deadline: deadline?.toISOString() ?? null,
+        };
+
+        const result = ticketCreateSchema.safeParse(payload);
 
         if (!result.success) {
             const fieldErrors: Record<string, string> = {};
@@ -156,7 +162,6 @@ export const CreateTicket = () => {
                         error={!!errors.assignee}
                         helperText={errors.assignee}
                     />
-
                     <Autocomplete
                         multiple
                         freeSolo
@@ -179,14 +184,15 @@ export const CreateTicket = () => {
                             })
                         }
                         renderInput={(params) => (
-                            <TextField
+                            <StyledErrorTextField
                                 {...params}
                                 label="Add Labels"
                                 placeholder="Type and press Enter"
+                                error={!!errors.labels}
+                                helperText={errors.labels}
                             />
                         )}
                     />
-
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
                             label="Deadline"
