@@ -3,7 +3,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { DeleteCommentFormData } from '../updateComment/updateComment.schema';
 
-
 export const useDeleteCommentMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({

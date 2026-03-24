@@ -72,7 +72,7 @@ export const ChartCard = <T extends Record<string, unknown>>({
             return label;
         }
 
-        return ''; 
+        return '';
     };
 
     const renderChart = () => {

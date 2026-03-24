@@ -20,7 +20,6 @@ export const TICKET_TYPE_MAP: Record<string, number> = {
     Subtask: 5,
 };
 
-
 export const STATUS_INT_TO_STRING: Record<number, string> = {
     1: 'Open',
     2: 'In Progress',

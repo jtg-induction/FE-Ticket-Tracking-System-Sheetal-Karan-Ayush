@@ -42,15 +42,11 @@ const buildReportParams = (
     limit?: number;
     cursor?: string;
 } => {
-   
     const status = filters.status?.map((s) => STATUS_MAP[s]) ?? [];
 
-    const priority =
-        filters.priority?.map((p) => PRIORITY_MAP[p]) ?? [];
+    const priority = filters.priority?.map((p) => PRIORITY_MAP[p]) ?? [];
 
-    const ticketType =
-        filters.ticketType?.map((t) => TICKET_TYPE_MAP[t]) ??
-        [];
+    const ticketType = filters.ticketType?.map((t) => TICKET_TYPE_MAP[t]) ?? [];
 
     const params = {
         email,
@@ -66,7 +62,6 @@ const buildReportParams = (
 
     return params;
 };
-
 
 export const getUserReport = async (
     filters: UserReportFilters,

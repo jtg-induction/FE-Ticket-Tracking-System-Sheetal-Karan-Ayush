@@ -4,7 +4,7 @@ export const getAllCommentsRequestSchema = z.object({
     limit: z.int(),
     cursor: z.string().optional(),
     ticket_key: z.string(),
-    parent_comment_id: z.int().nullable()
+    parent_comment_id: z.int().nullable(),
 });
 
 export const allCommentsResponseSchema = z.object({
@@ -18,9 +18,12 @@ export const allCommentsResponseSchema = z.object({
 });
 export const getAllCommentsResponseSchema = z.object({
     comments: z.array(allCommentsResponseSchema),
-    next_cursor: z.string().nullable()
+    next_cursor: z.string().nullable(),
 });
 
-export type GetAllCommentsFormData = z.infer<typeof getAllCommentsRequestSchema>;
-export type GetAllCommentsResponse = z.infer<typeof getAllCommentsResponseSchema>;
-
+export type GetAllCommentsFormData = z.infer<
+    typeof getAllCommentsRequestSchema
+>;
+export type GetAllCommentsResponse = z.infer<
+    typeof getAllCommentsResponseSchema
+>;

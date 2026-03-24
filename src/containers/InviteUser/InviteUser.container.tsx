@@ -22,7 +22,7 @@ import { theme } from '@theme';
 
 import { InviteUserProps, UserRole } from './InviteUser.types';
 
-export const InviteUser = ({open, onClose, projectId} : InviteUserProps) => {
+export const InviteUser = ({ open, onClose, projectId }: InviteUserProps) => {
     const [email, setEmail] = useState('');
     const [role, setRole] = useState<UserRole>(1);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -101,12 +101,18 @@ export const InviteUser = ({open, onClose, projectId} : InviteUserProps) => {
                     </RadioGroup>
                 </FormControl>
                 {inviteMutation.isError && (
-                    <Typography variant='subtitle2' sx={{ color: theme.palette.error.contrastText }}>
+                    <Typography
+                        variant="subtitle2"
+                        sx={{ color: theme.palette.error.contrastText }}
+                    >
                         {inviteMutation.error.message}
                     </Typography>
                 )}
                 {inviteMutation.isSuccess && (
-                    <Typography variant='subtitle2' sx={{ color: theme.palette.success.contrastText }}>
+                    <Typography
+                        variant="subtitle2"
+                        sx={{ color: theme.palette.success.contrastText }}
+                    >
                         {inviteMutation.data.message}
                     </Typography>
                 )}

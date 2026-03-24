@@ -39,8 +39,8 @@ export const ticketsImportResponseSchema = z.object({
     total: z.int(),
     success_count: z.int(),
     failed_count: z.int(),
-    results: z.array(ticketsResponseSchema)
-})
+    results: z.array(ticketsResponseSchema),
+});
 
 export const getTicketResponseSchema = z.object({
     id: z.int().nullable(),
@@ -67,14 +67,18 @@ export const getAllTicketsJqlRequestSchema = z.object({
 
 export const getAllTicketsResponseSchema = z.object({
     tickets: z.array(ticketsResponseSchema),
-    next_cursor: z.string().nullable()
+    next_cursor: z.string().nullable(),
 });
 
 export type GetTicketResponse = z.infer<typeof ticketsResponseSchema>;
-export type GetTicketImportResponse = z.infer<typeof ticketsImportResponseSchema>;
+export type GetTicketImportResponse = z.infer<
+    typeof ticketsImportResponseSchema
+>;
 export type GetTicketDetailsResponse = z.infer<typeof getTicketResponseSchema>;
 export type GetAllTicketsFormData = z.infer<typeof getAllTicketsRequestSchema>;
 export type GetAllTicketsResponse = z.infer<typeof getAllTicketsResponseSchema>;
-export type GetAllTicketsJqlFormData =  z.infer<typeof getAllTicketsJqlRequestSchema>;
+export type GetAllTicketsJqlFormData = z.infer<
+    typeof getAllTicketsJqlRequestSchema
+>;
 export type QueryParams = Omit<GetAllTicketsFormData, 'cursor'>;
 export type JqlQueryParams = Omit<GetAllTicketsJqlFormData, 'cursor'>;

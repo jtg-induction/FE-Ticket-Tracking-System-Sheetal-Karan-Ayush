@@ -3,4 +3,4 @@ export type InviteUserProps = {
     open: boolean;
     onClose: () => void;
     projectId?: number;
-}
+};

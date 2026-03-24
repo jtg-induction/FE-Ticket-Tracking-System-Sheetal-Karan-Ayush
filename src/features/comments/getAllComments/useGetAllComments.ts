@@ -1,16 +1,23 @@
 import { getAllComments } from '@api/comments/getAllCommentsApi';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
-import { GetAllCommentsFormData, GetAllCommentsResponse } from './getAllComments.schema';
-
+import {
+    GetAllCommentsFormData,
+    GetAllCommentsResponse,
+} from './getAllComments.schema';
 
 export const useGetAllComments = (
     params: GetAllCommentsFormData,
     enabled: boolean = true,
-) => useInfiniteQuery<GetAllCommentsResponse, Error>({
+) =>
+    useInfiniteQuery<GetAllCommentsResponse, Error>({
         queryKey: ['comments', params],
 
-        queryFn: async ({ pageParam }) => getAllComments({...params, cursor: pageParam as string | undefined}),
+        queryFn: async ({ pageParam }) =>
+            getAllComments({
+                ...params,
+                cursor: pageParam as string | undefined,
+            }),
 
         getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
 

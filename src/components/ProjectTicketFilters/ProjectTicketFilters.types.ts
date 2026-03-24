@@ -6,7 +6,7 @@ export type Filters = {
     deadline?: dayjs.Dayjs;
     status?: number;
     sort: string;
-}
+};
 
 export type ProjectTicketFilterProps = {
     filters: Filters;

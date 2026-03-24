@@ -3,7 +3,15 @@ import { useEffect, useState } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 import { useParams } from 'react-router-dom';
 
-import { Alert, Autocomplete, Box, Button, Chip, MenuItem, TextField } from '@mui/material';
+import {
+    Alert,
+    Autocomplete,
+    Box,
+    Button,
+    Chip,
+    MenuItem,
+    TextField,
+} from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -13,7 +21,6 @@ import { ticketFiltersSchema } from '@features/reports/projectReport.schema';
 import { useReportStore } from '@features/reports/store/projectReportStore';
 
 export const DownloadProjectReportDialog = () => {
-
     const { projectKey } = useParams<{ projectKey: string }>();
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const { filters, setFilter, resetFilters } = useReportStore();
@@ -24,7 +31,6 @@ export const DownloadProjectReportDialog = () => {
             setFilter('project_key', projectKey);
         }
     }, [projectKey, filters.project_key, setFilter]);
-
 
     const handleDownload = () => {
         const result = ticketFiltersSchema.safeParse(filters);
@@ -38,30 +44,41 @@ export const DownloadProjectReportDialog = () => {
         download(result.data);
     };
 
-    const handleDateChange = (key: keyof typeof filters, value: Dayjs | null) => {
+    const handleDateChange = (
+        key: keyof typeof filters,
+        value: Dayjs | null,
+    ) => {
         const formatted = value ? dayjs(value).format('YYYY-MM-DD') : null;
         setFilter(key, formatted);
     };
 
-
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
             <Box display={'flex'} flexDirection={'column'} gap={2} padding={2}>
-
                 <Box display={'flex'} gap={2}>
                     <Autocomplete
                         multiple
                         freeSolo
                         options={[]}
                         value={filters.assignee || []}
-                        onChange={(_, newValue: string[]) => setFilter('assignee', newValue)}
+                        onChange={(_, newValue: string[]) =>
+                            setFilter('assignee', newValue)
+                        }
                         renderTags={(value, getTagProps) =>
                             value.map((option, index) => (
-                                <Chip label={option} {...getTagProps({ index })} key={index} />
+                                <Chip
+                                    label={option}
+                                    {...getTagProps({ index })}
+                                    key={index}
+                                />
                             ))
                         }
                         renderInput={(params) => (
-                            <TextField {...params} label="Search by Assignee" placeholder="Type email and hit Enter" />
+                            <TextField
+                                {...params}
+                                label="Search by Assignee"
+                                placeholder="Type email and hit Enter"
+                            />
                         )}
                         sx={{ flex: 5 }}
                     />
@@ -70,14 +87,17 @@ export const DownloadProjectReportDialog = () => {
                         sx={{ flex: 1 }}
                         select
                         label="Group By User"
-                        value={String(filters.group_by_user) || ""}
-                        onChange={(e) => setFilter('group_by_user', e.target.value === 'true')}
+                        value={String(filters.group_by_user) || ''}
+                        onChange={(e) =>
+                            setFilter(
+                                'group_by_user',
+                                e.target.value === 'true',
+                            )
+                        }
                     >
-
                         <MenuItem value="false">No</MenuItem>
                         <MenuItem value="true">Yes</MenuItem>
                     </TextField>
-
                 </Box>
 
                 <Box display={'flex'} gap={2}>
@@ -86,12 +106,16 @@ export const DownloadProjectReportDialog = () => {
                         select
                         label="Status"
                         slotProps={{
-                            select: { multiple: true }
+                            select: { multiple: true },
                         }}
                         value={filters.status || []}
-                        onChange={(e) => setFilter('status', e.target.value as unknown as number[])}
+                        onChange={(e) =>
+                            setFilter(
+                                'status',
+                                e.target.value as unknown as number[],
+                            )
+                        }
                     >
-
                         <MenuItem value={1}>Open</MenuItem>
                         <MenuItem value={2}>In Progress</MenuItem>
                         <MenuItem value={3}>Resolved</MenuItem>
@@ -103,10 +127,15 @@ export const DownloadProjectReportDialog = () => {
                         select
                         label="Priority"
                         slotProps={{
-                            select: { multiple: true }
+                            select: { multiple: true },
                         }}
                         value={filters.priority || []}
-                        onChange={(e) => setFilter('priority', e.target.value as unknown as number[])}
+                        onChange={(e) =>
+                            setFilter(
+                                'priority',
+                                e.target.value as unknown as number[],
+                            )
+                        }
                     >
                         <MenuItem value={1}>High</MenuItem>
                         <MenuItem value={2}>Medium</MenuItem>
@@ -118,12 +147,16 @@ export const DownloadProjectReportDialog = () => {
                         select
                         label="Type"
                         slotProps={{
-                            select: { multiple: true }
+                            select: { multiple: true },
                         }}
                         value={filters.type || []}
-                        onChange={(e) => setFilter('type', e.target.value as unknown as number[])}
+                        onChange={(e) =>
+                            setFilter(
+                                'type',
+                                e.target.value as unknown as number[],
+                            )
+                        }
                     >
-
                         <MenuItem value={1}>Task</MenuItem>
                         <MenuItem value={2}>Bug</MenuItem>
                         <MenuItem value={3}>Story</MenuItem>
@@ -134,7 +167,9 @@ export const DownloadProjectReportDialog = () => {
                     <DatePicker
                         sx={{ flex: 1 }}
                         label="Search by Deadline"
-                        value={filters.deadline ? dayjs(filters.deadline) : null}
+                        value={
+                            filters.deadline ? dayjs(filters.deadline) : null
+                        }
                         onChange={(val) => handleDateChange('deadline', val)}
                     />
                 </Box>
@@ -143,27 +178,51 @@ export const DownloadProjectReportDialog = () => {
                     <DatePicker
                         sx={{ flex: 1 }}
                         label="Created after"
-                        value={filters.created_start_date ? dayjs(filters.created_start_date) : null}
-                        onChange={(val) => handleDateChange('created_start_date', val)}
+                        value={
+                            filters.created_start_date
+                                ? dayjs(filters.created_start_date)
+                                : null
+                        }
+                        onChange={(val) =>
+                            handleDateChange('created_start_date', val)
+                        }
                     />
                     <DatePicker
                         sx={{ flex: 1 }}
                         label="Created before"
-                        value={filters.created_end_date ? dayjs(filters.created_end_date) : null}
-                        onChange={(val) => handleDateChange('created_end_date', val)}
+                        value={
+                            filters.created_end_date
+                                ? dayjs(filters.created_end_date)
+                                : null
+                        }
+                        onChange={(val) =>
+                            handleDateChange('created_end_date', val)
+                        }
                     />
 
                     <DatePicker
                         sx={{ flex: 1 }}
                         label="Completed after"
-                        value={filters.completed_start_date ? dayjs(filters.completed_start_date) : null}
-                        onChange={(val) => handleDateChange('completed_start_date', val)}
+                        value={
+                            filters.completed_start_date
+                                ? dayjs(filters.completed_start_date)
+                                : null
+                        }
+                        onChange={(val) =>
+                            handleDateChange('completed_start_date', val)
+                        }
                     />
                     <DatePicker
                         sx={{ flex: 1 }}
                         label="Completed before"
-                        value={filters.completed_end_date ? dayjs(filters.completed_end_date) : null}
-                        onChange={(val) => handleDateChange('completed_end_date', val)}
+                        value={
+                            filters.completed_end_date
+                                ? dayjs(filters.completed_end_date)
+                                : null
+                        }
+                        onChange={(val) =>
+                            handleDateChange('completed_end_date', val)
+                        }
                     />
                 </Box>
 
@@ -185,13 +244,14 @@ export const DownloadProjectReportDialog = () => {
                     </Button>
 
                     {errorMessage && (
-                        <Alert severity="error" onClose={() => setErrorMessage(null)}>
+                        <Alert
+                            severity="error"
+                            onClose={() => setErrorMessage(null)}
+                        >
                             {errorMessage}
                         </Alert>
                     )}
-
                 </Box>
-
             </Box>
         </LocalizationProvider>
     );

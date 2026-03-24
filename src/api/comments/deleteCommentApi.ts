@@ -1,6 +1,6 @@
-import { handleApiError } from "@api/apiErrorHandling";
-import { api } from "@api/axios";
-import { DeleteCommentFormData } from "@features/comments/updateComment/updateComment.schema";
+import { handleApiError } from '@api/apiErrorHandling';
+import { api } from '@api/axios';
+import { DeleteCommentFormData } from '@features/comments/updateComment/updateComment.schema';
 
 /**
  * Deletes a comment by its ID.
@@ -16,12 +16,10 @@ import { DeleteCommentFormData } from "@features/comments/updateComment/updateCo
  *
  * @throws Will propagate errors processed by {@link handleApiError}
  */
-export const deleteComment = async (
-    data: DeleteCommentFormData
-) => {
+export const deleteComment = async (data: DeleteCommentFormData) => {
     try {
         await api.delete(
-           `/api/tickets/${data.ticket_key}/comments/${data.comment_id}`,
+            `/api/tickets/${data.ticket_key}/comments/${data.comment_id}`,
         );
     } catch (error: unknown) {
         return handleApiError(error);

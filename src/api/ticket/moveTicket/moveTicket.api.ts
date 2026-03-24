@@ -1,6 +1,10 @@
 import { handleApiError } from '@api/apiErrorHandling';
 import { api } from '@api/axios';
-import { TicketMoveFormData, TicketMoveResponse, ticketMoveResponseSchema } from '@features/ticket/moveTicket/moveTicket.schema';
+import {
+    TicketMoveFormData,
+    TicketMoveResponse,
+    ticketMoveResponseSchema,
+} from '@features/ticket/moveTicket/moveTicket.schema';
 
 export const moveTicket = async (
     data: TicketMoveFormData,

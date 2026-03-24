@@ -1,18 +1,21 @@
-import { useState } from "react";
+import { useState } from 'react';
 
-import { useParams } from "react-router-dom";
+import { useParams } from 'react-router-dom';
 
-import { Typography } from "@mui/material";
+import { Typography } from '@mui/material';
 
-import { DialogBox } from "@components/DialogBox";
-import { useMoveTicketMutation } from "@features/ticket/moveTicket/useMoveTicketMutation";
-import { StyledErrorTextField } from "@pages/Register/Register.styles";
-import { theme } from "@theme";
+import { DialogBox } from '@components/DialogBox';
+import { useMoveTicketMutation } from '@features/ticket/moveTicket/useMoveTicketMutation';
+import { StyledErrorTextField } from '@pages/Register/Register.styles';
+import { theme } from '@theme';
 
-import { MAX_PROJECT_KEY_LENGTH, MIN_PROJECT_KEY_LENGTH } from "./moveTicket.constants";
-import { MoveTicketProps } from "./moveTicket.types";
+import {
+    MAX_PROJECT_KEY_LENGTH,
+    MIN_PROJECT_KEY_LENGTH,
+} from './moveTicket.constants';
+import { MoveTicketProps } from './moveTicket.types';
 
-export const MoveTicketContainer = ({open, onClose}: MoveTicketProps) => {
+export const MoveTicketContainer = ({ open, onClose }: MoveTicketProps) => {
     const moveTicketMutation = useMoveTicketMutation();
     const [targetProjectKey, setTargetProjectKey] = useState('');
 
@@ -22,8 +25,9 @@ export const MoveTicketContainer = ({open, onClose}: MoveTicketProps) => {
     }>();
 
     const trimmedKey = targetProjectKey.trim();
-    const isInvalidTargetKey = trimmedKey.length < MIN_PROJECT_KEY_LENGTH ||
-                               trimmedKey.length > MAX_PROJECT_KEY_LENGTH;
+    const isInvalidTargetKey =
+        trimmedKey.length < MIN_PROJECT_KEY_LENGTH ||
+        trimmedKey.length > MAX_PROJECT_KEY_LENGTH;
 
     const handleMoveTicket = () => {
         // Guard: ensure required route params exist
@@ -34,11 +38,11 @@ export const MoveTicketContainer = ({open, onClose}: MoveTicketProps) => {
 
         // Trigger mutation to move the ticket
         moveTicketMutation.mutate({
-            project_key: projectKey,          // Source project key (current project)
-            ticket_key: ticketKey,            // Ticket identifier
+            project_key: projectKey, // Source project key (current project)
+            ticket_key: ticketKey, // Ticket identifier
             target_project_key: targetProjectKey, // Destination project key
         });
-    }
+    };
 
     return (
         <DialogBox
@@ -55,7 +59,9 @@ export const MoveTicketContainer = ({open, onClose}: MoveTicketProps) => {
                 variant="outlined"
                 fullWidth
                 value={targetProjectKey}
-                onChange={(e) => { setTargetProjectKey(e.target.value)}}
+                onChange={(e) => {
+                    setTargetProjectKey(e.target.value);
+                }}
                 sx={{ marginBottom: 2 }}
             />
             {moveTicketMutation.isError && (
@@ -75,5 +81,5 @@ export const MoveTicketContainer = ({open, onClose}: MoveTicketProps) => {
                 </Typography>
             )}
         </DialogBox>
-    )
-}
+    );
+};

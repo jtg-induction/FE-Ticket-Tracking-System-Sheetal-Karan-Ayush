@@ -1,5 +1,5 @@
 export type SubscribeTicketProps = {
     open: boolean;
-    onClose: () => void; 
+    onClose: () => void;
     isSubscribed?: boolean;
-}
+};

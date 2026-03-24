@@ -41,7 +41,7 @@ export const CreateTicket = () => {
     const createTicketMutation = useCreateTicketMutation();
     const isSubmitting = createTicketMutation.isPending;
     const { projectKey } = useParams<{ projectKey: string }>();
-     const [labels, setLabels] = useState<string[]>([]);
+    const [labels, setLabels] = useState<string[]>([]);
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     ): void => {

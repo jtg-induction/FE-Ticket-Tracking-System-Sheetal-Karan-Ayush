@@ -12,11 +12,11 @@ export const getAllTickets = async (
 ): Promise<GetAllTicketsResponse> => {
     try {
         const response = await api.get(`/projects/${projectKey}/tickets`, {
-            params
+            params,
         });
 
         const parsed = getAllTicketsResponseSchema.safeParse(response.data);
-        
+
         if (!parsed.success) {
             throw new Error('Invalid server response ');
         }

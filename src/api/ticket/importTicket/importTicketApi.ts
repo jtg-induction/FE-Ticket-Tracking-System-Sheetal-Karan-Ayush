@@ -11,9 +11,10 @@ export const importTicket = async (
 ): Promise<GetTicketImportResponse> => {
     try {
         const response = await api.post(
-            `projects/${data.projectKey}/multiple-import`, {
-                ticket_keys: data.ticketKey
-            }
+            `projects/${data.projectKey}/multiple-import`,
+            {
+                ticket_keys: data.ticketKey,
+            },
         );
 
         const parsed = ticketsImportResponseSchema.safeParse(response.data);

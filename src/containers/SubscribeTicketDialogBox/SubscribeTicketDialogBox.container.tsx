@@ -1,15 +1,19 @@
-import { useParams } from "react-router-dom";
+import { useParams } from 'react-router-dom';
 
-import { Typography } from "@mui/material";
+import { Typography } from '@mui/material';
 
-import { DialogBox } from "@components/DialogBox";
-import { useSubscribeTicketMutation } from "@features/ticket/subscribeTicket/subscribeTicketMutation";
-import { useUnSubscribeTicketMutation } from "@features/ticket/subscribeTicket/unSubscribeTicketMutation";
-import { theme } from "@theme";
+import { DialogBox } from '@components/DialogBox';
+import { useSubscribeTicketMutation } from '@features/ticket/subscribeTicket/subscribeTicketMutation';
+import { useUnSubscribeTicketMutation } from '@features/ticket/subscribeTicket/unSubscribeTicketMutation';
+import { theme } from '@theme';
 
-import { SubscribeTicketProps } from "./subscribeTicket.types";
+import { SubscribeTicketProps } from './subscribeTicket.types';
 
-export const SubscribeTicketContainer = ({open, onClose, isSubscribed}: SubscribeTicketProps) => {
+export const SubscribeTicketContainer = ({
+    open,
+    onClose,
+    isSubscribed,
+}: SubscribeTicketProps) => {
     const subscribeTicketMutation = useSubscribeTicketMutation();
     const unSubscribeTicketMutation = useUnSubscribeTicketMutation();
     const { projectKey, ticketKey } = useParams<{
@@ -18,41 +22,33 @@ export const SubscribeTicketContainer = ({open, onClose, isSubscribed}: Subscrib
     }>();
 
     const handleSubscribeTicket = () => {
-        if(isSubscribed) {
-            unSubscribeTicketMutation.mutate(
-            {   
-                project_key: projectKey as string, 
-                ticket_key: ticketKey as string, 
-            })
+        if (isSubscribed) {
+            unSubscribeTicketMutation.mutate({
+                project_key: projectKey as string,
+                ticket_key: ticketKey as string,
+            });
+        } else {
+            subscribeTicketMutation.mutate({
+                project_key: projectKey as string,
+                ticket_key: ticketKey as string,
+            });
         }
-        else {
-            subscribeTicketMutation.mutate(
-            {   
-                project_key: projectKey as string, 
-                ticket_key: ticketKey as string, 
-            })
-        }
-    }
+    };
 
     return (
         <DialogBox
             open={open}
-            title=''
+            title=""
             onClose={onClose}
             onSubmit={handleSubscribeTicket}
             submitText="Confirm"
             cancelText="Cancel"
-        >   
-            {isSubscribed ?(
-                    <Typography>
-                        UnSubscribe to Ticket?
-                    </Typography>
-                ):(
-                <Typography>
-                    Subscribe to Ticket?
-                </Typography>
-                )
-            }
+        >
+            {isSubscribed ? (
+                <Typography>UnSubscribe to Ticket?</Typography>
+            ) : (
+                <Typography>Subscribe to Ticket?</Typography>
+            )}
             {subscribeTicketMutation.isError && (
                 <Typography
                     variant="subtitle2"
@@ -86,5 +82,5 @@ export const SubscribeTicketContainer = ({open, onClose, isSubscribed}: Subscrib
                 </Typography>
             )}
         </DialogBox>
-    )
-}
+    );
+};

@@ -6,12 +6,12 @@ import { getUserReportPdf } from './api';
 type UseUserReportPdfProps = {
     onSuccess?: () => void;
     onError?: (error: Error) => void;
-}
+};
 type UseUserReportPdfVariables = {
     filters: UserReportFilters;
     email?: string;
     projectKey?: string;
-}
+};
 export const useUserReportPdf = (options?: UseUserReportPdfProps) => {
     const mutation = useMutation({
         mutationFn: ({

@@ -7,9 +7,8 @@ export const commentCreateSchema = z.object({
         .max(255, 'comment must be at most 255 characters long.'),
     project_key: z.string(),
     ticket_key: z.string(),
-    parent_comment_id: z.int().nullable()
+    parent_comment_id: z.int().nullable(),
 });
-
 
 export const commentResponseSchema = z.object({
     id: z.int(),

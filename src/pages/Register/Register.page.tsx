@@ -93,7 +93,7 @@ export const Register = () => {
             return;
         }
         signupMutation.mutate(
-            { name, email, password},
+            { name, email, password },
             { onSuccess: () => setOtpOpen(true) },
         );
     };

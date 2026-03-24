@@ -2,7 +2,7 @@ export type UserInfo = {
     id: number;
     email: string;
     name: string;
-}
+};
 
 export type RawTicket = {
     id: number;
@@ -17,7 +17,7 @@ export type RawTicket = {
     reporter: string;
     created_at: string;
     labels: string[];
-}
+};
 
 export type Ticket = {
     id: number;
@@ -32,7 +32,7 @@ export type Ticket = {
     reporter: string;
     created_at: string;
     labels: string[];
-}
+};
 
 export type Summary = {
     totalTickets: number;
@@ -40,12 +40,12 @@ export type Summary = {
     pendingTickets: number;
     deadlinesMet: number;
     deadlinesMissed: number;
-}
+};
 
 export type ChartData = {
     label: string;
     value: number;
-}
+};
 
 export type UserReportResponse = {
     user_info: UserInfo;
@@ -56,7 +56,7 @@ export type UserReportResponse = {
         deadline: ChartData[];
         priority: ChartData[];
     };
-}
+};
 
 export type UserReportFilters = {
     status: string[];
@@ -68,7 +68,7 @@ export type UserReportFilters = {
     createdTo?: string;
     deadlineFrom?: string;
     deadlineTo?: string;
-}
+};
 
 export type UserBasicDetails = {
     id: number;

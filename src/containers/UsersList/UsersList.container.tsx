@@ -1,10 +1,10 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState } from 'react';
 
-import { debounce } from "lodash";
-import { useNavigate, useParams } from "react-router-dom";
+import { debounce } from 'lodash';
+import { useNavigate, useParams } from 'react-router-dom';
 
-import CloseIcon from "@mui/icons-material/Close";
-import SearchIcon from "@mui/icons-material/Search";
+import CloseIcon from '@mui/icons-material/Close';
+import SearchIcon from '@mui/icons-material/Search';
 import {
     Avatar,
     Box,
@@ -20,25 +20,25 @@ import {
     Toolbar,
     Typography,
     useMediaQuery,
-} from "@mui/material";
-import Chip from "@mui/material/Chip";
+} from '@mui/material';
+import Chip from '@mui/material/Chip';
 
-import { useGetAllUsers } from "@features/project/useGetAllUsers";
-import { theme } from "@theme";
+import { useGetAllUsers } from '@features/project/useGetAllUsers';
+import { theme } from '@theme';
 
-import { UserSidebarProps } from "./UserList.types";
-
+import { UserSidebarProps } from './UserList.types';
 
 export const UserSidebar = ({ open, onClose }: UserSidebarProps) => {
-    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const navigate = useNavigate();
     const { projectKey } = useParams<{
         projectKey: string;
     }>();
-    const [searchUserName, setSearchUserName] = useState<string>("");
-    const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetAllUsers(
-        {   projectKey: projectKey as string, 
-            userName: searchUserName.length > 0 ? searchUserName : undefined 
+    const [searchUserName, setSearchUserName] = useState<string>('');
+    const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+        useGetAllUsers({
+            projectKey: projectKey as string,
+            userName: searchUserName.length > 0 ? searchUserName : undefined,
         });
     const users = data?.pages.flatMap((p) => p) ?? [];
 
@@ -47,7 +47,7 @@ export const UserSidebar = ({ open, onClose }: UserSidebarProps) => {
             debounce((value: string) => {
                 setSearchUserName(value);
             }, 500),
-        []
+        [],
     );
     return (
         <Drawer

@@ -19,7 +19,8 @@ const buildQueryParams = (filters: ProjectReportFilters) => {
     return params;
 };
 
-export const useDownloadProjectReport = () => useMutation({
+export const useDownloadProjectReport = () =>
+    useMutation({
         mutationFn: async (filters: ProjectReportFilters) => {
             const params = buildQueryParams(filters);
 

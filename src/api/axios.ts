@@ -11,7 +11,7 @@ const PATH = import.meta.env.VITE_API_SERVER_URL as string;
 type RefreshTokenResponse = {
     access_token: string;
     refresh_token: string;
-}
+};
 export interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
     __isRetrying?: boolean;
     skipAuthRefresh?: boolean;
@@ -36,7 +36,7 @@ const refreshTokenApi = async (): Promise<string> => {
             token: previousRefreshToken,
         },
     );
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+
     const { access_token, refresh_token } = response.data;
 
     localStorage.setItem('access_token', access_token);
@@ -49,7 +49,8 @@ api.interceptors.request.use(
     (config: CustomAxiosRequestConfig) => {
         const token = localStorage.getItem('access_token');
         if (token) {
-            (config.headers as AxiosHeaders)['Authorization'] = `Bearer ${ token }`;
+            (config.headers as AxiosHeaders)['Authorization'] =
+                `Bearer ${token}`;
         }
         return config;
     },
@@ -65,7 +66,6 @@ api.interceptors.response.use(
         const originalRequest = error.config as CustomAxiosRequestConfig;
         const status = error.response?.status ?? null;
 
-
         if (
             status === 401 &&
             originalRequest &&
@@ -77,7 +77,7 @@ api.interceptors.response.use(
             return new Promise((resolve, reject) => {
                 failedQueue.push((newAccessToken: string) => {
                     (originalRequest.headers as AxiosHeaders)['Authorization'] =
-                        `Bearer ${ newAccessToken }`;
+                        `Bearer ${newAccessToken}`;
                     resolve(api(originalRequest));
                 });
 
@@ -86,7 +86,7 @@ api.interceptors.response.use(
                     refreshTokenApi()
                         .then((newAccessToken) => {
                             api.defaults.headers['Authorization'] =
-                                `Bearer ${ newAccessToken }`;
+                                `Bearer ${newAccessToken}`;
                             failedQueue.forEach((cb) => cb(newAccessToken));
                             failedQueue = [];
                         })

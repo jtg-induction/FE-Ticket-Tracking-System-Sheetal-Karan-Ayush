@@ -11,11 +11,15 @@ export const getAllTicketsJql = async (
     params: GetAllTicketsJqlFormData,
 ): Promise<GetAllTicketsResponse> => {
     try {
-        const response = await api.post(`/projects/${projectKey}/search`, {jql: params.jql}, {
-            params: {limit: params.limit, cursor: params.cursor}
-        });
+        const response = await api.post(
+            `/projects/${projectKey}/search`,
+            { jql: params.jql },
+            {
+                params: { limit: params.limit, cursor: params.cursor },
+            },
+        );
         const parsed = getAllTicketsResponseSchema.safeParse(response.data);
-        
+
         if (!parsed.success) {
             throw new Error('Invalid server response ');
         }

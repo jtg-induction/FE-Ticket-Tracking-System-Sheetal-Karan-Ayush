@@ -20,7 +20,7 @@ import { type SignupInput } from './signup.types';
 
 export const signupUser = async (payload: SignupInput) => {
     try {
-        await api.post("/api/auth/signup", payload);
+        await api.post('/api/auth/signup', payload);
     } catch (error: unknown) {
         return handleApiError(error);
     }

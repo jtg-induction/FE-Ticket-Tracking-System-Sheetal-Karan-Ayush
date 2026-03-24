@@ -3,7 +3,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { TicketSubsribeFormData } from './subscribeTicket.schema';
 
-
 export const useSubscribeTicketMutation = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -12,4 +11,4 @@ export const useSubscribeTicketMutation = () => {
             await queryClient.invalidateQueries({ queryKey: ['ticket'] });
         },
     });
-}
+};

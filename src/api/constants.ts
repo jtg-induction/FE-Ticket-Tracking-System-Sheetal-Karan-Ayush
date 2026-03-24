@@ -1,1 +1,1 @@
-export const INVALID_SERVER_RESPONSE = "Invalid Server Response"
+export const INVALID_SERVER_RESPONSE = 'Invalid Server Response';

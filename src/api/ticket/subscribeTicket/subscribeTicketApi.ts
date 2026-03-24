@@ -10,7 +10,6 @@ export const subscribeTicket = async (
             `/projects/${requestBody.project_key}/tickets/${requestBody.ticket_key}/subscribe`,
             requestBody,
         );
-
     } catch (error: unknown) {
         return handleApiError(error);
     }

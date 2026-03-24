@@ -3,7 +3,13 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { BugReport, Menu } from '@mui/icons-material';
-import { Avatar, Typography, useMediaQuery, useTheme } from '@mui/material';
+import {
+    Avatar,
+    Tooltip,
+    Typography,
+    useMediaQuery,
+    useTheme,
+} from '@mui/material';
 
 import { useAuthStore } from '@features/auth';
 
@@ -46,6 +52,7 @@ export const Header = ({ isMenuOpen, setMenuOpen }: HeaderProps) => {
                             >
                                 <BugReport />
                             </Avatar>
+
                             <Typography
                                 variant="h2"
                                 color={theme.palette.grey[900]}
@@ -65,13 +72,15 @@ export const Header = ({ isMenuOpen, setMenuOpen }: HeaderProps) => {
                     )}
                 </StyledLeftBox>
                 <StyledRightBox>
-                    <Avatar
-                        alt="TaskVault"
-                        sx={{ bgcolor: 'primary.main' }}
-                        onClick={() => void navigate('/user')}
-                    >
-                        {username?.substring(0, 2).toUpperCase()}
-                    </Avatar>
+                    <Tooltip title={username}>
+                        <Avatar
+                            alt="TaskVault"
+                            sx={{ bgcolor: 'primary.main', cursor: 'pointer' }}
+                            onClick={() => void navigate('/user')}
+                        >
+                            {username?.substring(0, 2).toUpperCase()}
+                        </Avatar>
+                    </Tooltip>
                 </StyledRightBox>
             </StyledToolbar>
         </HeaderStyled>

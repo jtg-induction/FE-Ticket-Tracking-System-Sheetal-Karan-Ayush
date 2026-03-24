@@ -24,6 +24,7 @@ import {
     TableHead,
     TableRow,
     TextField,
+    Tooltip,
     Typography,
 } from '@mui/material';
 
@@ -175,7 +176,6 @@ export const ProjectDashboardPage = () => {
     };
     const [userSidebarOpen, setUserSidebarOpen] = useState(false);
 
-  
     const handleOpenProjectDialog = () => {
         if (project) {
             setUpdateFormData({
@@ -214,9 +214,9 @@ export const ProjectDashboardPage = () => {
     const { data: statusCounts, isLoading: statusLoading } =
         useTicketStatusStats(projectKey);
     const { data: priorityCounts, isLoading: priorityLoading } =
-              useTicketPriorityStats(projectKey);
+        useTicketPriorityStats(projectKey);
     const { data: deadlineCounts, isLoading: deadlineLoading } =
-                  useTicketDeadlineStats(projectKey);
+        useTicketDeadlineStats(projectKey);
 
     const statusChartData = useMemo(() => {
         if (!statusCounts) return null;
@@ -225,7 +225,7 @@ export const ProjectDashboardPage = () => {
             count: item.count,
         }));
     }, [statusCounts]);
-    
+
     const priorityChartData = useMemo(() => {
         if (!priorityCounts) return null;
         return priorityCounts.map((item) => ({
@@ -242,7 +242,6 @@ export const ProjectDashboardPage = () => {
         }));
     }, [deadlineCounts]);
 
-    
     const [importError, setImportError] = useState<string>('');
 
     const handleImportTicket = () => {
@@ -282,9 +281,10 @@ export const ProjectDashboardPage = () => {
             <StyledHeader>
                 <StyledUpperBox>
                     <StyledLeftBox>
-                        <ClampedTooltipText variant="h2" lines={2}>
-                            {project?.title}
-                        </ClampedTooltipText>
+                        <Typography variant="h3">
+                            Project Key: {projectKey}
+                        </Typography>
+
                         <StatusBadge
                             label={
                                 project?.status === 2 ? 'Archived' : 'Active'
@@ -296,17 +296,21 @@ export const ProjectDashboardPage = () => {
                         {!isDeveloper && (
                             <IconBox>
                                 <IconBox>
-                                    <EditIcon
-                                        onClick={handleOpenProjectDialog}
-                                    />
-                                    <DeleteIcon
-                                        onClick={() => {
-                                            if (project) {
-                                                setDeleteTarget(project);
-                                                setIsDeleteDialogOpen(true);
-                                            }
-                                        }}
-                                    />
+                                    <Tooltip title="Update Project Details">
+                                        <EditIcon
+                                            onClick={handleOpenProjectDialog}
+                                        />
+                                    </Tooltip>
+                                    <Tooltip title="Delete Project">
+                                        <DeleteIcon
+                                            onClick={() => {
+                                                if (project) {
+                                                    setDeleteTarget(project);
+                                                    setIsDeleteDialogOpen(true);
+                                                }
+                                            }}
+                                        />
+                                    </Tooltip>
                                 </IconBox>
                             </IconBox>
                         )}
@@ -336,7 +340,9 @@ export const ProjectDashboardPage = () => {
                                         void setIsInviteDialogOpen(true)
                                     }
                                 >
-                                    <PersonAddAltIcon />
+                                    <Tooltip title="Invite user">
+                                        <PersonAddAltIcon />
+                                    </Tooltip>
                                 </StyledButton>
                             </>
                         )}
@@ -348,17 +354,24 @@ export const ProjectDashboardPage = () => {
                                 )
                             }
                         >
-                            <DownloadIcon />
+                            <Tooltip title="Download Report">
+                                <DownloadIcon />
+                            </Tooltip>
                         </StyledButton>
                         <StyledButton
                             sx={{ padding: theme.spacing(0) }}
                             onClick={() => setUserSidebarOpen((prev) => !prev)}
                         >
-                            <UserSidebarIcon />
+                            <Tooltip title="User list">
+                                <UserSidebarIcon />
+                            </Tooltip>
                         </StyledButton>
                     </StyledRightBox>
                 </StyledUpperBox>
                 <StyledLowerBox>
+                    <ClampedTooltipText variant="h2" lines={2}>
+                        Title: {project?.title}
+                    </ClampedTooltipText>
                     <Typography variant="body2">
                         {project?.description}
                     </Typography>
@@ -368,7 +381,11 @@ export const ProjectDashboardPage = () => {
 
             <SectionLayout>
                 <Grid2 container spacing={3} sx={{ mt: 1 }}>
-                    <Grid2 size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
+                    {/* ticket status chart */}
+                    <Grid2
+                        size={{ xs: 12, sm: 12, md: 4, lg: 4 }}
+                        sx={{ minWidth: '300px' }}
+                    >
                         {statusLoading ? (
                             <ChartLoadingContainer>
                                 <CircularProgress />
@@ -389,8 +406,11 @@ export const ProjectDashboardPage = () => {
                             </ChartNoDataContainer>
                         )}
                     </Grid2>
-
-                    <Grid2 size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
+                    {/* ticket priority chart */}
+                    <Grid2
+                        size={{ xs: 12, sm: 12, md: 4, lg: 4 }}
+                        sx={{ minWidth: '300px' }}
+                    >
                         {priorityLoading ? (
                             <ChartLoadingContainer>
                                 <CircularProgress />
@@ -411,7 +431,11 @@ export const ProjectDashboardPage = () => {
                             </ChartNoDataContainer>
                         )}
                     </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 12, md: 12, lg: 12 }}>
+                    {/* deadline chart */}
+                    <Grid2
+                        size={{ xs: 12, sm: 12, md: 4, lg: 4 }}
+                        sx={{ minWidth: '300px' }}
+                    >
                         {deadlineLoading ? (
                             <LineChartLoadingContainer>
                                 <CircularProgress />

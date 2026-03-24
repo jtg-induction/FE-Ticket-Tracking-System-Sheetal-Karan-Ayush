@@ -3,7 +3,11 @@ import React, { useState } from 'react';
 import dayjs from 'dayjs';
 import { useParams } from 'react-router-dom';
 
-import { Delete as DeleteIcon, Edit as EditIcon, Mail as SubscribeIcon } from '@mui/icons-material';
+import {
+    Delete as DeleteIcon,
+    Edit as EditIcon,
+    Mail as SubscribeIcon,
+} from '@mui/icons-material';
 import {
     Box,
     Button,
@@ -18,6 +22,7 @@ import {
     Select,
     Stack,
     TextField,
+    Tooltip,
     Typography,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
@@ -51,7 +56,6 @@ import {
     TicketConstToTypeMap,
 } from './TicketDetails.util';
 
-
 export const TicketDetails: React.FC = () => {
     const theme = useTheme();
     const { projectKey, ticketKey } = useParams<{
@@ -73,9 +77,9 @@ export const TicketDetails: React.FC = () => {
     const [deadline, setDeadline] = React.useState<dayjs.Dayjs | null>(null);
     const formatDate = (dateString: string) =>
         new Date(dateString).toLocaleDateString();
-    const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
-    const [isSubsribeDialogOpen, setIsSubsribeDialogOpen] = useState(false)
-    
+    const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
+    const [isSubsribeDialogOpen, setIsSubsribeDialogOpen] = useState(false);
+
     const handleDeleteTicket = () => {
         if (!projectKey || !ticketKey) {
             return;
@@ -90,7 +94,12 @@ export const TicketDetails: React.FC = () => {
 
     const [newComment, setNewComment] = useState('');
 
-    const { data: comments, fetchNextPage: fetchCommentsNextPage, hasNextPage: hasCommentsNextPage, isLoading } = useGetAllComments({
+    const {
+        data: comments,
+        fetchNextPage: fetchCommentsNextPage,
+        hasNextPage: hasCommentsNextPage,
+        isLoading,
+    } = useGetAllComments({
         limit: 5,
         ticket_key: ticketKey as string,
         parent_comment_id: null,
@@ -102,15 +111,15 @@ export const TicketDetails: React.FC = () => {
             project_key: projectKey as string,
             ticket_key: ticketKey as string,
             parent_comment_id: null,
-        }
+        };
         createCommentMutation.mutate(payload, {
             onSuccess: () => {
-            setNewComment('');
-            void queryClient.invalidateQueries({ queryKey: ['comments'] });
+                setNewComment('');
+                void queryClient.invalidateQueries({ queryKey: ['comments'] });
             },
         });
-    }
-    
+    };
+
     const handleFieldChange = (
         field: keyof TicketUpdateFormData,
         value: TicketUpdateFormData[keyof TicketUpdateFormData],
@@ -124,8 +133,8 @@ export const TicketDetails: React.FC = () => {
             ...updateFormData,
             project_key: projectKey,
             ticket_key: ticketKey,
-            deadline: deadline ? deadline.toISOString(): undefined,
-        }
+            deadline: deadline ? deadline.toISOString() : undefined,
+        };
         const result = ticketUpdateRequestSchema.safeParse(payload);
 
         if (!result.success) {
@@ -137,7 +146,11 @@ export const TicketDetails: React.FC = () => {
             setErrors(fieldErrors);
             return;
         }
-        updateTicketMutation.mutate(result.data);
+        updateTicketMutation.mutate(result.data, {
+            onSuccess: () => {
+                setIsEditDialogOpen(false);
+            },
+        });
     };
 
     return (
@@ -180,30 +193,57 @@ export const TicketDetails: React.FC = () => {
 
                             {/* Icon Box with Edit and Delete icons */}
                             <Box>
-                                {ticket.role == ADMIN && 
-                                <>
-                                <Button
-                                    variant="contained"
-                                    size="small"
-                                    onClick={() => setIsMoveDialogOpen(true)}
-                                >
-                                    Move
-                                </Button>
+                                {ticket.role == ADMIN && (
+                                    <>
+                                        <Button
+                                            variant="contained"
+                                            size="small"
+                                            onClick={() =>
+                                                setIsMoveDialogOpen(true)
+                                            }
+                                        >
+                                            Move
+                                        </Button>
 
-                                <IconButton
-                                    sx={{
-                                        backgroundColor: COLORS.GRAY.BACKGROUND,
-                                        '&:hover': {
-                                            backgroundColor:
-                                                COLORS.GRAY.SECONDARY,
-                                        },
-                                        padding: theme.spacing(1),
-                                    }}
-                                    onClick={() => setIsEditDialogOpen(true)} // Open edit dialog
-                                >
-                                    <EditIcon />
-                                </IconButton>
+                                        <IconButton
+                                            sx={{
+                                                backgroundColor:
+                                                    COLORS.GRAY.BACKGROUND,
+                                                '&:hover': {
+                                                    backgroundColor:
+                                                        COLORS.GRAY.SECONDARY,
+                                                },
+                                                padding: theme.spacing(1),
+                                            }}
+                                            onClick={() =>
+                                                setIsEditDialogOpen(true)
+                                            } // Open edit dialog
+                                        >
+                                            <Tooltip title="Edit ticket">
+                                                <EditIcon />
+                                            </Tooltip>
+                                        </IconButton>
 
+                                        <IconButton
+                                            sx={{
+                                                backgroundColor:
+                                                    COLORS.GRAY.BACKGROUND,
+                                                '&:hover': {
+                                                    backgroundColor:
+                                                        COLORS.GRAY.SECONDARY,
+                                                },
+                                                padding: theme.spacing(1),
+                                            }}
+                                            onClick={() =>
+                                                setIsDeleteDialogOpen(true)
+                                            }
+                                        >
+                                            <Tooltip title="Delete ticket">
+                                                <DeleteIcon />
+                                            </Tooltip>
+                                        </IconButton>
+                                    </>
+                                )}
                                 <IconButton
                                     sx={{
                                         backgroundColor: COLORS.GRAY.BACKGROUND,
@@ -213,23 +253,13 @@ export const TicketDetails: React.FC = () => {
                                         },
                                         padding: theme.spacing(1),
                                     }}
-                                    onClick={() => setIsDeleteDialogOpen(true)}
+                                    onClick={() =>
+                                        setIsSubsribeDialogOpen(true)
+                                    } // Open Subsribe dialog
                                 >
-                                    <DeleteIcon />
-                                </IconButton>
-                                </>}
-                                <IconButton
-                                    sx={{
-                                        backgroundColor: COLORS.GRAY.BACKGROUND,
-                                        '&:hover': {
-                                            backgroundColor:
-                                                COLORS.GRAY.SECONDARY,
-                                        },
-                                        padding: theme.spacing(1),
-                                    }}
-                                    onClick={() => setIsSubsribeDialogOpen(true)} // Open Subsribe dialog
-                                >
-                                    <SubscribeIcon />
+                                    <Tooltip title="Subscribe ticket">
+                                        <SubscribeIcon />
+                                    </Tooltip>
                                 </IconButton>
                             </Box>
                         </Box>
@@ -323,8 +353,6 @@ export const TicketDetails: React.FC = () => {
                             </span>
                         </StyledLabel>
 
-                        
-
                         {/* Labels */}
                         <Stack
                             direction="row"
@@ -363,7 +391,9 @@ export const TicketDetails: React.FC = () => {
                                     size="small"
                                     placeholder="Add a comment..."
                                     value={newComment}
-                                    onChange={(e) => setNewComment(e.target.value)}
+                                    onChange={(e) =>
+                                        setNewComment(e.target.value)
+                                    }
                                     onKeyDown={(e) =>
                                         e.key === 'Enter' && handleAddComment()
                                     }
@@ -372,7 +402,10 @@ export const TicketDetails: React.FC = () => {
                                     variant="contained"
                                     size="small"
                                     onClick={handleAddComment}
-                                    disabled={!newComment.trim() || newComment.length > MAX_COMMENT_LENGTH}
+                                    disabled={
+                                        !newComment.trim() ||
+                                        newComment.length > MAX_COMMENT_LENGTH
+                                    }
                                 >
                                     Comment
                                 </Button>
@@ -380,35 +413,47 @@ export const TicketDetails: React.FC = () => {
 
                             {/* Comments List */}
                             <Stack spacing={3}>
-                                {
-                                    comments?.pages?.length? (
+                                {comments?.pages?.length ? (
                                     <>
-                                        {comments.pages.flatMap((page) => page.comments).map((comment) => (
-                                            <Box key={comment.id}>
-                                                <Divider />
-                                                <CommentItem
-                                                    comment={{
-                                                        id: comment.id,
-                                                        commentText: comment.comment,
-                                                        user: comment.email,
-                                                        ticketId: comment.ticket_id,
-                                                        parentComment: comment.parent_comment_id,
-                                                        time: comment.created_at,
-                                                    }}
-                                                />
-                                            </Box>
-                                        ))}
-                                        {hasCommentsNextPage &&
-                                            <Button size="small" onClick={() => void fetchCommentsNextPage()} disabled={isLoading}>
-                                                <Typography variant="caption">{isLoading ? 'Loading...' : 'Load More'}</Typography>
+                                        {comments.pages
+                                            .flatMap((page) => page.comments)
+                                            .map((comment) => (
+                                                <Box key={comment.id}>
+                                                    <Divider />
+                                                    <CommentItem
+                                                        comment={{
+                                                            id: comment.id,
+                                                            commentText:
+                                                                comment.comment,
+                                                            user: comment.email,
+                                                            ticketId:
+                                                                comment.ticket_id,
+                                                            parentComment:
+                                                                comment.parent_comment_id,
+                                                            time: comment.created_at,
+                                                        }}
+                                                    />
+                                                </Box>
+                                            ))}
+                                        {hasCommentsNextPage && (
+                                            <Button
+                                                size="small"
+                                                onClick={() =>
+                                                    void fetchCommentsNextPage()
+                                                }
+                                                disabled={isLoading}
+                                            >
+                                                <Typography variant="caption">
+                                                    {isLoading
+                                                        ? 'Loading...'
+                                                        : 'Load More'}
+                                                </Typography>
                                             </Button>
-                                        }
+                                        )}
                                     </>
-                                )
-                                : (
+                                ) : (
                                     <div>No comments</div>
-                                )
-                                }
+                                )}
                             </Stack>
                         </Card>
                     </CardContent>
@@ -561,8 +606,15 @@ export const TicketDetails: React.FC = () => {
                     </Typography>
                 )}
             </DialogBox>
-            <MoveTicketContainer open={isMoveDialogOpen} onClose={() => setIsMoveDialogOpen(false)} />
-            <SubscribeTicketContainer open={isSubsribeDialogOpen} onClose={() => setIsSubsribeDialogOpen(false)} isSubscribed={ticket?.is_subscribed}/>
+            <MoveTicketContainer
+                open={isMoveDialogOpen}
+                onClose={() => setIsMoveDialogOpen(false)}
+            />
+            <SubscribeTicketContainer
+                open={isSubsribeDialogOpen}
+                onClose={() => setIsSubsribeDialogOpen(false)}
+                isSubscribed={ticket?.is_subscribed}
+            />
         </>
     );
 };

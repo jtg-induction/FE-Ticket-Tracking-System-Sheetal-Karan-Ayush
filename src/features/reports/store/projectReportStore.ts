@@ -2,12 +2,11 @@ import { create } from 'zustand';
 
 import { ProjectReportFilters } from '../projectReport.schema';
 
-
 type Store = {
     filters: ProjectReportFilters;
     setFilter: <K extends keyof ProjectReportFilters>(
-        key: K, 
-        value: ProjectReportFilters[K]
+        key: K,
+        value: ProjectReportFilters[K],
     ) => void;
     resetFilters: () => void;
 };

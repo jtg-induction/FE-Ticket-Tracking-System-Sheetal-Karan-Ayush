@@ -173,7 +173,6 @@ export const getProject = async (
     }
 };
 
-
 export const getTicketDeadlineStats = async (
     projectKey: string,
 ): Promise<DeadlineStatsResponse[]> => {
@@ -199,25 +198,31 @@ export const getTicketPriorityStats = async (
         `api/reports/project/${projectKey}/ticket/priority`,
     );
     return response.data;
-}
+};
 
-export const getAllUsers =  async (
+export const getAllUsers = async (
     data: GetAllUsersRequest,
 ): Promise<GetAllUsersResponse> => {
     try {
         const response = await api.get<ProjectResponse>(
-            `/projects/${data.projectKey}/users`, {
-                params: { user_name: data.userName, offset: data.offset, limit: data.limit },
-            }
+            `/projects/${data.projectKey}/users`,
+            {
+                params: {
+                    user_name: data.userName,
+                    offset: data.offset,
+                    limit: data.limit,
+                },
+            },
         );
 
-        const parsed = getAllProjectUsersResponseSchema.safeParse(response.data);
-        
+        const parsed = getAllProjectUsersResponseSchema.safeParse(
+            response.data,
+        );
+
         if (!parsed.success) {
             throw new Error('Invalid server response ');
         }
         return parsed.data;
-
     } catch (error: unknown) {
         return handleApiError(error);
     }

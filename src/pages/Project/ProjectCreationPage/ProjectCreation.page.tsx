@@ -65,7 +65,9 @@ export const ProjectCreationPage = () => {
                     );
                 }
             } else {
-                setSnackbarMessage('Unauthorized: Invalid Jira URL, Access Token, or Admin Email');
+                setSnackbarMessage(
+                    'Unauthorized: Invalid Jira URL, Access Token, or Admin Email',
+                );
             }
             setSnackbarOpen(true);
             setIsUnique(false);

@@ -16,5 +16,5 @@ export const TicketConstToPriorityMap: { [key: number]: string } = {
     3: 'High',
 };
 
-export const ADMIN = 1
+export const ADMIN = 1;
 export const MAX_COMMENT_LENGTH = 255;

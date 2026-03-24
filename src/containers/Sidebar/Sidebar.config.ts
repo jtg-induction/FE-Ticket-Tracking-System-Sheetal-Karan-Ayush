@@ -1,4 +1,3 @@
-
 import { Add, ListAlt, PieChart } from '@mui/icons-material';
 
 import { SidebarItem } from './Sidebar.types';
@@ -20,4 +19,4 @@ export const sidebarList: SidebarItem[] = [
         icon: 'listAlt',
     },
 ];
-export const myProjects = "My Projects"
+export const myProjects = 'My Projects';

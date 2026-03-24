@@ -1,6 +1,10 @@
-import { handleApiError } from "@api/apiErrorHandling";
-import { api } from "@api/axios";
-import { CommentResponse, commentResponseSchema, CreateCommentFormData } from "@features/comments/createComment/createComment.schema";
+import { handleApiError } from '@api/apiErrorHandling';
+import { api } from '@api/axios';
+import {
+    CommentResponse,
+    commentResponseSchema,
+    CreateCommentFormData,
+} from '@features/comments/createComment/createComment.schema';
 
 /**
  * Creates a new comment for a specific ticket within a project.
