@@ -98,8 +98,8 @@ export const UserReportPage: React.FC = () => {
 
     const { user, clearAuth } = useAuthStore();
     const navigate = useNavigate();
-    const { projectKey } = useParams();
     const [searchParams] = useSearchParams();
+    const { projectKey } = useParams();
     const email = searchParams.get('email') ?? userData?.email;
     const {
         data: reportData,
@@ -186,14 +186,13 @@ export const UserReportPage: React.FC = () => {
             sort: event.target.value as 'latest' | 'oldest',
         }));
     };
-
     const handleLoadMore = () => {
         if (nextCursor) {
             setCursor(nextCursor);
             setPage((prev) => prev + 1);
         }
     };
-
+    
     const handleReset = () => {
         setCursor(undefined);
         setPage(0);
@@ -209,19 +208,22 @@ export const UserReportPage: React.FC = () => {
             deadlineTo: undefined,
         });
     };
-
+    
     const handlePdfDownload = () => {
-        if (!userData?.email) return;
-        downloadPdf({ filters, email: userData.email, projectKey });
+        downloadPdf({ filters, email, projectKey });
     };
-
+    
     const handleLogout = () => {
         clearAuth();
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         void navigate('/login');
     };
-
+    
+    const getProjectKeyFromTicket = (ticketKey: string) => {
+        const match = ticketKey.match(/^([A-Z]+)-\d+$/);
+        return match ? match[1] : undefined;
+    };
     return (
         <PageContainer>
             <HeaderContainer>
@@ -523,7 +525,22 @@ export const UserReportPage: React.FC = () => {
                                 </StyledTableRow>
                             ) : (
                                 tickets.map((ticket) => (
-                                    <StyledTableRow key={ticket.id}>
+                                    <StyledTableRow
+                                        key={ticket.id}
+                                        hover
+                                        sx={{ cursor: 'pointer' }} 
+                                        onClick={() =>{
+                                            const projectKeyToUse =
+                                                projectKey ||
+                                                getProjectKeyFromTicket(
+                                                    ticket.jira_ticket_key,
+                                                );
+                                            void navigate(
+                                                `/project/${projectKeyToUse}/ticket/${ticket.jira_ticket_key}`,
+                                            );
+                                            }
+                                        } 
+                                    >
                                         <TableCell>
                                             <Tooltip title={ticket.title} arrow>
                                                 <TicketTitle variant="body2">
@@ -551,9 +568,6 @@ export const UserReportPage: React.FC = () => {
             </Paper>
 
             <LoadMoreContainer>
-                <Typography variant="body2" color="textSecondary">
-                    Page {page + 1}
-                </Typography>
                 <LoadMoreButton
                     variant="contained"
                     onClick={handleLoadMore}

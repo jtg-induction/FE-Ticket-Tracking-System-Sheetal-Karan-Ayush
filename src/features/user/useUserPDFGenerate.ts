@@ -3,20 +3,23 @@ import { useMutation } from '@tanstack/react-query';
 
 import { getUserReportPdf } from './api';
 
-interface UseUserReportPdfProps {
+type UseUserReportPdfProps = {
     onSuccess?: () => void;
     onError?: (error: Error) => void;
 }
-
+type UseUserReportPdfVariables = {
+    filters: UserReportFilters;
+    email: string;
+    projectKey?: string;
+}
 export const useUserReportPdf = (options?: UseUserReportPdfProps) => {
     const mutation = useMutation({
         mutationFn: ({
             filters,
             email,
-        }: {
-            filters: UserReportFilters;
-            email: string;
-        }) => getUserReportPdf(filters, email),
+            projectKey,
+        }: UseUserReportPdfVariables) =>
+            getUserReportPdf(filters, email, projectKey),
         onSuccess: (blob: Blob, variables) => {
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -35,7 +38,7 @@ export const useUserReportPdf = (options?: UseUserReportPdfProps) => {
 
     return {
         downloadPdf: mutation.mutate,
-        isLoading: mutation.isPending, 
+        isLoading: mutation.isPending,
         isError: mutation.isError,
         error: mutation.error,
     };

@@ -92,8 +92,6 @@ export const ProjectDashboardPage = () => {
     const { projectKey } = useParams<{ projectKey: string }>();
     const { data: project, isError } = useGetProject(projectKey);
     const isDeveloper = project?.role === 2;
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
 
     const { mutate: updateProject } = useUpdateProject();
     const { mutate: deleteProject } = useDeleteProject();

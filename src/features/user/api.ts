@@ -108,12 +108,16 @@ export const getUserBasicDetails = async (): Promise<UserBasicDetails> => {
 export const getUserReportPdf = async (
     filters: UserReportFilters,
     email: string,
+    projectKey?: string,
 ): Promise<Blob> => {
     try {
         const params = buildReportParams(filters, email);
 
         const response = await api.get<Blob>('/user-report', {
-            params,
+            params: {
+                ...params,
+                ...(projectKey ? { project_key: projectKey } : {}),
+            },
             paramsSerializer: { indexes: null },
             responseType: 'blob',
         });
