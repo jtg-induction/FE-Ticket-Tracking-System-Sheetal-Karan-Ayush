@@ -58,7 +58,7 @@ const storeCreator: StateCreator<ProjectStore> = (set) => ({
 
     removeProject: (id) =>
         set((state) => ({
-            projects: state.projects.filter((p) => p.id !== id),
+            projects: state.projects.filter((p) => p.id !== Number(id)),
         })),
     setDeleteTarget: (project: ProjectResponse) =>
         set({ deleteTarget: project }),

@@ -3,7 +3,6 @@ import { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { Delete } from '@mui/icons-material';
 import DownloadIcon from '@mui/icons-material/Download';
 import UserSidebarIcon from '@mui/icons-material/PeopleAlt';
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
