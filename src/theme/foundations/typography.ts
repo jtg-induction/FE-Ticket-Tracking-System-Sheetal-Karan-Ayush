@@ -45,11 +45,11 @@ const typographyStyle = (theme: Theme): TypographyOptions => ({
     h2: {
         fontSize: typographyUtil.pxToRem(FONT_SIZES.FONT_XL),
         fontWeight: FONT_WEIGHTS.BOLD,
-        lineHeight: typographyUtil.pxToRem(30),
+        lineHeight: typographyUtil.pxToRem(25),
 
         [theme.breakpoints.up('md')]: {
-            fontSize: typographyUtil.pxToRem(FONT_SIZES.FONT_3XL),
-            lineHeight: typographyUtil.pxToRem(45),
+            fontSize: typographyUtil.pxToRem(FONT_SIZES.FONT_XL),
+            lineHeight: typographyUtil.pxToRem(30),
         },
     },
 

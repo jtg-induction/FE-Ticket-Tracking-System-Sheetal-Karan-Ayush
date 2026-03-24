@@ -4,7 +4,7 @@
  */
 export const COLORS = {
     PRIMARY: {
-        MAIN: '#0E9F6E',
+        MAIN: '#0e469fff',
     },
     GRAY: {
         PRIMARY: '#111827',

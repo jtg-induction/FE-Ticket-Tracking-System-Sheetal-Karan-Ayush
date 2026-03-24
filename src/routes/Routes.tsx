@@ -1,7 +1,13 @@
 import { createBrowserRouter, RouteObject } from 'react-router-dom';
 
-import { Login, PageNotFound, Register } from '@pages';
 import { DashboardLayout } from '@containers';
+import {
+    Login,
+    PageNotFound,
+    ProjectCreationPage,
+    ProjectDashboardPage,
+    Register,
+} from '@pages';
 
 const routes: RouteObject[] = [
     {
@@ -9,6 +15,14 @@ const routes: RouteObject[] = [
         element: <DashboardLayout />,
 
         children: [
+            {
+                path: 'project/create',
+                element: <ProjectCreationPage />,
+            },
+            {
+                path: 'project/:projectKey',
+                element: <ProjectDashboardPage />,
+            },
             {
                 path: '*',
                 element: <PageNotFound />,

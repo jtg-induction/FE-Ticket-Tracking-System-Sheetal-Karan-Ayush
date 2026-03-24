@@ -1,8 +1,18 @@
+import { useState } from 'react';
+
 import { NavLink } from 'react-router-dom';
 
-import { Typography, useMediaQuery, useTheme } from '@mui/material';
+import {
+    Button,
+    Stack,
+    Typography,
+    useMediaQuery,
+    useTheme,
+} from '@mui/material';
 
 import { HeroCard, Logo } from '@components';
+import { StyledErrorTextField } from '@containers/RegisterForm/RegisterForm.styles';
+import { useSignupMutation } from '@features/auth';
 
 import {
     StyledContent,
@@ -10,12 +20,72 @@ import {
     StyledStackWrapper,
     StyledWrapper,
 } from './Register.styles';
-import { RegisterForm } from '@containers';
 
 export const Register = () => {
     const theme = useTheme();
 
     const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
+
+    const [name, setName] = useState('');
+    const nameRegex = /^[A-Za-z][A-Za-z ]*$/;
+    const isInvalidName = name.length > 0 && !nameRegex.test(name);
+
+    const [email, setEmail] = useState('');
+    const [isInvalidEmail, setIsInvalidEmail] = useState(false);
+    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setEmail(value);
+        if (value.length > 0) {
+            setIsInvalidEmail(!e.target.validity.valid);
+        } else {
+            setIsInvalidEmail(false);
+        }
+    };
+    const [password, setPassword] = useState('');
+    const passwordRegex =
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const isInvalidPassword =
+        password.length > 0 && !passwordRegex.test(password);
+
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [isInvalidConfirmPassword, setIsInvalidConfirmPassword] =
+        useState(false);
+    const handleConfirmPasswordChange = (
+        e: React.ChangeEvent<HTMLInputElement>,
+    ) => {
+        const value = e.target.value;
+        setConfirmPassword(value);
+        if (password.length > 0 && value.length > 0) {
+            setIsInvalidConfirmPassword(value !== password);
+        } else {
+            setIsInvalidConfirmPassword(false);
+        }
+    };
+
+    const isFormValid =
+        name.length > 2 &&
+        name.length < 256 &&
+        email.length > 0 &&
+        email.length < 256 &&
+        password.length > 7 &&
+        password.length < 256 &&
+        confirmPassword.length > 7 &&
+        !isInvalidName &&
+        !isInvalidEmail &&
+        !isInvalidPassword &&
+        password === confirmPassword;
+
+    const signupMutation = useSignupMutation();
+
+    const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
+        e.preventDefault();
+
+        if (!isFormValid) {
+            // console.log('Submission blocked: Fix validation errors first.');
+            return;
+        }
+        signupMutation.mutate({ name, email, password, avatarId: 1 });
+    };
 
     return (
         <StyledWrapper>
@@ -32,7 +102,81 @@ export const Register = () => {
                         </Typography>
                     </StyledContent>
 
-                    <RegisterForm />
+                    <Stack component="form" spacing={4} onSubmit={handleSubmit}>
+                        <StyledErrorTextField
+                            required
+                            name="name"
+                            label="Name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            error={isInvalidName}
+                            helperText={
+                                isInvalidName
+                                    ? 'Enter a valid name (letters only) minlength-2 maxlength-255'
+                                    : ''
+                            }
+                        />
+                        <StyledErrorTextField
+                            required
+                            name="email"
+                            label="Email"
+                            type="email"
+                            value={email}
+                            onChange={handleEmailChange}
+                            error={isInvalidEmail}
+                            helperText={
+                                isInvalidEmail
+                                    ? 'Enter a valid email address'
+                                    : ''
+                            }
+                        />
+
+                        <StyledErrorTextField
+                            required
+                            name="password"
+                            label="Password"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            error={isInvalidPassword}
+                            helperText={
+                                isInvalidPassword
+                                    ? 'Password must contain at least 8 characters(atleast one small letter, one capital letter, one number and atleast one special character) and at max 255 characters'
+                                    : ''
+                            }
+                        />
+
+                        <StyledErrorTextField
+                            required
+                            name="confirmPassword"
+                            label="Confirm Password"
+                            type="password"
+                            value={confirmPassword}
+                            onChange={handleConfirmPasswordChange}
+                            error={isInvalidConfirmPassword}
+                            helperText={
+                                isInvalidConfirmPassword
+                                    ? 'Confirm password and password must be same'
+                                    : ''
+                            }
+                        />
+                        {signupMutation.isError && (
+                            <Typography
+                                variant="subtitle2"
+                                sx={{ color: theme.palette.error.contrastText }}
+                            >
+                                {signupMutation.error.message}
+                            </Typography>
+                        )}
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            type="submit"
+                            disabled={!isFormValid}
+                        >
+                            Submit
+                        </Button>
+                    </Stack>
 
                     <Typography textAlign={'center'}>
                         Have an account? <NavLink to="/login">Login</NavLink>

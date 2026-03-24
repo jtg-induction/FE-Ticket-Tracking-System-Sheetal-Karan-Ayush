@@ -1,61 +1,63 @@
-import { Box, BoxProps, styled } from '@mui/material';
+import { Link } from 'react-router-dom';
+
+import { AppBar, Box, BoxProps, styled } from '@mui/material';
 
 import { HamburgerButtonProps } from './Header.types';
 
-export const HeaderStyled = styled(Box)<BoxProps>(({ theme }) => {
-    const { palette } = theme;
+export const HeaderStyled = styled(AppBar)<BoxProps>(({ theme }) => {
+    const { palette, typography, spacing } = theme;
 
     return {
+        display: 'flex',
+        justifyContent: 'center',
+        padding: spacing(4),
         backgroundColor: palette.common.white,
         position: 'fixed',
         width: '100%',
         top: 0,
+        height: typography.pxToRem(64),
         zIndex: theme.zIndex.drawer + 1,
     };
 });
 
 export const HamburgerButton = styled(Box)<HamburgerButtonProps & BoxProps>(({
-    theme,
-    isOpen,
+    theme
 }) => {
     const {
-        typography: { pxToRem },
-        palette,
+        typography: { pxToRem }
     } = theme;
     return {
         display: 'flex',
-        flexDirection: 'column',
         justifyContent: 'center',
-        width: pxToRem(28),
-        height: pxToRem(28),
+        alignItems: 'center',
+        width: pxToRem(32),
+        height: pxToRem(32),
         background: 'transparent',
         border: 'none',
         cursor: 'pointer',
         position: 'relative',
-
-        '& span': {
-            display: 'block',
-            width: pxToRem(24),
-            height: pxToRem(2),
-            backgroundColor: palette.text.primary,
-            transition: 'all 0.3s ease-in-out',
-            position: 'absolute',
-
-            '&:nth-of-type(1)': {
-                transform: isOpen
-                    ? 'rotate(45deg)'
-                    : `translateY(${pxToRem(-8)})`,
-            },
-
-            '&:nth-of-type(2)': {
-                opacity: isOpen ? 0 : 1,
-            },
-
-            '&:nth-of-type(3)': {
-                transform: isOpen
-                    ? 'rotate(-45deg)'
-                    : `translateY(${pxToRem(8)})`,
-            },
-        },
     };
 });
+
+export const StyledLeftBox = styled(Link)(({ theme }) => {
+    const { spacing } = theme;
+
+    return {
+        display: 'flex',
+        gap: spacing(4),
+        alignItems: 'center',
+        textDecoration: 'none',
+    };
+});
+
+export const StyledToolbar = styled(Box)(() => ({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+}));
+
+export const StyledRightBox = styled(Box)(() => ({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+}));
