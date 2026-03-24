@@ -1,6 +1,6 @@
 import { handleApiError } from '@api/apiErrorHandling';
 import { api } from '@api/axios';
-import { GetAllCommentsFormData, GetAllCommentsResponse } from '@features/comments/getAllComments/getAllComments.schema';
+import { GetAllCommentsFormData, GetAllCommentsResponse, getAllCommentsResponseSchema } from '@features/comments/getAllComments/getAllComments.schema';
 
 /**
  * Fetches all comments for a given ticket.
@@ -24,7 +24,11 @@ export const getAllComments = async (
 ): Promise<GetAllCommentsResponse> => {
     try {
         const response = await api.get(`/api/tickets/${params.ticket_key}/comments`, { params });
-        return response.data;
+        const parsed = getAllCommentsResponseSchema.safeParse(response.data);
+        if (!parsed.success) {
+            throw new Error('Invalid server response ');
+        }
+        return parsed.data;
 
     } catch (error: unknown) {
         return handleApiError(error);

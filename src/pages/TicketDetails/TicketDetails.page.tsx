@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 import dayjs from 'dayjs';
 import { useParams } from 'react-router-dom';
 
-import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
+import { Delete as DeleteIcon, Edit as EditIcon, Mail as SubscribeIcon } from '@mui/icons-material';
 import {
     Box,
     Button,
@@ -29,6 +29,7 @@ import { CommentItem } from '@components/CommentItem/CommentItem.component';
 import { DialogBox } from '@components/DialogBox';
 import { COLORS } from '@constant';
 import { MoveTicketContainer } from '@containers/MoveTicketDialogBox/MoveTicketDialogBox.container';
+import { SubscribeTicketContainer } from '@containers/SubscribeTicketDialogBox/SubscribeTicketDialogBox.container';
 import { useCreateCommentMutation } from '@features/comments/createComment/useCreateCommentMutation';
 import { useGetAllComments } from '@features/comments/getAllComments/useGetAllComments';
 import { useDeleteTicket } from '@features/ticket/deleteTicket/useDeleteTicketMutation';
@@ -73,7 +74,8 @@ export const TicketDetails: React.FC = () => {
     const formatDate = (dateString: string) =>
         new Date(dateString).toLocaleDateString();
     const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
-
+    const [isSubsribeDialogOpen, setIsSubsribeDialogOpen] = useState(false)
+    
     const handleDeleteTicket = () => {
         if (!projectKey || !ticketKey) {
             return;
@@ -216,6 +218,19 @@ export const TicketDetails: React.FC = () => {
                                     <DeleteIcon />
                                 </IconButton>
                                 </>}
+                                <IconButton
+                                    sx={{
+                                        backgroundColor: COLORS.GRAY.BACKGROUND,
+                                        '&:hover': {
+                                            backgroundColor:
+                                                COLORS.GRAY.SECONDARY,
+                                        },
+                                        padding: theme.spacing(1),
+                                    }}
+                                    onClick={() => setIsSubsribeDialogOpen(true)} // Open Subsribe dialog
+                                >
+                                    <SubscribeIcon />
+                                </IconButton>
                             </Box>
                         </Box>
 
@@ -546,7 +561,8 @@ export const TicketDetails: React.FC = () => {
                     </Typography>
                 )}
             </DialogBox>
-            <MoveTicketContainer isMoveDialogOpen={isMoveDialogOpen} setIsMoveDialogOpen={setIsMoveDialogOpen} />
+            <MoveTicketContainer open={isMoveDialogOpen} onClose={() => setIsMoveDialogOpen(false)} />
+            <SubscribeTicketContainer open={isSubsribeDialogOpen} onClose={() => setIsSubsribeDialogOpen(false)} isSubscribed={ticket?.is_subscribed}/>
         </>
     );
 };

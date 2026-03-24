@@ -12,7 +12,7 @@ import { theme } from "@theme";
 import { MAX_PROJECT_KEY_LENGTH, MIN_PROJECT_KEY_LENGTH } from "./moveTicket.constants";
 import { MoveTicketProps } from "./moveTicket.types";
 
-export const MoveTicketContainer = ({isMoveDialogOpen, setIsMoveDialogOpen}: MoveTicketProps) => {
+export const MoveTicketContainer = ({open, onClose}: MoveTicketProps) => {
     const moveTicketMutation = useMoveTicketMutation();
     const [targetProjectKey, setTargetProjectKey] = useState('');
 
@@ -42,9 +42,9 @@ export const MoveTicketContainer = ({isMoveDialogOpen, setIsMoveDialogOpen}: Mov
 
     return (
         <DialogBox
-            open={isMoveDialogOpen}
+            open={open}
             title="MoveTicket"
-            onClose={() => setIsMoveDialogOpen(false)}
+            onClose={onClose}
             onSubmit={handleMoveTicket}
             submitText="Confirm"
             cancelText="Cancel"
