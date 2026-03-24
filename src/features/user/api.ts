@@ -72,15 +72,17 @@ export const getUserReport = async (
     filters: UserReportFilters,
     email: string,
     cursor?: string,
+    projectKey?: string,
 ): Promise<UserReportResponse> => {
     try {
-        const params = buildReportParams(filters, email);
+        const baseParams = buildReportParams(filters, email);
 
         const response = await api.get<UserReportResponse>(
             '/user/full-details',
             {
                 params: {
-                    ...params,
+                    ...baseParams,
+                    ...(projectKey ? { project_key: projectKey } : {}),
                     limit: filters.limit ?? 10,
                     cursor,
                 },
@@ -93,7 +95,6 @@ export const getUserReport = async (
         throw new Error(getErrorMessage(error));
     }
 };
-
 export const getUserBasicDetails = async (): Promise<UserBasicDetails> => {
     try {
         const response = await api.get<UserBasicDetails>('/user');
@@ -106,12 +107,16 @@ export const getUserBasicDetails = async (): Promise<UserBasicDetails> => {
 export const getUserReportPdf = async (
     filters: UserReportFilters,
     email: string,
+    projectKey?: string,
 ): Promise<Blob> => {
     try {
         const params = buildReportParams(filters, email);
 
         const response = await api.get<Blob>('/user-report', {
-            params,
+            params: {
+                ...params,
+                ...(projectKey ? { project_key: projectKey } : {}),
+            },
             paramsSerializer: { indexes: null },
             responseType: 'blob',
         });

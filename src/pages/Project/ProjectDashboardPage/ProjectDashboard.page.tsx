@@ -303,7 +303,7 @@ export const ProjectDashboardPage = () => {
                     </StyledLeftBox>
                     
                         <StyledRightBox>
-                            {!isDeveloper && (
+                        {!isDeveloper && project?.status!=2 && (
                                 <>
                                     <StyledButton
                                         variant="contained"
@@ -323,16 +323,16 @@ export const ProjectDashboardPage = () => {
                                     >    
                                         <PersonAddAltIcon/>
                                     </StyledButton>
+
+                                </>
+                                
+                            )} 
                                     <StyledButton
                                         sx={{padding: theme.spacing(0)}}
                                         onClick={() => void navigate(`/project/${projectKey}/reports/download`)}
                                     >    
                                         <DownloadIcon />
                                     </StyledButton>
-
-                                </>
-                                
-                            )} 
                             <StyledButton
                                 sx={{padding: theme.spacing(0)}}
                                 onClick={() => setUserSidebarOpen((prev) => !prev)}
@@ -350,7 +350,7 @@ export const ProjectDashboardPage = () => {
 
             <SectionLayout>
                 <Grid2 container spacing={3} sx={{ mt: 1 }}>
-                    <Grid2 size={{ xs: 12, sm: 6, md: 6, lg: 4 }}>
+                    <Grid2 size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
                         {statusLoading ? (
                             <ChartLoadingContainer>
                                 <CircularProgress />
@@ -372,6 +372,28 @@ export const ProjectDashboardPage = () => {
                         )}
                     </Grid2>
 
+
+                    <Grid2 size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
+                        {priorityLoading ? (
+                            <ChartLoadingContainer>
+                                <CircularProgress />
+                            </ChartLoadingContainer>
+                        ) : priorityChartData ? (
+                            <ChartCard
+                                title="Ticket by Priority"
+                                type="pie"
+                                data={priorityChartData}
+                                dataKey="count"
+                                xKey="priority"
+                            />
+                        ) : (
+                            <ChartNoDataContainer>
+                                <Typography color="textSecondary">
+                                    No data available
+                                </Typography>
+                            </ChartNoDataContainer>
+                        )}
+                    </Grid2>
                     <Grid2 size={{ xs: 12, sm: 12, md: 12, lg: 12 }}>
                         {deadlineLoading ? (
                             <LineChartLoadingContainer>
@@ -392,28 +414,6 @@ export const ProjectDashboardPage = () => {
                                     No deadline data available
                                 </Typography>
                             </LineChartNoDataContainer>
-                        )}
-                    </Grid2>
-
-                    <Grid2 size={{ xs: 12, sm: 6, md: 6, lg: 4 }}>
-                        {priorityLoading ? (
-                            <ChartLoadingContainer>
-                                <CircularProgress />
-                            </ChartLoadingContainer>
-                        ) : priorityChartData ? (
-                            <ChartCard
-                                title="Ticket by Priority"
-                                type="pie"
-                                data={priorityChartData}
-                                dataKey="count"
-                                xKey="priority"
-                            />
-                        ) : (
-                            <ChartNoDataContainer>
-                                <Typography color="textSecondary">
-                                    No data available
-                                </Typography>
-                            </ChartNoDataContainer>
                         )}
                     </Grid2>
                 </Grid2>

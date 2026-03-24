@@ -12,7 +12,6 @@ export const useAuthStore = create<AuthStore>((set) => ({
                 id: data.id,
                 name: data.name,
                 email: data.email,
-                avatarId: data.avatar_id,
             },
             accessToken: data.access_token,
             refreshToken: data.refresh_token,

@@ -7,9 +7,10 @@ export const useUserReport = (
     email?: string,
     filters?: Partial<UserReportFilters>,
     cursor?: string,
+    projectKey?: string,
 ) =>
     useQuery({
-        queryKey: ['user-report', email, filters, cursor],
+        queryKey: ['user-report', email, filters, cursor, projectKey],
         queryFn: () => {
             if (!email) throw new Error('Email is required');
 
@@ -26,8 +27,9 @@ export const useUserReport = (
                 ...filters,
             };
 
-            return getUserReport(mergedFilters, email, cursor);
+            return getUserReport(mergedFilters, email, cursor, projectKey);
         },
         enabled: !!email,
         placeholderData: (prev) => prev,
+        refetchOnMount: 'always',
     });

@@ -47,13 +47,12 @@ const routes: RouteObject[] = [
                         path: 'project/:projectKey/ticket/:ticketKey',
                         element: <TicketDetails />,
                     },
-                    // just adding route temporarily else it would be shown in dialog box in project dashboard page itself
                     {
                         path: 'project/:projectKey/reports/download',
                         element: <DownloadProjectReportDialog />,
                     },
                     {
-                        path: 'project/:projectKey/user/:userId',
+                        path: 'project/:projectKey/user',
                         element: <UserReportPage />,
                     },
                     {

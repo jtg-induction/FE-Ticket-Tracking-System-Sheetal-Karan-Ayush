@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import {
     Assignment as TotalIcon,
@@ -26,6 +26,7 @@ import {
     TextField,
     Tooltip,
     Typography,
+    useMediaQuery,
 } from '@mui/material';
 
 import { ChartCard } from '@components';
@@ -33,6 +34,7 @@ import { useAuthStore } from '@features/auth';
 import { useUserReport } from '@features/user';
 import { useUserBasicDetails } from '@features/user/useUserBasicDetails';
 import { useUserReportPdf } from '@features/user/useUserPDFGenerate';
+import { theme } from '@theme';
 
 import { mapTicket } from './userProjectReport.config';
 import {
@@ -54,7 +56,7 @@ import {
     TitleCell,
     UserInfoCard,
 } from './UserProjectReport.style';
-import { RawTicket,UserReportFilters } from './UserProjectReport.type';
+import { RawTicket, UserReportFilters } from './UserProjectReport.type';
 
 const SummaryCardItem: React.FC<{
     label: string;
@@ -91,19 +93,26 @@ export const UserReportPage: React.FC = () => {
         deadlineFrom: undefined,
         deadlineTo: undefined,
     });
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+
     const [cursor, setCursor] = useState<string | undefined>(undefined);
     const [page, setPage] = useState(0);
 
     const { user, clearAuth } = useAuthStore();
     const navigate = useNavigate();
-
+    const [filterErrors, setFilterErrors] = useState<Record<string, string>>(
+        {},
+    );
     const { data: userData, isLoading: userLoading } = useUserBasicDetails();
+    const [searchParams] = useSearchParams();
+    const { projectKey } = useParams();
+    const email = searchParams.get('email') ?? userData?.email;
     const {
         data: reportData,
         isLoading,
         isError,
         error,
-    } = useUserReport(userData?.email, filters, cursor);
+    } = useUserReport(email, filters, cursor, projectKey);
 
     const { downloadPdf, isLoading: isPdfLoading } = useUserReportPdf();
 
@@ -148,7 +157,24 @@ export const UserReportPage: React.FC = () => {
             </PageContainer>
         );
     }
+    const validateFilters = (filter: UserReportFilters) => {
+        const errors: Record<string, string> = {};
 
+        if (filter.createdFrom && filter.createdTo) {
+            if (new Date(filter.createdFrom) > new Date(filter.createdTo)) {
+                errors.created = "'Created From' must be before 'Created To'";
+            }
+        }
+
+        if (filter.deadlineFrom && filter.deadlineTo) {
+            if (new Date(filter.deadlineFrom) > new Date(filter.deadlineTo)) {
+                errors.deadline =
+                    "'Deadline From' must be before 'Deadline To'";
+            }
+        }
+
+        return errors;
+    };
     const summary = reportData!.summary ?? {
         totalTickets: 0,
         completedTickets: 0,
@@ -183,7 +209,6 @@ export const UserReportPage: React.FC = () => {
             sort: event.target.value as 'latest' | 'oldest',
         }));
     };
-
     const handleLoadMore = () => {
         if (nextCursor) {
             setCursor(nextCursor);
@@ -208,8 +233,7 @@ export const UserReportPage: React.FC = () => {
     };
 
     const handlePdfDownload = () => {
-        if (!userData?.email) return;
-        downloadPdf({ filters, email: userData.email });
+        downloadPdf({ filters, email, projectKey });
     };
 
     const handleLogout = () => {
@@ -218,7 +242,20 @@ export const UserReportPage: React.FC = () => {
         localStorage.removeItem('refresh_token');
         void navigate('/login');
     };
-
+    const handleDateChange =
+        (field: keyof UserReportFilters) =>
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            const value = e.target.value;
+            setFilters((prev) => {
+                const updatedFilters = { ...prev, [field]: value };
+                setFilterErrors(validateFilters(updatedFilters));
+                return updatedFilters;
+            });
+        };
+    const getProjectKeyFromTicket = (ticketKey: string) => {
+        const match = ticketKey.match(/^([A-Z]+)-\d+$/);
+        return match ? match[1] : undefined;
+    };
     return (
         <PageContainer>
             <HeaderContainer>
@@ -229,7 +266,7 @@ export const UserReportPage: React.FC = () => {
                         startIcon={<RefreshIcon />}
                         onClick={handleReset}
                     >
-                        Reset
+                        {!isSmallScreen && 'Reset'}
                     </Button>
                     <Button
                         variant="contained"
@@ -237,7 +274,8 @@ export const UserReportPage: React.FC = () => {
                         onClick={handlePdfDownload}
                         disabled={isPdfLoading}
                     >
-                        {isPdfLoading ? 'Generating...' : 'Download PDF'}
+                        {!isSmallScreen &&
+                            (isPdfLoading ? 'Generating...' : 'Download PDF')}
                     </Button>
                     <Button
                         variant="contained"
@@ -245,7 +283,7 @@ export const UserReportPage: React.FC = () => {
                         startIcon={<LogoutIcon />}
                         onClick={handleLogout}
                     >
-                        Logout
+                        {!isSmallScreen && 'Logout'}
                     </Button>
                 </ActionButtonsContainer>
             </HeaderContainer>
@@ -438,12 +476,9 @@ export const UserReportPage: React.FC = () => {
                         type="date"
                         label="Created From"
                         value={filters.createdFrom || ''}
-                        onChange={(e) =>
-                            setFilters((prev) => ({
-                                ...prev,
-                                createdFrom: e.target.value,
-                            }))
-                        }
+                        onChange={handleDateChange('createdFrom')}
+                        error={!!filterErrors.created}
+                        helperText={filterErrors.created}
                         InputLabelProps={{ shrink: true }}
                         size="small"
                     />
@@ -454,12 +489,9 @@ export const UserReportPage: React.FC = () => {
                         type="date"
                         label="Created To"
                         value={filters.createdTo || ''}
-                        onChange={(e) =>
-                            setFilters((prev) => ({
-                                ...prev,
-                                createdTo: e.target.value,
-                            }))
-                        }
+                        onChange={handleDateChange('createdTo')}
+                        error={!!filterErrors.created}
+                        helperText={filterErrors.created}
                         InputLabelProps={{ shrink: true }}
                         size="small"
                     />
@@ -470,12 +502,9 @@ export const UserReportPage: React.FC = () => {
                         type="date"
                         label="Deadline From"
                         value={filters.deadlineFrom || ''}
-                        onChange={(e) =>
-                            setFilters((prev) => ({
-                                ...prev,
-                                deadlineFrom: e.target.value,
-                            }))
-                        }
+                        onChange={handleDateChange('deadlineFrom')}
+                        error={!!filterErrors.deadline}
+                        helperText={filterErrors.deadline}
                         InputLabelProps={{ shrink: true }}
                         size="small"
                     />
@@ -486,12 +515,9 @@ export const UserReportPage: React.FC = () => {
                         type="date"
                         label="Deadline To"
                         value={filters.deadlineTo || ''}
-                        onChange={(e) =>
-                            setFilters((prev) => ({
-                                ...prev,
-                                deadlineTo: e.target.value,
-                            }))
-                        }
+                        onChange={handleDateChange('deadlineTo')}
+                        error={!!filterErrors.deadline}
+                        helperText={filterErrors.deadline}
                         InputLabelProps={{ shrink: true }}
                         size="small"
                     />
@@ -520,7 +546,21 @@ export const UserReportPage: React.FC = () => {
                                 </StyledTableRow>
                             ) : (
                                 tickets.map((ticket) => (
-                                    <StyledTableRow key={ticket.id}>
+                                    <StyledTableRow
+                                        key={ticket.id}
+                                        hover
+                                        sx={{ cursor: 'pointer' }}
+                                        onClick={() => {
+                                            const projectKeyToUse =
+                                                projectKey ||
+                                                getProjectKeyFromTicket(
+                                                    ticket.jira_ticket_key,
+                                                );
+                                            void navigate(
+                                                `/project/${projectKeyToUse}/ticket/${ticket.jira_ticket_key}`,
+                                            );
+                                        }}
+                                    >
                                         <TableCell>
                                             <Tooltip title={ticket.title} arrow>
                                                 <TicketTitle variant="body2">
@@ -548,9 +588,14 @@ export const UserReportPage: React.FC = () => {
             </Paper>
 
             <LoadMoreContainer>
-                <Typography variant="body2" color="textSecondary">
+                <Box
+                    sx={{
+                        mx: 4,
+                        my: 1,
+                    }}
+                >
                     Page {page + 1}
-                </Typography>
+                </Box>
                 <LoadMoreButton
                     variant="contained"
                     onClick={handleLoadMore}

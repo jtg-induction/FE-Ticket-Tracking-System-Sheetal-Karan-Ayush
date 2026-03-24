@@ -7,7 +7,6 @@ type SignupInput = {
     name: string;
     email: string;
     password: string;
-    avatarId: number;
 };
 
 type LoginInput = {

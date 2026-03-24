@@ -5,7 +5,6 @@ export type AuthStore = {
         id: number;
         name: string;
         email: string;
-        avatarId: number;
     } | null;
 
     accessToken: string | null;
