@@ -41,6 +41,7 @@ export const ProjectTicketFilters = ({
                     slotProps={{
                         textField: {
                             size: 'small',
+                            readOnly: true,
                         },
                     }}
                 />

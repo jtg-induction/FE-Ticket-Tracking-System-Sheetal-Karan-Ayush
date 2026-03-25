@@ -1,7 +1,9 @@
 export const TicketConstToTypeMap: { [key: number]: string } = {
-    1: 'Bug',
-    2: 'Feature',
-    3: 'Task',
+    1: 'Task',
+    2: 'Bug',
+    3: 'Story',
+    4: 'Epic',
+    5: 'SubTask',
 };
 
 export const TicketConstToStatusMap: { [key: number]: string } = {
@@ -11,9 +13,9 @@ export const TicketConstToStatusMap: { [key: number]: string } = {
 };
 
 export const TicketConstToPriorityMap: { [key: number]: string } = {
-    1: 'Low',
+    1: 'High',
     2: 'Medium',
-    3: 'High',
+    3: 'Low',
 };
 
 export const ADMIN = 1;

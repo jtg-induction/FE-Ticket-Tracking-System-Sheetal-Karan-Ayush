@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { RemoveRedEye, VisibilityOff } from '@mui/icons-material';
 import {
     Alert,
+    Box,
     Button,
     CircularProgress,
     IconButton,
@@ -135,9 +136,17 @@ export const ProjectCreationPage = () => {
 
     return (
         <form onSubmit={handleSubmit}>
+            <Box padding={4} textAlign="center">
+                <Typography variant='h2' color='primary.main'>
+                    Ready to build something great?
+                </Typography>
+                <Typography variant='body1' color="text.secondary">
+                    Start by creating your project. You'll be able to invite your team, track tickets and view dashboards in the next step.
+                </Typography>
+            </Box>
             <CardBox>
                 <Typography variant="h2" textAlign="center">
-                    Project Creation
+                    Create new Project
                 </Typography>
                 <TextField
                     label="Title"

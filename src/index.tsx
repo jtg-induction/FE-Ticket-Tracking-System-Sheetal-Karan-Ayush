@@ -43,3 +43,4 @@ createRoot(rootElement).render(
     </StrictMode>,
 );
 <AuthInitializer />;
+

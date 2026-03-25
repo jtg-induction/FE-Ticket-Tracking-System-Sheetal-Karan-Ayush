@@ -15,9 +15,11 @@ export const ticketUpdateRequestSchema = z.object({
         .optional(),
     ticket_type: z
         .union([
-            z.literal(TicketType.BUG),
-            z.literal(TicketType.FEATURE_REQUEST),
             z.literal(TicketType.TASK),
+            z.literal(TicketType.BUG),
+            z.literal(TicketType.STORY),
+            z.literal(TicketType.EPIC),
+            z.literal(TicketType.SUBTASK),
         ])
         .optional(),
     status: z
@@ -29,9 +31,9 @@ export const ticketUpdateRequestSchema = z.object({
         .optional(),
     priority: z
         .union([
-            z.literal(TicketPriority.LOW),
-            z.literal(TicketPriority.MEDIUM),
             z.literal(TicketPriority.HIGH),
+            z.literal(TicketPriority.MEDIUM),
+            z.literal(TicketPriority.LOW),
         ])
         .optional(),
     assignee: z

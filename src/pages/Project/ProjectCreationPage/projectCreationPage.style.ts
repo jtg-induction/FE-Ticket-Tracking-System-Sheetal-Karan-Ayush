@@ -12,7 +12,7 @@ export const CardBox = styled(Box)<BoxProps>(({ theme }) => {
         top: '40%',
         left: '50%',
         transform: `translate(-50%, -50%)`,
-        maxWidth: pxToRem(500),
+        maxWidth: pxToRem(724),
         width: '100%',
         marginLeft: 'auto',
         marginRight: 'auto',

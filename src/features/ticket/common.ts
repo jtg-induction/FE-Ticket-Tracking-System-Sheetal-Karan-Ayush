@@ -1,7 +1,9 @@
 export enum TicketType {
-    BUG = 1,
-    FEATURE_REQUEST = 2,
-    TASK = 3,
+    TASK = 1,
+    BUG = 2,
+    STORY = 3,
+    EPIC = 4,
+    SUBTASK = 5,
 }
 
 export enum TicketStatus {
@@ -11,7 +13,7 @@ export enum TicketStatus {
 }
 
 export enum TicketPriority {
-    LOW = 1,
+    HIGH = 1,
     MEDIUM = 2,
-    HIGH = 3,
+    LOW = 3,
 }

@@ -23,7 +23,6 @@ export const importTicket = async (
             throw new Error('Invalid server response ');
         }
 
-
         const firstResult = parsed.data.results?.[0];
 
         if (firstResult && firstResult.status === 'failed') {
@@ -32,7 +31,6 @@ export const importTicket = async (
 
         return parsed.data;
 
-        // return parsed.data;
     } catch (error: unknown) {
         return handleApiError(error);
     }

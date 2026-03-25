@@ -489,7 +489,7 @@ export const TicketDetails: React.FC = () => {
                 <StyledErrorTextField
                     label="Title"
                     fullWidth
-                    value={updateFormData?.title || ''}
+                    value={updateFormData?.title || ticket?.title}
                     onChange={(e) => handleFieldChange('title', e.target.value)}
                     sx={{ marginBottom: theme.spacing(2) }}
                     error={!!errors.title}
@@ -501,7 +501,7 @@ export const TicketDetails: React.FC = () => {
                     fullWidth
                     multiline
                     rows={4}
-                    value={updateFormData?.description || ''}
+                    value={updateFormData?.description || ticket?.description}
                     onChange={(e) =>
                         handleFieldChange('description', e.target.value)
                     }
@@ -514,7 +514,7 @@ export const TicketDetails: React.FC = () => {
                 <FormControl fullWidth sx={{ marginBottom: theme.spacing(2) }}>
                     <InputLabel>Priority</InputLabel>
                     <Select
-                        value={updateFormData?.priority || 1}
+                        value={updateFormData?.priority || ticket?.priority}
                         onChange={(e) =>
                             handleFieldChange(
                                 'priority',
@@ -537,7 +537,7 @@ export const TicketDetails: React.FC = () => {
                 <FormControl fullWidth sx={{ marginBottom: theme.spacing(2) }}>
                     <InputLabel>Status</InputLabel>
                     <Select
-                        value={updateFormData?.status || 1}
+                        value={updateFormData?.status || ticket?.status}
                         onChange={(e) =>
                             handleFieldChange('status', Number(e.target.value))
                         }
@@ -557,7 +557,7 @@ export const TicketDetails: React.FC = () => {
                 <FormControl fullWidth sx={{ marginBottom: theme.spacing(2) }}>
                     <InputLabel>Task Type</InputLabel>
                     <Select
-                        value={updateFormData?.ticket_type || 1}
+                        value={updateFormData?.ticket_type || ticket?.ticket_type}
                         onChange={(e) =>
                             handleFieldChange(
                                 'ticket_type',

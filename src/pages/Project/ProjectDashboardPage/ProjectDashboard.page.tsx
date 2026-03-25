@@ -78,6 +78,7 @@ import {
     StyledTableRow,
     StyledUpperBox,
 } from './ProjectDashboardPage.style';
+import { TicketType } from '@features/ticket/common';
 
 export const ProjectDashboardPage = () => {
     const {
@@ -372,14 +373,20 @@ export const ProjectDashboardPage = () => {
                     <ClampedTooltipText variant="h2" lines={2}>
                         Title: {project?.title}
                     </ClampedTooltipText>
-                    <Typography variant="body2">
-                        {project?.description}
-                    </Typography>
+                    <Tooltip title={project?.description}>
+                        <Typography variant="body2" sx={(theme) => ({
+                            ...theme.mixins.lineClamp(4)
+                        })} >
+                            {project?.description}
+                        </Typography>
+                    </Tooltip>
                 </StyledLowerBox>
             </StyledHeader>
             <Divider />
 
             <SectionLayout>
+                <Typography variant='h3' align='center'>Project Summary</Typography>
+
                 <Grid2 container spacing={3} sx={{ mt: 1 }}>
                     {/* ticket status chart */}
                     <Grid2
@@ -441,7 +448,7 @@ export const ProjectDashboardPage = () => {
                                 <CircularProgress />
                             </LineChartLoadingContainer>
                         ) : deadlineChartData &&
-                          deadlineChartData.length > 0 ? (
+                            deadlineChartData.length > 0 ? (
                             <ChartCard
                                 title="Ticket Deadline Performance"
                                 type="line"
@@ -463,6 +470,7 @@ export const ProjectDashboardPage = () => {
                     open={userSidebarOpen}
                     onClose={() => setUserSidebarOpen(false)}
                 />
+                <Typography variant='h3'>Tickets</Typography>
                 <Box
                     sx={{
                         display: 'flex',
@@ -587,10 +595,10 @@ export const ProjectDashboardPage = () => {
                                                 <Typography variant="body2">
                                                     {ticket.deadline
                                                         ? dayjs(
-                                                              ticket.deadline,
-                                                          ).format(
-                                                              'MMM DD, YYYY',
-                                                          )
+                                                            ticket.deadline,
+                                                        ).format(
+                                                            'MMM DD, YYYY',
+                                                        )
                                                         : 'N/A'}
                                                 </Typography>
                                             </TableCell>
@@ -601,7 +609,7 @@ export const ProjectDashboardPage = () => {
                                                 >
                                                     {
                                                         TicketConstToStatusMap[
-                                                            ticket.status
+                                                        ticket.status
                                                         ]
                                                     }
                                                 </Typography>
