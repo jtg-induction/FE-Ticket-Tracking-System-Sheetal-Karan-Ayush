@@ -10,8 +10,7 @@ export const ticketCreateSchema = z.object({
 
     description: z
         .string()
-        .max(1000, 'Description can be at most 1000 characters long.')
-        .optional(),
+        .max(1000, 'Description can be at most 1000 characters long.'),
 
     ticket_type: z
         .union([

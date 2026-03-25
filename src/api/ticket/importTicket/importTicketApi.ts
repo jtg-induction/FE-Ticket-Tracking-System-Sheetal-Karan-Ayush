@@ -22,7 +22,17 @@ export const importTicket = async (
         if (!parsed.success) {
             throw new Error('Invalid server response ');
         }
+
+
+        const firstResult = parsed.data.results?.[0];
+
+        if (firstResult && firstResult.status === 'failed') {
+            throw new Error(firstResult.reason || 'Import failed');
+        }
+
         return parsed.data;
+
+        // return parsed.data;
     } catch (error: unknown) {
         return handleApiError(error);
     }

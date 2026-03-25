@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const projectCreateSchema = z.object({
-    title: z.string().min(1, 'Title is required'),
+    title: z.string().min(1, 'Title is required').max(80, 'Title cannot exceed 80 characters'),
     description: z.string().optional(),
     jira_url: z.string().url('Invalid JIRA URL'),
     access_token: z.string().min(1, 'Access token required'),

@@ -35,12 +35,25 @@ export const ticketsResponseSchema = z.object({
     labels: z.array(z.string()),
 });
 
+
+export const importResultItemSchema = z.object({
+    ticket_key: z.string(),
+    status: z.enum(['success', 'failed']),
+    ticket_id: z.number().int().nullable(),
+    reason: z.string().nullable().optional(),
+});
+
+
+
 export const ticketsImportResponseSchema = z.object({
     total: z.int(),
     success_count: z.int(),
     failed_count: z.int(),
-    results: z.array(ticketsResponseSchema),
+    // results: z.array(ticketsResponseSchema),
+    results: z.array(importResultItemSchema),
 });
+
+
 
 export const getTicketResponseSchema = z.object({
     id: z.int().nullable(),

@@ -148,6 +148,18 @@ export const ProjectCreationPage = () => {
                     helperText={errors.title}
                     fullWidth
                     required
+
+                    sx={{
+                        '& .MuiInputLabel-root.Mui-error': {
+                            color: 'error.contrastText',
+                        },
+                        '& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'error.contrastText',
+                        },
+                        '& .MuiFormHelperText-root.Mui-error': {
+                            color: 'error.contrastText',
+                        },
+                    }}
                 />
                 <TextField
                     label="Description"
@@ -217,7 +229,7 @@ export const ProjectCreationPage = () => {
                     onChange={handleChange}
                     fullWidth
                     required
-                    error={!!errors.jira_project_key}
+                    error={createFormData.jira_project_key.length > 0 && !!errors.jira_project_key}
                     sx={{
                         '& .MuiInputBase-root': {
                             borderColor:
@@ -239,14 +251,17 @@ export const ProjectCreationPage = () => {
                         },
                     }}
                     helperText={
-                        isInvalidFormat
-                            ? 'Key must contain only 2-10 letters'
-                            : isUnique === false
-                              ? 'Key already exists'
-                              : isUnique === true
-                                ? 'Key is available ✓'
-                                : 'Key must be unique with 2-10 letters'
-                    }
+                        isKeyDisabled ? 'Add access token first' :
+                            (createFormData.jira_project_key.length === 0
+                                ? ''
+                                : isInvalidFormat
+                                    ? 'Key must contain only 2-10 letters'
+                                    : loading
+                                        ? 'Checking'
+                                        : isUnique
+                                            ? 'Key is available ✓'
+                                            : 'Key already exists'
+                            )}
                     slotProps={{
                         input: {
                             endAdornment: loading ? (

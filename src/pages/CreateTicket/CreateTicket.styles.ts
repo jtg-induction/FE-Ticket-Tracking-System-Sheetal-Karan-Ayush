@@ -22,5 +22,7 @@ export const StyledWrapper = styled(Card)(({ theme }) => {
         justifyContent: 'center',
         maxWidth: pxToRem(1024),
         margin: 'auto',
+        padding: pxToRem(16),
+        height: '100%',
     };
 });
