@@ -2,13 +2,14 @@ import { MenuItem } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
+import { DebouncedSearchField } from '@components';
+
 import {
-    FilterField,
     FiltersContainer,
     FiltersWrapper,
     ResetButton,
     SmallFilterField,
-    StyledDatePicker,
+    StyledDatePicker
 } from './ProjectTicketFilter.style';
 import { ProjectTicketFilterProps } from './ProjectTicketFilters.types';
 
@@ -20,20 +21,21 @@ export const ProjectTicketFilters = ({
     <LocalizationProvider dateAdapter={AdapterDayjs}>
         <FiltersWrapper>
             <FiltersContainer>
-                <FilterField
+                <DebouncedSearchField
                     label="Search by Title"
                     size="small"
                     value={filters.title}
-                    onChange={(e) => onChange('title', e.target.value)}
+                    onChange={(value) => onChange('title', value)}
+                    delay={500}
                 />
 
-                <FilterField
+                <DebouncedSearchField
                     label="Search by Assignee"
                     size="small"
                     value={filters.assignee}
-                    onChange={(e) => onChange('assignee', e.target.value)}
+                    onChange={(value) => onChange('assignee', value)}
+                    delay={500}
                 />
-
                 <StyledDatePicker
                     label="Search by Deadline"
                     value={filters.deadline}

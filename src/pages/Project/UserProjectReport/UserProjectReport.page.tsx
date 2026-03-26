@@ -57,6 +57,7 @@ import {
     UserInfoCard,
 } from './UserProjectReport.style';
 import { RawTicket, UserReportFilters } from './UserProjectReport.type';
+import { TicketPriorityMap } from '@components/ProjectCharts/ProjectCharts.config';
 
 const SummaryCardItem: React.FC<{
     label: string;
@@ -295,12 +296,14 @@ export const UserReportPage: React.FC = () => {
                 <Grid2 container spacing={2}>
                     <Grid2 size={{ xs: 12, sm: 6, md: 4 }}>
                         <Typography variant="body1">
-                            <strong>Name:</strong> {reportData?.user_info.name || 'N/A'}
+                            <strong>Name:</strong>{' '}
+                            {reportData?.user_info.name || 'N/A'}
                         </Typography>
                     </Grid2>
                     <Grid2 size={{ xs: 12, sm: 6, md: 4 }}>
                         <Typography variant="body1">
-                            <strong>Email:</strong> {reportData?.user_info.email || 'N/A'}
+                            <strong>Email:</strong>{' '}
+                            {reportData?.user_info.email || 'N/A'}
                         </Typography>
                     </Grid2>
                 </Grid2>
@@ -369,7 +372,12 @@ export const UserReportPage: React.FC = () => {
                         <ChartCard
                             title="Ticket Priority"
                             type="pie"
-                            data={reportData.charts.priority}
+                            data={reportData.charts.priority.map((item) => ({
+                                label:
+                                    TicketPriorityMap[Number(item.label)] ??
+                                    'Unknown',
+                                value: item.value,
+                            }))}
                             dataKey="value"
                             xKey="label"
                         />

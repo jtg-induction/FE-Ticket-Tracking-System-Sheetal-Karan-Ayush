@@ -1,5 +1,4 @@
 import {
-    CircularProgress,
     Dialog,
     DialogActions,
     DialogContent,
@@ -18,8 +17,7 @@ export const DialogBox = ({
     submitText = 'Save',
     cancelText = 'Cancel',
     maxWidth = 'sm',
-    isSubmitting = false,
-    isSubmitDisabled=false,
+    submitButtonDisabled = false,
 }: DialogBoxProps) => (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth={maxWidth}>
         <DialogTitle>{title}</DialogTitle>
@@ -32,12 +30,12 @@ export const DialogBox = ({
             </StyledDialogButton>
 
             {onSubmit && (
-                <StyledDialogButton onClick={onSubmit} variant="contained" disabled={isSubmitDisabled}>
-                    {isSubmitting ? (
-                        <CircularProgress size={22} color="inherit" />
-                    ) : (
-                        submitText
-                    )}
+                <StyledDialogButton
+                    onClick={onSubmit}
+                    variant="contained"
+                    disabled={submitButtonDisabled}
+                >
+                    {submitText}
                 </StyledDialogButton>
             )}
         </DialogActions>

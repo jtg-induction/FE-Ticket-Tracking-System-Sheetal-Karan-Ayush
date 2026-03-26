@@ -45,7 +45,8 @@ export const ChartCard = <T extends Record<string, unknown>>({
         return (
             <Card
                 sx={{
-                    height: 350,
+                    height: 400,
+                    width:350,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',

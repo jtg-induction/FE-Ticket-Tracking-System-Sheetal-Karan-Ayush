@@ -1,7 +1,7 @@
+import { updateProject } from '@api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { updateProject } from './api'; 
-import { ProjectUpdateData } from './schema';
+import { ProjectUpdateData } from '../schema';
 
 export const useUpdateProject = () => {
     const queryClient = useQueryClient();

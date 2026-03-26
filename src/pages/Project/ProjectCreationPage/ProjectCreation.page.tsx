@@ -28,10 +28,11 @@ import { CardBox } from './projectCreationPage.style';
 export const ProjectCreationPage = () => {
     const theme = useTheme();
     const navigate = useNavigate();
-    const [apiError, setApiError] = useState(false);
     const { createFormData, setCreateFormData, reset } = useProjectStore();
+    
+    const [apiError, setApiError] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
-    const [isUnique, setIsUnique] = useState<boolean>(false);
+    const [isUnique, setIsUnique] = useState<boolean>();
     const [showPassword, setShowPassword] = useState(false);
     const createProjectMutation = useCreateProject();
     const isSubmitting = createProjectMutation.isPending;
@@ -55,7 +56,7 @@ export const ProjectCreationPage = () => {
         } catch (error: unknown) {
             setApiError(true);
             if (axios.isAxiosError(error)) {
-                if (error.response && error.response.status === 502) {
+                if (error.response?.status === 502) {
                     setSnackbarMessage(
                         'Unauthorized: Invalid Jira URL, Access Token, or Admin Email',
                     );
@@ -65,7 +66,9 @@ export const ProjectCreationPage = () => {
                     );
                 }
             } else {
-                setSnackbarMessage('Unauthorized: Invalid Jira URL, Access Token, or Admin Email');
+                setSnackbarMessage(
+                    'Unauthorized: Invalid Jira URL, Access Token, or Admin Email',
+                );
             }
             setSnackbarOpen(true);
             setIsUnique(false);
@@ -130,7 +133,7 @@ export const ProjectCreationPage = () => {
             },
         });
     };
-
+    console.log(isUnique)
     return (
         <form onSubmit={handleSubmit}>
             <CardBox>
@@ -240,7 +243,7 @@ export const ProjectCreationPage = () => {
                         isInvalidFormat
                             ? 'Key must contain only 2-10 letters'
                             : isUnique === false
-                              ? 'Key already exists'
+                              ? 'Key Already exists'
                               : isUnique === true
                                 ? 'Key is available ✓'
                                 : 'Key must be unique with 2-10 letters'
