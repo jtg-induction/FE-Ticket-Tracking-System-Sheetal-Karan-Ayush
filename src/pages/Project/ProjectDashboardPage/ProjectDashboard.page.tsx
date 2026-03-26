@@ -51,11 +51,12 @@ import { importTicketRequestSchema } from '@features/ticket/importTicket/importT
 import { useImportTicketMutation } from '@features/ticket/importTicket/useImportTicket';
 import { useJqlSearchTickets } from '@features/ticket/jqlSearch/useJqlSearchTicket';
 import { StyledErrorTextField } from '@pages/Register/Register.styles';
-import { TicketConstToStatusMap } from '@pages/TicketDetails/TicketDetails.util';
+import { TicketConstToPriorityMap, TicketConstToStatusMap } from '@pages/TicketDetails/TicketDetails.util';
 import { useQueryClient } from '@tanstack/react-query';
 import { theme } from '@theme';
 
 import { TICKET_TABLE_HEADER } from './ProjectDashboard.config';
+import { TransformedPriorityItem, TransformedStatusItem } from './ProjectDashboard.types';
 import {
     ChartLoadingContainer,
     ChartNoDataContainer,
@@ -277,6 +278,24 @@ export const ProjectDashboardPage = () => {
         }
     }, [filterType, projectKey, queryClient]);
 
+    const getStatusString = (status: number): string =>
+        TicketConstToStatusMap[status] ?? 'Unknown';
+    const getPriorityString = (priority: number): string =>
+        TicketConstToPriorityMap[priority] ?? 'Unknown';
+    
+    const transformedStatusData: TransformedStatusItem[] | undefined =
+        statusChartData?.map((item) => ({
+            status: getStatusString(Number(item.status)),
+            count: item?.count,
+        }));
+
+    const transformedPriorityData: TransformedPriorityItem[] | undefined =
+        priorityChartData?.map((item) => ({
+            priority: getPriorityString(Number(item.priority)),
+            count: item.count,
+            height: 400,
+        }));
+        
     return (
         <>
             <StyledHeader>
@@ -373,11 +392,11 @@ export const ProjectDashboardPage = () => {
                             <ChartLoadingContainer>
                                 <CircularProgress />
                             </ChartLoadingContainer>
-                        ) : statusChartData ? (
+                        ) : transformedStatusData ? (
                             <ChartCard
                                 title="Ticket by Status"
                                 type="pie"
-                                data={statusChartData}
+                                data={transformedStatusData}
                                 dataKey="count"
                                 xKey="status"
                             />
@@ -399,7 +418,7 @@ export const ProjectDashboardPage = () => {
                             <ChartCard
                                 title="Ticket by Priority"
                                 type="pie"
-                                data={priorityChartData}
+                                data={transformedPriorityData}
                                 dataKey="count"
                                 xKey="priority"
                             />

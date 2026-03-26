@@ -3,7 +3,7 @@ type ChartType = 'line' | 'bar' | 'pie';
 export type ChartCardProps<T> = {
     title: string;
     type: ChartType;
-    data: T[];
+    data: T[] | undefined;
     dataKey: keyof T;
     xKey?: keyof T;
     colors?: string[];

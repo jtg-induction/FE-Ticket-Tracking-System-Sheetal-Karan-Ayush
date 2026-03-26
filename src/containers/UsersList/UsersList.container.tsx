@@ -55,6 +55,11 @@ export const UserSidebar = ({ open, onClose }: UserSidebarProps) => {
             open={open}
             onClose={onClose}
             variant={isMobile ? 'temporary' : 'persistent'}
+            sx={{
+                "& .MuiDrawer-paper": {
+                    width: theme.spacing(75),
+                },
+            }}
         >
             <Toolbar />
             <Box display="flex" flexDirection="column" height="100%">

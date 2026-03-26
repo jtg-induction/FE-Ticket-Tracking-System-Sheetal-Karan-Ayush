@@ -19,7 +19,7 @@ export const DialogBox = ({
     cancelText = 'Cancel',
     maxWidth = 'sm',
     isSubmitting = false,
-    isSubmitDisabled=false,
+    isSubmitDisabled = false,
 }: DialogBoxProps) => (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth={maxWidth}>
         <DialogTitle>{title}</DialogTitle>

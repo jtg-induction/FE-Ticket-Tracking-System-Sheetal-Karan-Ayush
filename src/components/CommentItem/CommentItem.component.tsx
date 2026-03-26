@@ -64,7 +64,9 @@ export const CommentItem = ({
             ticket_key: ticketKey as string,
             parent_comment_id: comment.id,
         }
-        createCommentMutation.mutate(payload);
+        createCommentMutation.mutate(payload, {
+            onSuccess: () => setReplyText('')
+        });
     }
 
     const handleDeleteOnClick = () => {
@@ -106,11 +108,14 @@ export const CommentItem = ({
             {/* Toggle between display text and input box */}
             <Box marginTop={2} marginBottom={4}>
                 {isEditing ? (
-                    <Box display="flex" gap={2}>
+                    <Box display="flex" gap={2} alignItems='center'>
                         <TextField
                             size="small"
                             fullWidth
                             value={editedText}
+                            multiline
+                            minRows={1}
+                            maxRows={4}
                             onChange={(e) => setEditedText(e.target.value)}
                         />
                         <Button
@@ -122,7 +127,7 @@ export const CommentItem = ({
                         </Button>
                     </Box>
                 ) : (
-                    <Typography variant="subtitle1">{ commentText }</Typography>
+                    <Typography variant="subtitle1" sx={{ whiteSpace: 'pre-line' }}>{ commentText }</Typography>
                 )}
             </Box>
 
@@ -133,14 +138,17 @@ export const CommentItem = ({
             )}
 
             {showReply && (
-                <Box display="flex" gap={2} mt={2}>
+                <Box display="flex" gap={2} mt={2} alignItems='center'>
                     <TextField
                         size="small"
                         fullWidth
                         value={replyText}
+                        multiline
+                        minRows={1}
+                        maxRows={4}
                         onChange={(e) => setReplyText(e.target.value)}
                         onKeyDown={(e) =>
-                            e.key === 'Enter' && handleAddReply()
+                            e.key === 'Enter' && !e.shiftKey && handleAddReply()
                         }
                         placeholder="Write reply..."
                     />

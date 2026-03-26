@@ -9,7 +9,8 @@ import { theme } from "@theme";
 
 import { SubscribeTicketProps } from "./subscribeTicket.types";
 
-export const SubscribeTicketContainer = ({open, onClose, isSubscribed}: SubscribeTicketProps) => {
+export const SubscribeTicketDialog = ({open, onClose, isSubscribed}: SubscribeTicketProps) => {
+
     const subscribeTicketMutation = useSubscribeTicketMutation();
     const unSubscribeTicketMutation = useUnSubscribeTicketMutation();
     const { projectKey, ticketKey } = useParams<{
@@ -20,16 +21,23 @@ export const SubscribeTicketContainer = ({open, onClose, isSubscribed}: Subscrib
     const handleSubscribeTicket = () => {
         if(isSubscribed) {
             unSubscribeTicketMutation.mutate(
-            {   
-                project_key: projectKey as string, 
-                ticket_key: ticketKey as string, 
-            })
+                {   
+                    project_key: projectKey as string, 
+                    ticket_key: ticketKey as string, 
+                }, 
+                {
+                    onSuccess: () => onClose(),
+                }
+            )
         }
         else {
             subscribeTicketMutation.mutate(
             {   
                 project_key: projectKey as string, 
                 ticket_key: ticketKey as string, 
+            }, 
+            {
+                onSuccess: () => onClose(),
             })
         }
     }
@@ -42,6 +50,8 @@ export const SubscribeTicketContainer = ({open, onClose, isSubscribed}: Subscrib
             onSubmit={handleSubscribeTicket}
             submitText="Confirm"
             cancelText="Cancel"
+            isSubmitDisabled={subscribeTicketMutation.isPending || unSubscribeTicketMutation.isPending}
+            isSubmitting={subscribeTicketMutation.isPending || unSubscribeTicketMutation.isPending}
         >   
             {isSubscribed ?(
                     <Typography>

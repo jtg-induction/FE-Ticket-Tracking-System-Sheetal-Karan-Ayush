@@ -16,8 +16,10 @@ export const ticketUpdateRequestSchema = z.object({
     ticket_type: z
         .union([
             z.literal(TicketType.BUG),
-            z.literal(TicketType.FEATURE_REQUEST),
+            z.literal(TicketType.EPIC),
             z.literal(TicketType.TASK),
+            z.literal(TicketType.SUBTASK),
+            z.literal(TicketType.STORY),
         ])
         .optional(),
     status: z
@@ -47,7 +49,7 @@ export const ticketUpdateRequestSchema = z.object({
             message: 'Each label can be at most 20 characters long.',
         })
         .optional(),
-    deadline: z.string().optional(),
+    deadline: z.string().optional().nullable(),
     project_key: z.string(),
     ticket_key: z.string(),
 });

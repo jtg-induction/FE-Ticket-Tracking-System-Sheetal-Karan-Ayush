@@ -2,7 +2,7 @@ import { useState } from 'react';
 import React from 'react';
 
 import dayjs from 'dayjs';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import {
     Autocomplete,
@@ -32,7 +32,7 @@ import { StyledErrorTextField, StyledWrapper } from './CreateTicket.styles';
 
 export const CreateTicket = () => {
     const theme = useTheme();
-
+    const navigate = useNavigate();
     const [ticketType, setTicketType] = useState(1);
     const [ticketPriority, setTicketPriority] = useState(1);
     const [deadline, setDeadline] = React.useState<dayjs.Dayjs | null>(null);
@@ -75,8 +75,9 @@ export const CreateTicket = () => {
         }
 
         createTicketMutation.mutate(result.data, {
-            onSuccess: () => {
+            onSuccess: (data) => {
                 setErrors({});
+                void navigate(`/project/${projectKey}/ticket/${data.jira_ticket_key}`)
             },
         });
     };

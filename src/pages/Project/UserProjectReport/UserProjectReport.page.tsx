@@ -34,6 +34,7 @@ import { useAuthStore } from '@features/auth';
 import { useUserReport } from '@features/user';
 import { useUserBasicDetails } from '@features/user/useUserBasicDetails';
 import { useUserReportPdf } from '@features/user/useUserPDFGenerate';
+import { TicketConstToPriorityMap } from '@pages/TicketDetails/TicketDetails.util';
 import { theme } from '@theme';
 
 import { mapTicket } from './userProjectReport.config';
@@ -369,7 +370,12 @@ export const UserReportPage: React.FC = () => {
                         <ChartCard
                             title="Ticket Priority"
                             type="pie"
-                            data={reportData.charts.priority}
+                            data={reportData.charts.priority.map((item) => ({
+                                label:
+                                    TicketConstToPriorityMap[Number(item.label)] ??
+                                    'Unknown',
+                                value: item.value,
+                            }))}
                             dataKey="value"
                             xKey="label"
                         />

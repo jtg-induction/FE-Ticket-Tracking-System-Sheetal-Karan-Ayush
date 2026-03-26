@@ -31,7 +31,7 @@ export const ProjectCreationPage = () => {
     const [apiError, setApiError] = useState(false);
     const { createFormData, setCreateFormData, reset } = useProjectStore();
     const [errors, setErrors] = useState<Record<string, string>>({});
-    const [isUnique, setIsUnique] = useState<boolean>(false);
+    const [isUnique, setIsUnique] = useState<boolean>();
     const [showPassword, setShowPassword] = useState(false);
     const createProjectMutation = useCreateProject();
     const isSubmitting = createProjectMutation.isPending;
@@ -237,13 +237,9 @@ export const ProjectCreationPage = () => {
                         },
                     }}
                     helperText={
-                        isInvalidFormat
-                            ? 'Key must contain only 2-10 letters'
-                            : isUnique === false
+                        isUnique === false
                               ? 'Key already exists'
-                              : isUnique === true
-                                ? 'Key is available ✓'
-                                : 'Key must be unique with 2-10 letters'
+                              : ''
                     }
                     slotProps={{
                         input: {
