@@ -2,6 +2,8 @@ import { MenuItem } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
+import 'dayjs/locale/en-in';
+
 import {
     FilterField,
     FiltersContainer,
@@ -17,7 +19,7 @@ export const ProjectTicketFilters = ({
     onChange,
     onReset,
 }: ProjectTicketFilterProps) => (
-    <LocalizationProvider dateAdapter={AdapterDayjs}>
+    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale='en-in'>
         <FiltersWrapper>
             <FiltersContainer>
                 <FilterField
@@ -41,6 +43,9 @@ export const ProjectTicketFilters = ({
                     slotProps={{
                         textField: {
                             size: 'small',
+                        },
+                        actionBar: {
+                            actions: ['clear'],
                         },
                     }}
                 />

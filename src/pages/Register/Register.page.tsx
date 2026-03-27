@@ -23,7 +23,7 @@ import { RegisterForm } from '@containers/RegisterForm';
 export const Register = () => {
     const theme = useTheme();
     const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
-
+    
     return (
         <StyledWrapper>
             <StyledStackWrapper direction={'row'}>

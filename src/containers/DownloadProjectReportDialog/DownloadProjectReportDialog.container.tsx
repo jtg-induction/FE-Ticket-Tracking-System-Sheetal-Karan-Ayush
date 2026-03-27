@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 import { useParams } from 'react-router-dom';
 
+import 'dayjs/locale/en-in';
+
 import { Alert, Autocomplete, Box, Button, Chip, MenuItem, TextField } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -45,7 +47,7 @@ export const DownloadProjectReportDialog = () => {
 
 
     return (
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale='en-in'>
             <Box display={'flex'} flexDirection={'column'} gap={2} padding={2}>
 
                 <Box display={'flex'} gap={2}>
@@ -132,38 +134,81 @@ export const DownloadProjectReportDialog = () => {
                     </TextField>
 
                     <DatePicker
-                        sx={{ flex: 1 }}
+                        sx={{
+                            flex: 1,
+                            '& .MuiOutlinedInput-root': {
+                                '&.Mui-error fieldset': {
+                                    borderColor: 'error',
+                                },
+                            },
+                            '& .MuiInputLabel-root.Mui-error': {
+                                color: 'error.contrastText',
+                            },
+                        }}
                         label="Search by Deadline"
                         value={filters.deadline ? dayjs(filters.deadline) : null}
                         onChange={(val) => handleDateChange('deadline', val)}
+                        slotProps={{
+                            actionBar: {
+                                actions: ['clear'],
+                            },
+                        }}
                     />
                 </Box>
 
                 <Box display={'flex'} gap={2}>
+
+
                     <DatePicker
                         sx={{ flex: 1 }}
                         label="Created after"
                         value={filters.created_start_date ? dayjs(filters.created_start_date) : null}
                         onChange={(val) => handleDateChange('created_start_date', val)}
+                        maxDate={dayjs()}
+                        slotProps={{
+                            actionBar: {
+                                actions: ['clear'],
+                            },
+                        }}
                     />
                     <DatePicker
                         sx={{ flex: 1 }}
                         label="Created before"
                         value={filters.created_end_date ? dayjs(filters.created_end_date) : null}
                         onChange={(val) => handleDateChange('created_end_date', val)}
+                        maxDate={dayjs()}
+                        minDate={filters.created_start_date ? dayjs(filters.created_start_date) : undefined}
+                        slotProps={{
+                            actionBar: {
+                                actions: ['clear'],
+                            },
+                        }}
                     />
 
                     <DatePicker
                         sx={{ flex: 1 }}
                         label="Completed after"
                         value={filters.completed_start_date ? dayjs(filters.completed_start_date) : null}
+                        maxDate={dayjs()}
                         onChange={(val) => handleDateChange('completed_start_date', val)}
+                        slotProps={{
+                            actionBar: {
+                                actions: ['clear'],
+                            },
+                        }}
                     />
                     <DatePicker
                         sx={{ flex: 1 }}
                         label="Completed before"
                         value={filters.completed_end_date ? dayjs(filters.completed_end_date) : null}
                         onChange={(val) => handleDateChange('completed_end_date', val)}
+                        maxDate={dayjs()}
+                        minDate={filters.completed_start_date ? dayjs(filters.completed_start_date) : undefined}
+                        slotProps={{
+                            actionBar: {
+                                actions: ['clear'],
+                            },
+                        }}
                     />
                 </Box>
 
