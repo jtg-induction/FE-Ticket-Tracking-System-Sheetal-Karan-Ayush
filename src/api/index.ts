@@ -1,2 +1,3 @@
 export { api } from './axios';
-export { handleApiError } from './handleApiError';
+export { loginUser, signupUser } from './auth'
+export { handleApiError } from './apiErrorHandling';

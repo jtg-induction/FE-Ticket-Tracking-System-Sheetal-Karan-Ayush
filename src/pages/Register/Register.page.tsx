@@ -84,7 +84,7 @@ export const Register = () => {
             // console.log('Submission blocked: Fix validation errors first.');
             return;
         }
-        signupMutation.mutate({ name, email, password, avatarId: 1 });
+        signupMutation.mutate({ name, email, password});
     };
 
     return (
@@ -112,7 +112,7 @@ export const Register = () => {
                             error={isInvalidName}
                             helperText={
                                 isInvalidName
-                                    ? 'Enter a valid name (letters only) minlength-2 maxlength-255'
+                                    ? 'Enter a valid name (letters only), with length ranging from 2 to 255'
                                     : ''
                             }
                         />

@@ -1,21 +1,6 @@
 import { create } from 'zustand';
 
-import type { AuthResponse } from './schema';
-
-type AuthStore = {
-    user: {
-        id: number;
-        name: string;
-        email: string;
-        avatarId: number;
-    } | null;
-
-    accessToken: string | null;
-    refreshToken: string | null;
-
-    setAuth: (data: AuthResponse) => void;
-    clearAuth: () => void;
-} 
+import { AuthStore } from './authStore.types';
 
 export const useAuthStore = create<AuthStore>( (set) => ({
     user: null,

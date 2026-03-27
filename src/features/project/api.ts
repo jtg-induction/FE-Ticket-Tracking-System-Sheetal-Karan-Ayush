@@ -32,6 +32,7 @@ export const createProject = async (
             jira_project_key: project.jira_project_key.toUpperCase(),
             jira_url: `${project.jira_url.replace(/\/$/, '')}/browse/${project.jira_project_key}`,
             status: 1,
+            role: 1
         };
 
         return formattedProject;
@@ -88,6 +89,7 @@ export const updateProject = async (
             jira_project_key: project.jira_project_key.toUpperCase(),
             jira_url: `${project.jira_url.replace(/\/$/, '')}/browse/${project.jira_project_key}`,
             status: 1,
+            role: 1
         };
 
         return formattedProject;
@@ -118,6 +120,7 @@ export const getAllProjects = async (): Promise<ProjectResponse[]> => {
                 jira_project_key: project.jira_project_key.toUpperCase(),
                 jira_url: `${project.jira_url.replace(/\/$/, '')}/browse/${project.jira_project_key}`,
                 status: project.status ?? 1,
+                role: project.role
             }),
         );
 
@@ -140,6 +143,7 @@ export const getProject = async (projectKey: string): Promise<ProjectResponse> =
               jira_project_key: project.jira_project_key.toUpperCase(),
               jira_url: `${project.jira_url.replace(/\/$/, '')}/browse/${project.jira_project_key}`,
               status: project.status,
+              role: project.role
           };
 
         return formattedProject;
