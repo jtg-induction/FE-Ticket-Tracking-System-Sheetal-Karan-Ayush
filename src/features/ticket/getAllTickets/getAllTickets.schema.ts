@@ -56,6 +56,7 @@ export const getTicketResponseSchema = z.object({
     created_at: z.string(),
     labels: z.array(z.string()),
     role: z.int(),
+    is_archived: z.boolean(),
     is_subscribed: z.boolean(),
 });
 

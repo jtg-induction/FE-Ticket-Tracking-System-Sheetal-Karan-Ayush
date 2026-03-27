@@ -20,7 +20,6 @@ export const signupUser = async (data: SignupInput): Promise<AuthResponse> => {
             name: data.name,
             email: data.email,
             password: data.password,
-            avatar_id: 1,
         };
         const response = await api.post('/api/auth/signup', payload);
         const parsed = authResponseSchema.safeParse(response.data);

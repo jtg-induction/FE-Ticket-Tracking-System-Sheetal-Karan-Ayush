@@ -106,7 +106,7 @@ export const TicketDetails: React.FC = () => {
 
                         {/* Icon Box with Edit and Delete icons */}
                         <Box>
-                            {ticket.role == ADMIN && 
+                            {ticket.role == ADMIN && !ticket.is_archived && 
                             <>
                             <Button
                                 variant="contained"

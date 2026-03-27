@@ -42,6 +42,7 @@ export const CommentItem = ({
             comment_id: comment.id,
             ticket_id: comment.ticketId,
             ticket_key: ticketKey as string,
+            project_key: projectKey as string,
         }
         updateCommentMutation.mutate(payload)
         setCommentText(editedText)
@@ -52,6 +53,7 @@ export const CommentItem = ({
     {
         ticket_key: ticketKey as string,
         limit: 10,
+        project_key: projectKey as string,
         parent_comment_id: comment.id,
     },
         showReply
@@ -73,6 +75,7 @@ export const CommentItem = ({
         const payload = {
             comment_id: comment.id,
             ticket_key: ticketKey as string,
+            project_key: projectKey as string,
         }
         deleteCommentMutation.mutate(payload)
     };

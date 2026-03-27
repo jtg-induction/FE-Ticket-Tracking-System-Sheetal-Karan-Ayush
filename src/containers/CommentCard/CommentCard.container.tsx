@@ -21,6 +21,7 @@ export const CommentCard = ({ticketKey, projectKey}: CommentCardProps) => {
     const { data: comments, fetchNextPage: fetchCommentsNextPage, hasNextPage: hasCommentsNextPage, isLoading } = useGetAllComments({
         limit: COMMENTS_COUNT_LIMIT,
         ticket_key: ticketKey,
+        project_key: projectKey,
         parent_comment_id: null,
     });
     
@@ -76,7 +77,7 @@ export const CommentCard = ({ticketKey, projectKey}: CommentCardProps) => {
                     variant="contained"
                     size="small"
                     onClick={handleAddComment}
-                    disabled={!newComment.trim() || newComment.length > MAX_COMMENT_LENGTH}
+                    disabled={!newComment.trim() || newComment.length > MAX_COMMENT_LENGTH || createCommentMutation.isPending}
                 >
                     Comment
                 </Button>

@@ -23,7 +23,7 @@ export const getAllComments = async (
     params: GetAllCommentsFormData,
 ): Promise<GetAllCommentsResponse> => {
     try {
-        const response = await api.get(`/api/tickets/${params.ticket_key}/comments`, { params });
+        const response = await api.get(`/api/projects/${params.project_key}/tickets/${params.ticket_key}/comments`, { params });
         const parsed = getAllCommentsResponseSchema.safeParse(response.data);
         if (!parsed.success) {
             throw new Error('Invalid server response ');

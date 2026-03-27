@@ -18,6 +18,7 @@ export const useUpdateProject = () => {
                 queryKey: ['project', variables.jira_project_key],
             });
             await queryClient.invalidateQueries({ queryKey: ['projects'] });
+            await queryClient.invalidateQueries({ queryKey: ['ticket'] });
         },
     });
 };

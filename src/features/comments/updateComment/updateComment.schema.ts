@@ -7,7 +7,8 @@ export const commentUpdateSchema = z.object({
         .max(255, 'comment must be at most 255 characters long.'),
     comment_id: z.int(),
     ticket_key: z.string(),
-    ticket_id: z.int()
+    ticket_id: z.int(),
+    project_key: z.string(),
 });
 
 export type UpdateCommentFormData = z.infer<typeof commentUpdateSchema>;

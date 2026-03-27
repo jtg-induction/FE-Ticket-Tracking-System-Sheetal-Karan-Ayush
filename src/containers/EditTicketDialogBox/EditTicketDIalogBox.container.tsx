@@ -93,6 +93,16 @@ export const EditTicketDialog = ({ open, onClose }: EditTicketProps) => {
                 helperText={errors.description}
             />
 
+            <StyledErrorTextField
+                label="Assignee"
+                fullWidth
+                value={updateFormData?.assignee}
+                onChange={(e) => handleFieldChange('assignee', e.target.value)}
+                sx={{ marginBottom: theme.spacing(2) }}
+                error={!!errors.assignee}
+                helperText={errors.assignee}
+            />
+
             {/* Priority */}
             <FormControl fullWidth sx={{ marginBottom: theme.spacing(2) }}>
                 <InputLabel>Priority</InputLabel>

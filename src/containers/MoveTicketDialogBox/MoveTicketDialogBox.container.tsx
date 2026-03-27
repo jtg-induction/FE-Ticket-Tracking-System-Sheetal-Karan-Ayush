@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { Typography } from "@mui/material";
 
@@ -15,6 +15,7 @@ import { MoveTicketProps } from "./moveTicket.types";
 export const MoveTicketDialog = ({open, onClose}: MoveTicketProps) => {
     const moveTicketMutation = useMoveTicketMutation();
     const [targetProjectKey, setTargetProjectKey] = useState('');
+    const navigate = useNavigate()
 
     const { projectKey, ticketKey } = useParams<{
         projectKey?: string;
@@ -34,6 +35,8 @@ export const MoveTicketDialog = ({open, onClose}: MoveTicketProps) => {
             project_key: projectKey,          
             ticket_key: ticketKey,            
             target_project_key: targetProjectKey, 
+        },{
+            onSuccess: () => void navigate(`/project/${projectKey}`)
         });
     }
 

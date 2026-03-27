@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import {
-    Button,
     FormControl,
     FormControlLabel,
     FormLabel,
@@ -13,7 +12,7 @@ import {
     Typography,
 } from '@mui/material';
 
-import { AppDialog } from '@components/AppDialog/AppDialog.component';
+import { DialogBox } from '@components';
 import {
     inviteUserRequestSchema,
     useInviteUserMutation,
@@ -48,20 +47,25 @@ export const InviteUser = ({open, onClose, projectId} : InviteUserProps) => {
             return;
         }
         setErrors({});
-        inviteMutation.mutate(formData);
+        inviteMutation.mutate(formData, {
+            onSuccess: () => onClose()
+        });
     };
 
+    
+            
+            
     return (
         <>
-            <AppDialog
+            <DialogBox
                 open={open}
                 onClose={onClose}
                 title="Invite User"
-                actions={
-                    <Button variant="contained" onClick={inviteOnClick}>
-                        Invite
-                    </Button>
-                }
+                submitText="Invite"
+                cancelText="Cancel"
+                onSubmit={inviteOnClick}
+                isSubmitDisabled={inviteMutation.isPending}
+                isSubmitting={inviteMutation.isPending}
             >
                 <TextField
                     label="Email"
@@ -105,12 +109,7 @@ export const InviteUser = ({open, onClose, projectId} : InviteUserProps) => {
                         {inviteMutation.error.message}
                     </Typography>
                 )}
-                {inviteMutation.isSuccess && (
-                    <Typography variant='subtitle2' sx={{ color: theme.palette.success.contrastText }}>
-                        {inviteMutation.data.message}
-                    </Typography>
-                )}
-            </AppDialog>
+            </DialogBox>
         </>
     );
 };

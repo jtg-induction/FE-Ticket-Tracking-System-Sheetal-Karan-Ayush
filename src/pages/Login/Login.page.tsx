@@ -66,7 +66,7 @@ export const Login = () => {
                 onSuccess: (data) => {
                     localStorage.setItem('access_token', data.access_token);
                     localStorage.setItem('refresh_token', data.refresh_token);
-                    void navigate('/project/create');
+                    void navigate('/user');
                 },
             },
         );

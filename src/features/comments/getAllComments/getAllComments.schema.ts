@@ -4,6 +4,7 @@ export const getAllCommentsRequestSchema = z.object({
     limit: z.int(),
     cursor: z.string().optional(),
     ticket_key: z.string(),
+    project_key: z.string(),
     parent_comment_id: z.int().nullable()
 });
 
