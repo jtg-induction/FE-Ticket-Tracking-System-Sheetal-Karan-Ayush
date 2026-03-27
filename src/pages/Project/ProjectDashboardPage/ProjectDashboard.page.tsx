@@ -78,7 +78,7 @@ import {
     StyledTableRow,
     StyledUpperBox,
 } from './ProjectDashboardPage.style';
-import { TicketType } from '@features/ticket/common';
+import { TicketPriority, TicketStatus, TicketType } from '@features/ticket/common';
 
 export const ProjectDashboardPage = () => {
     const {
@@ -222,15 +222,15 @@ export const ProjectDashboardPage = () => {
     const statusChartData = useMemo(() => {
         if (!statusCounts) return null;
         return statusCounts.map((item) => ({
-            status: item.status,
+            status: TicketStatus[Number(item.status)].toLowerCase() || `Status ${item.status}`,
             count: item.count,
-        }));
+        }))
     }, [statusCounts]);
 
     const priorityChartData = useMemo(() => {
         if (!priorityCounts) return null;
         return priorityCounts.map((item) => ({
-            priority: item.priority,
+            priority: TicketPriority[Number(item.priority)].toLowerCase() || `Status ${item.priority}`,
             count: item.count,
         }));
     }, [priorityCounts]);
@@ -373,13 +373,11 @@ export const ProjectDashboardPage = () => {
                     <ClampedTooltipText variant="h2" lines={2}>
                         Title: {project?.title}
                     </ClampedTooltipText>
-                    <Tooltip title={project?.description}>
-                        <Typography variant="body2" sx={(theme) => ({
-                            ...theme.mixins.lineClamp(4)
-                        })} >
-                            {project?.description}
-                        </Typography>
-                    </Tooltip>
+                    <Typography variant="body2" sx={{
+                        maxLines: 4, maxHeight: 160, overflowY: 'auto',
+                    }} >
+                        {project?.description}
+                    </Typography>
                 </StyledLowerBox>
             </StyledHeader>
             <Divider />
@@ -389,8 +387,7 @@ export const ProjectDashboardPage = () => {
 
                 <Grid2 container spacing={3} sx={{ mt: 1 }}>
                     {/* ticket status chart */}
-                    <Grid2
-                        size={{ xs: 12, sm: 12, md: 4, lg: 4 }}
+                    <Grid2 size={{ xs: 12, sm: 12, md: 4, lg: 4 }}
                         sx={{ minWidth: '300px' }}
                     >
                         {statusLoading ? (
@@ -414,8 +411,7 @@ export const ProjectDashboardPage = () => {
                         )}
                     </Grid2>
                     {/* ticket priority chart */}
-                    <Grid2
-                        size={{ xs: 12, sm: 12, md: 4, lg: 4 }}
+                    <Grid2 size={{ xs: 12, sm: 12, md: 4, lg: 4 }}
                         sx={{ minWidth: '300px' }}
                     >
                         {priorityLoading ? (
@@ -439,10 +435,9 @@ export const ProjectDashboardPage = () => {
                         )}
                     </Grid2>
                     {/* deadline chart */}
-                    <Grid2
-                        size={{ xs: 12, sm: 12, md: 4, lg: 4 }}
+                    <Grid2 size={{ xs: 12, sm: 12, md: 4, lg: 4 }}
                         sx={{ minWidth: '300px' }}
-                    >
+                    > 
                         {deadlineLoading ? (
                             <LineChartLoadingContainer>
                                 <CircularProgress />

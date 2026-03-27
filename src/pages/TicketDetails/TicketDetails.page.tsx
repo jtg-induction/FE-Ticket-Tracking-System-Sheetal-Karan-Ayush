@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import dayjs from 'dayjs';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import {
     Delete as DeleteIcon,
@@ -79,6 +79,7 @@ export const TicketDetails: React.FC = () => {
         new Date(dateString).toLocaleDateString();
     const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
     const [isSubsribeDialogOpen, setIsSubsribeDialogOpen] = useState(false);
+    const navigate = useNavigate();
 
     const handleDeleteTicket = () => {
         if (!projectKey || !ticketKey) {
@@ -192,18 +193,20 @@ export const TicketDetails: React.FC = () => {
                             </Typography>
 
                             {/* Icon Box with Edit and Delete icons */}
-                            <Box>
+                            <Box display={'flex'} gap={2}>
                                 {ticket.role == ADMIN && (
                                     <>
-                                        <Button
-                                            variant="contained"
-                                            size="small"
-                                            onClick={() =>
-                                                setIsMoveDialogOpen(true)
-                                            }
-                                        >
-                                            Move
-                                        </Button>
+                                        <Tooltip title="Move to another project">
+                                            <Button
+                                                variant="contained"
+                                                size="small"
+                                                onClick={() =>
+                                                    setIsMoveDialogOpen(true)
+                                                }
+                                            >
+                                                Move
+                                            </Button>
+                                        </Tooltip>
 
                                         <IconButton
                                             sx={{
@@ -255,9 +258,9 @@ export const TicketDetails: React.FC = () => {
                                     }}
                                     onClick={() =>
                                         setIsSubsribeDialogOpen(true)
-                                    } // Open Subsribe dialog
+                                    }
                                 >
-                                    <Tooltip title="Subscribe ticket">
+                                    <Tooltip title={ticket?.is_subscribed ? "Unsubscribe ticket" : "Subscribe ticket"}>
                                         <SubscribeIcon />
                                     </Tooltip>
                                 </IconButton>
@@ -324,6 +327,16 @@ export const TicketDetails: React.FC = () => {
 
                         {/* Assignee, Reporter, Deadline, Created On */}
                         <StyledLabel>
+                            <strong>Project Key:</strong>{' '}
+                            <span
+                                onClick={() => navigate(`/project/${projectKey}`)}
+                                style={{ color: COLORS.GRAY.SECONDARY, cursor: 'pointer' }}
+                            >
+                                {projectKey}
+                            </span>
+                        </StyledLabel>
+
+                        <StyledLabel>
                             <strong>Assignee:</strong>{' '}
                             <span style={{ color: COLORS.GRAY.SECONDARY }}>
                                 {ticket.assignee}
@@ -385,8 +398,11 @@ export const TicketDetails: React.FC = () => {
                             <Typography variant="h3">Comments</Typography>
 
                             {/* comment box */}
-                            <Box display="flex" gap={2}>
+                            <Box display="flex" gap={2} alignItems={'center'}>
                                 <TextField
+                                    multiline
+                                    minRows={1}
+                                    maxRows={4}
                                     fullWidth
                                     size="small"
                                     placeholder="Add a comment..."
@@ -394,8 +410,11 @@ export const TicketDetails: React.FC = () => {
                                     onChange={(e) =>
                                         setNewComment(e.target.value)
                                     }
-                                    onKeyDown={(e) =>
-                                        e.key === 'Enter' && handleAddComment()
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            handleAddComment()
+                                        }
+                                    }
                                     }
                                 />
                                 <Button

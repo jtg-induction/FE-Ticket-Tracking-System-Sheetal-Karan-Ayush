@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { Typography } from '@mui/material';
 
@@ -29,19 +29,29 @@ export const MoveTicketContainer = ({ open, onClose }: MoveTicketProps) => {
         trimmedKey.length < MIN_PROJECT_KEY_LENGTH ||
         trimmedKey.length > MAX_PROJECT_KEY_LENGTH;
 
+    const navigate = useNavigate();
+
     const handleMoveTicket = () => {
-        // Guard: ensure required route params exist
         if (!projectKey || !ticketKey) {
             // If params are missing, do not proceed with API call
             return;
         }
 
         // Trigger mutation to move the ticket
-        moveTicketMutation.mutate({
-            project_key: projectKey, // Source project key (current project)
-            ticket_key: ticketKey, // Ticket identifier
-            target_project_key: targetProjectKey, // Destination project key
-        });
+        moveTicketMutation.mutate(
+            {
+                project_key: projectKey, 
+                ticket_key: ticketKey, 
+                target_project_key: targetProjectKey, 
+            },
+            {
+                onSuccess: (data) => {
+                    const newTicketKey = data?.new_ticket_key || ticketKey;
+
+                    onClose(); // Close the dialog first
+                    navigate(`/project/${targetProjectKey}/ticket/${newTicketKey}`);
+                }
+            });
     };
 
     return (
