@@ -1,22 +1,10 @@
-import { Box, Container, Stack, styled, TextField } from '@mui/material';
+import { Box, Container, Stack, styled } from '@mui/material';
 
 export const StyledWrapper = styled(Container)({
     height: '100vh',
     display: 'flex',
     alignItems: 'center',
 });
-
-export const StyledErrorTextField = styled(TextField)(({ theme }) => ({
-    '& .MuiInputLabel-root.Mui-error': {
-        color: theme.palette.error.contrastText,
-    },
-    '& .MuiFormHelperText-root.Mui-error': {
-        color: theme.palette.error.contrastText,
-    },
-    '& .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline': {
-        borderColor: theme.palette.error.contrastText,
-    },
-}));
 
 export const StyledHeading = styled(Box)(({ theme }) => {
     const {
