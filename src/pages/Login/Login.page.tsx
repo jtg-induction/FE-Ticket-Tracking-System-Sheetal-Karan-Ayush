@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 
 import { NavLink, useNavigate } from 'react-router-dom';
 
-import { BugReport } from '@mui/icons-material';
+import { BugReport, Visibility, VisibilityOff } from '@mui/icons-material';
 import {
     Avatar,
     Button,
+    IconButton,
+    InputAdornment,
     Stack,
     Typography,
     useMediaQuery,
@@ -23,53 +25,54 @@ import {
     StyledStackWrapper,
     StyledWrapper,
 } from './Login.styles';
+import { LoginInput, loginSchema } from '@features/auth/loginSchema';
+import { useLoginStore } from '@features/auth/store/loginStore';
+import z from 'zod';
 
 export const Login = () => {
     const theme = useTheme();
+    const navigate = useNavigate();
     const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
-    const [email, setEmail] = useState('');
-    const [isInvalidEmail, setIsInvalidEmail] = useState(false);
-    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        setEmail(value);
-        if (value.length > 0) {
-            setIsInvalidEmail(!e.target.validity.valid);
-        } else {
-            setIsInvalidEmail(false);
-        }
-    };
+    const [showPassword, setShowPassword] = useState(false);
+    const handleClickShowPassword = () => setShowPassword(!showPassword);
 
-    const [password, setPassword] = useState('');
-    const passwordRegex =
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    const isInvalidPassword =
-        password.length > 0 && !passwordRegex.test(password);
-
-    const isFormValid =
-        email.length > 0 &&
-        password.length > 0 &&
-        !isInvalidEmail &&
-        !isInvalidPassword;
+    const { email, password, ...actions } = useLoginStore();
+    const [isSubmitted, setIsSubmitted] = useState(false);
 
     const loginMutation = useLoginMutation();
-    const navigate = useNavigate();
+
+    const validation = loginSchema.safeParse({ email, password });
+    const fieldErrors = !validation.success ? z.flattenError(validation.error).fieldErrors : {};
+
+    const isFormValid = validation.success;
+
+    const shouldShowError = (fieldName: keyof LoginInput, value: string) => {
+        const hasError = !!fieldErrors[fieldName];
+        const hasStartedTyping = value.length > 0;
+        return (hasStartedTyping || isSubmitted) && hasError;
+    };
+
+
     const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
         e.preventDefault();
+        setIsSubmitted(true);
 
-        if (!isFormValid) {
+        const validation = loginSchema.safeParse({ email, password });
+        if (!validation.success) {
             return;
         }
-        loginMutation.mutate(
-            { email, password },
-            {
-                onSuccess: (data) => {
-                    localStorage.setItem('access_token', data.access_token);
-                    localStorage.setItem('refresh_token', data.refresh_token);
-                    void navigate('/project/create');
-                },
+
+        loginMutation.mutate(validation.data, {
+            onSuccess: (data) => {
+                localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('refresh_token', data.refresh_token);
+                void navigate('/');
             },
-        );
+            onError: (error: any) => {
+                console.error("Login failed:", error.message);
+            },
+        });
     };
 
     return (
@@ -97,56 +100,68 @@ export const Login = () => {
                         </Typography>
                     </StyledContent>
 
+
                     <Stack component="form" spacing={4} onSubmit={handleSubmit}>
+
+
                         <StyledErrorTextField
-                            required
-                            name="email"
                             label="Email"
                             type="email"
                             value={email}
-                            onChange={handleEmailChange}
-                            error={isInvalidEmail}
-                            helperText={
-                                isInvalidEmail
-                                    ? 'Enter a valid email address'
-                                    : ''
-                            }
+                            onChange={(e) => {
+                                actions.setEmail((e.target.value).toLowerCase());
+                                if (loginMutation.isError) {
+                                    loginMutation.reset();
+                                }
+                            }}
+                            error={shouldShowError('email', email)}
+                            helperText={shouldShowError('email', email) ? fieldErrors.email?.[0] : ''}
                         />
 
                         <StyledErrorTextField
-                            required
-                            name="password"
                             label="Password"
-                            type="password"
+                            type={showPassword ? 'text' : 'password'}
                             value={password}
-                            onChange={(
-                                e: React.ChangeEvent<HTMLInputElement>,
-                            ) => setPassword(e.target.value)}
-                            error={isInvalidPassword}
-                            helperText={
-                                isInvalidPassword
-                                    ? 'Password must contain at least 8 characters(atleast one small letter, one capital letter, one number and atleast one special character)'
-                                    : ''
-                            }
+                            onChange={(e) => {
+                                actions.setPassword(e.target.value);
+                                if (loginMutation.isError) {
+                                    loginMutation.reset();
+                                }
+                            }}
+                            error={shouldShowError('password', password)}
+                            helperText={shouldShowError('password', password) ? fieldErrors.password?.[0] : ''}
+                            slotProps={{
+                                input: {
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                aria-label="toggle password visibility"
+                                                onClick={handleClickShowPassword}
+                                                onMouseDown={(e) => e.preventDefault()}
+                                                edge="end"
+                                            >
+                                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }
+                            }}
                         />
 
                         {loginMutation.isError && (
-                            <Typography
-                                variant="subtitle2"
-                                sx={{ color: theme.palette.error.contrastText }}
-                            >
+                            <Typography variant="subtitle2" color="error.contrastText">
                                 {loginMutation.error.message}
                             </Typography>
                         )}
 
                         <Button
                             variant="contained"
-                            color="primary"
                             type="submit"
-                            disabled={!isFormValid}
+                            disabled={!isFormValid || loginMutation.isPending}
                         >
-                            Login
+                            {loginMutation.isPending ? 'Loging In...' : 'Login'}
                         </Button>
+
                     </Stack>
 
                     <Typography textAlign={'center'}>

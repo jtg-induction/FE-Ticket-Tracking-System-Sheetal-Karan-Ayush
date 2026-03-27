@@ -2,14 +2,10 @@ import { type AuthResponse, authResponseSchema } from 'features/auth/schema';
 
 import { api } from './axios';
 import { handleApiError } from './handleApiError';
+import { LoginInput } from '@features/auth/loginSchema';
 
 type SignupInput = {
     name: string;
-    email: string;
-    password: string;
-};
-
-type LoginInput = {
     email: string;
     password: string;
 };
@@ -20,7 +16,6 @@ export const signupUser = async (data: SignupInput): Promise<AuthResponse> => {
             name: data.name,
             email: data.email,
             password: data.password,
-            avatar_id: 1,
         };
         const response = await api.post('/api/auth/signup', payload);
         const parsed = authResponseSchema.safeParse(response.data);

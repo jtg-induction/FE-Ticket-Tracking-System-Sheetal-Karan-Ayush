@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 
 import { NavLink, useNavigate } from 'react-router-dom';
 
-import { BugReport } from '@mui/icons-material';
+import { BugReport, Visibility, VisibilityOff } from '@mui/icons-material';
 import {
     Avatar,
     Button,
+    IconButton,
+    InputAdornment,
     Stack,
     Typography,
     useMediaQuery,
@@ -25,100 +27,71 @@ import {
     StyledStackWrapper,
     StyledWrapper,
 } from './Register.styles';
+import { RegisterInput, registerSchema } from '@features/auth/registerShema';
+import { useRegisterStore } from '@features/auth/store/registerStore';
 
 export const Register = () => {
     const theme = useTheme();
-
+    const navigate = useNavigate();
     const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
-    const [name, setName] = useState('');
-    const nameRegex = /^[A-Za-z][A-Za-z ]*$/;
-    const isInvalidName = name.length > 0 && !nameRegex.test(name);
+    const [otpOpen, setOtpOpen] = useState(false);
 
-    const [email, setEmail] = useState('');
-    const [isInvalidEmail, setIsInvalidEmail] = useState(false);
-    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        setEmail(value);
-        if (value.length > 0) {
-            setIsInvalidEmail(!e.target.validity.valid);
-        } else {
-            setIsInvalidEmail(false);
-        }
-    };
-    const [password, setPassword] = useState('');
-    const passwordRegex =
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    const isInvalidPassword =
-        password.length > 0 && !passwordRegex.test(password);
+    const [showPassword, setShowPassword] = useState(false);
+    const handleClickShowPassword = () => setShowPassword(!showPassword);
 
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [isInvalidConfirmPassword, setIsInvalidConfirmPassword] =
-        useState(false);
-    const handleConfirmPasswordChange = (
-        e: React.ChangeEvent<HTMLInputElement>,
-    ) => {
-        const value = e.target.value;
-        setConfirmPassword(value);
-        if (password.length > 0 && value.length > 0) {
-            setIsInvalidConfirmPassword(value !== password);
-        } else {
-            setIsInvalidConfirmPassword(false);
-        }
-    };
 
-    const isFormValid =
-        name.length > 2 &&
-        name.length < 256 &&
-        email.length > 0 &&
-        email.length < 256 &&
-        password.length > 7 &&
-        password.length < 256 &&
-        confirmPassword.length > 7 &&
-        !isInvalidName &&
-        !isInvalidEmail &&
-        !isInvalidPassword &&
-        password === confirmPassword;
-
-    const [otpOpen, setOtpOpen] = useState<boolean>(false);
-    const signupMutation = useSignupMutation();
-    const verifyMutation = useVerifyMutation();
+    const { name, email, password, confirmPassword, ...actions } = useRegisterStore();
+    const [isSubmitted, setIsSubmitted] = useState(false);
 
     const setAuth = useAuthStore((s) => s.setAuth);
 
+
+    const signupMutation = useSignupMutation();
+    const verifyMutation = useVerifyMutation();
+
+
+    const validation = registerSchema.safeParse({ name, email, password, confirmPassword });
+    const fieldErrors = !validation.success ? validation.error.flatten().fieldErrors : {};
+
+    const isFormValid = validation.success;
+
+    const shouldShowError = (fieldName: keyof RegisterInput, value: string) => {
+        const hasError = !!fieldErrors[fieldName];
+        const hasStartedTyping = value.length > 0;
+        return (hasStartedTyping || isSubmitted) && hasError;
+    };
+
+
     const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
         e.preventDefault();
+        setIsSubmitted(true);
 
-        if (!isFormValid) {
+        const validation = registerSchema.safeParse({ name, email, password, confirmPassword });
+        if (!validation.success) {
             return;
         }
-        signupMutation.mutate(
-            { name, email, password},
-            { onSuccess: () => setOtpOpen(true) },
-        );
-    };
-    const navigate = useNavigate();
-    const handleVerify = (otp: number) => {
-        verifyMutation.mutate(
-            { email, otp },
-            {
-                onSuccess: (data) => {
-                    setAuth(data);
-                    setOtpOpen(false);
-                    localStorage.setItem('access_token', data.access_token);
-                    localStorage.setItem('refresh_token', data.refresh_token);
-                    void navigate('/project/create');
-                },
-                onError: () => {
-                    <Typography
-                        variant="subtitle2"
-                        sx={{ color: theme.palette.error.contrastText }}
-                    >
-                        {verifyMutation.error?.message}
-                    </Typography>;
-                },
+
+        signupMutation.mutate(validation.data, {
+            onSuccess: () => {
+                setOtpOpen(true);
             },
-        );
+            onError: (error: any) => {
+                console.error("Signup failed:", error.message);
+            },
+        });
+    };
+
+    const handleVerify = (otp: number) => {
+        verifyMutation.mutate({ email, otp }, {
+            onSuccess: (data) => {
+                setAuth(data);
+                setOtpOpen(false);
+                localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('refresh_token', data.refresh_token);
+                navigate('/project/create');
+            }
+        });
     };
 
     return (
@@ -146,92 +119,95 @@ export const Register = () => {
                         </Typography>
                     </StyledContent>
 
+
                     <Stack component="form" spacing={4} onSubmit={handleSubmit}>
                         <StyledErrorTextField
-                            required
-                            name="name"
                             label="Name"
                             value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            error={isInvalidName}
-                            helperText={
-                                isInvalidName
-                                    ? 'Enter a valid name (letters only), with length ranging from 2 to 255'
-                                    : ''
-                            }
+                            onChange={(e) => actions.setName(e.target.value)}
+                            error={shouldShowError('name', name)}
+                            helperText={shouldShowError('name', name) ? fieldErrors.name?.[0] : ''}
                         />
+
                         <StyledErrorTextField
-                            required
-                            name="email"
                             label="Email"
                             type="email"
                             value={email}
-                            onChange={handleEmailChange}
-                            error={isInvalidEmail}
-                            helperText={
-                                isInvalidEmail
-                                    ? 'Enter a valid email address'
-                                    : ''
-                            }
+                            onChange={
+                                (e) => {
+                                    actions.setEmail((e.target.value).toLowerCase())
+                                    if (signupMutation.error) {
+                                        signupMutation.reset();
+                                    }
+                                }}
+                            error={shouldShowError('email', email)}
+                            helperText={shouldShowError('email', email) ? fieldErrors.email?.[0] : ''}
                         />
 
                         <StyledErrorTextField
-                            required
-                            name="password"
                             label="Password"
-                            type="password"
+                            type={showPassword ? 'text' : 'password'}
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            error={isInvalidPassword}
-                            helperText={
-                                isInvalidPassword
-                                    ? 'Password must contain at least 8 characters(atleast one small letter, one capital letter, one number and atleast one special character) and at max 255 characters'
-                                    : ''
-                            }
+                            onChange={(e) => actions.setPassword(e.target.value)}
+                            error={shouldShowError('password', password)}
+                            helperText={shouldShowError('password', password) ? fieldErrors.password?.[0] : ''}
+                            slotProps={{
+                                input: {
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                aria-label="toggle password visibility"
+                                                onClick={handleClickShowPassword}
+                                                onMouseDown={(e) => e.preventDefault()}
+                                                edge="end"
+                                            >
+                                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                }
+                            }}
                         />
 
                         <StyledErrorTextField
-                            required
-                            name="confirmPassword"
                             label="Confirm Password"
                             type="password"
                             value={confirmPassword}
-                            onChange={handleConfirmPasswordChange}
-                            error={isInvalidConfirmPassword}
-                            helperText={
-                                isInvalidConfirmPassword
-                                    ? 'Confirm password and password must be same'
-                                    : ''
-                            }
+                            onChange={(e) => actions.setConfirmPassword(e.target.value)}
+                            error={shouldShowError('confirmPassword', confirmPassword)}
+                            helperText={shouldShowError('confirmPassword', confirmPassword) ? fieldErrors.confirmPassword?.[0] : ''}
                         />
+
                         {signupMutation.isError && (
-                            <Typography
-                                variant="subtitle2"
-                                sx={{ color: theme.palette.error.contrastText }}
-                            >
+                            <Typography variant="subtitle2" color="error.contrastText">
                                 {signupMutation.error.message}
                             </Typography>
                         )}
+
                         <Button
                             variant="contained"
-                            color="primary"
                             type="submit"
-                            disabled={!isFormValid}
+                            disabled={!isFormValid || signupMutation.isPending}
                         >
-                            Submit
+                            {signupMutation.isPending ? 'Registering...' : 'Register'}
                         </Button>
+
                     </Stack>
+
                     <VerifyOtpDialog
                         open={otpOpen}
                         handleVerify={handleVerify}
                         setOpen={setOtpOpen}
                         errorMsg={verifyMutation.error?.message || ''}
+                        userMail={email}
                     />
+
                     <Typography textAlign={'center'}>
                         Have an account? <NavLink to="/login">Login</NavLink>
                     </Typography>
                 </StyledRegisterCard>
                 {isDesktop && <HeroCard />}
+
             </StyledStackWrapper>
         </StyledWrapper>
     );

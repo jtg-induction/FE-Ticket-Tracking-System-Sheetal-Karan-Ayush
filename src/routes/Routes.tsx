@@ -29,7 +29,7 @@ const routes: RouteObject[] = [
                     },
                     {
                         index: true,
-                        element: <Navigate to="project/create" />,
+                        element: <Navigate to="user" replace />,
                     },
                     {
                         path: 'project/create',
