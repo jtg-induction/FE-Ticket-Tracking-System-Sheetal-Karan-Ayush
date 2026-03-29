@@ -1,4 +1,4 @@
-import { CircularProgress, Grid2, Typography } from '@mui/material';
+import { CircularProgress, Grid2 } from '@mui/material';
 
 import { ChartCard } from '@components';
 

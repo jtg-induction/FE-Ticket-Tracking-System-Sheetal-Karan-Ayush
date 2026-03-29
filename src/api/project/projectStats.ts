@@ -5,12 +5,12 @@ type DeadlineStatsResponse = {
     count: number;
 };
 type TicketStatusCount = {
-    status: string;
+    status: number;
     count: number;
 }
 
 type TicketPriorityCount = {
-    priority: string;
+    priority: number;
     count: number;
 }
 

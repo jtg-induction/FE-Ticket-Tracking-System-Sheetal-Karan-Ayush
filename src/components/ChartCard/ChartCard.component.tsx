@@ -183,7 +183,7 @@ export const ChartCard = <T extends Record<string, unknown>>({
     };
 
     return (
-        <Card sx={{ height: 350, display: 'flex', flexDirection: 'column' }}>
+        <Card sx={{ height: 350, minWidth: 300, display: 'flex', flexDirection: 'column' }}>
             <CardContent
                 sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2 }}
             >

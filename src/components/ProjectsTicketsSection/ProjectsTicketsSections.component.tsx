@@ -16,9 +16,11 @@ import {
 } from '@mui/material';
 
 import { ProjectTicketFilters } from '@components';
+import { TicketResponse } from '@features/ticket/createTicket/createTicket.schema';
 import { TicketConstToStatusMap } from '@pages/TicketDetails/TicketDetails.util';
+import { InfiniteData } from '@tanstack/react-query';
 
-import { TicketSectionProps } from './ProjectTicket.type';
+import { TicketPage, TicketSectionProps } from './ProjectTicket.type';
 import { TICKET_TABLE_HEADER } from './ProjectTickets.config';
 import {
     DesktopTableCell,
@@ -42,7 +44,7 @@ export const TicketSection = ({
     hasNextPage,
     fetchNextPage,
     projectKey,
-}: TicketSectionProps) => {
+}: TicketSectionProps<InfiniteData<TicketPage>>) => {
     const navigate = useNavigate();
 
     return (
@@ -141,8 +143,8 @@ export const TicketSection = ({
                             </TableRow>
                         ) : ticketsData?.pages?.length ? (
                             ticketsData.pages
-                                .flatMap((page) => page.tickets)
-                                .map((ticket) => (
+                                .flatMap((page: TicketPage) => page.tickets)
+                                .map((ticket: TicketResponse) => (
                                     <TableRow
                                         key={ticket.id}
                                         onClick={() =>

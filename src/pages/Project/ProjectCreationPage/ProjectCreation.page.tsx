@@ -1,37 +1,39 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import axios from 'axios';
 import { debounce } from 'lodash';
 import { useNavigate } from 'react-router-dom';
+import { z } from 'zod';
 
 import { RemoveRedEye, VisibilityOff } from '@mui/icons-material';
 import {
     Alert,
     Button,
     CircularProgress,
+    Collapse,
     IconButton,
     Snackbar,
-    TextField,
     Typography,
-    useTheme,
 } from '@mui/material';
 
+import { useSnackbarStore } from '@components';
 import {
     projectCreateSchema,
     useCheckProjectKey,
     useCreateProject,
     useProjectStore,
 } from '@features/project';
+import { StyledErrorTextField } from '@pages/Register/Register.styles';
 
-import { CardBox } from './projectCreationPage.style';
+import { CardBox, TipsBox } from './projectCreationPage.style';
 
 export const ProjectCreationPage = () => {
-    const theme = useTheme();
     const navigate = useNavigate();
-    const { createFormData, setCreateFormData, reset } = useProjectStore();
-    
+    const { showSnackbar } = useSnackbarStore();
     const [apiError, setApiError] = useState(false);
+    const { createFormData, setCreateFormData, reset } = useProjectStore();
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [touched, setTouched] = useState<Record<string, boolean>>({});
     const [isUnique, setIsUnique] = useState<boolean>();
     const [showPassword, setShowPassword] = useState(false);
     const createProjectMutation = useCreateProject();
@@ -41,41 +43,52 @@ export const ProjectCreationPage = () => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
 
-    const debouncedCheckKey = debounce(async (value: string) => {
-        setLoading(true);
-        try {
-            const res = await checkKeyMutation.mutateAsync({
-                key: value,
-                formData: {
-                    jira_url: createFormData.jira_url,
-                    access_token: createFormData.access_token,
-                    lead_email: createFormData.lead_email,
-                },
-            });
-            setIsUnique(res.valid);
-        } catch (error: unknown) {
-            setApiError(true);
-            if (axios.isAxiosError(error)) {
-                if (error.response?.status === 502) {
-                    setSnackbarMessage(
-                        'Unauthorized: Invalid Jira URL, Access Token, or Admin Email',
-                    );
-                } else {
-                    setSnackbarMessage(
-                        'Something went wrong, please try again.',
-                    );
-                }
-            } else {
-                setSnackbarMessage(
-                    'Unauthorized: Invalid Jira URL, Access Token, or Admin Email',
-                );
-            }
-            setSnackbarOpen(true);
-            setIsUnique(false);
-        } finally {
-            setLoading(false);
+    const validateField = (
+        name: keyof typeof createFormData,
+        value: string,
+    ): string => {
+        const schema = projectCreateSchema.shape[name] as z.ZodTypeAny;
+        if (!schema) return '';
+        const result = schema.safeParse(value);
+        if (!result.success) {
+            return result.error.issues[0]?.message ?? '';
         }
-    }, 500);
+        return '';
+    };
+
+    const debouncedCheckKey = useCallback(
+        debounce(async (value: string) => {
+            setLoading(true);
+            try {
+                const currentData = useProjectStore.getState().createFormData;
+                const res = await checkKeyMutation.mutateAsync({
+                    key: value,
+                    formData: {
+                        jira_url: currentData.jira_url,
+                        access_token: currentData.access_token,
+                        lead_email: currentData.lead_email,
+                    },
+                });
+                setIsUnique(res.valid);
+            } catch (error: unknown) {
+                setApiError(true);
+                let message = 'Something went wrong, please try again.';
+                if (
+                    axios.isAxiosError(error) &&
+                    error.response?.status === 502
+                ) {
+                    message =
+                        'Unauthorized: Invalid Jira URL, Access Token, or Admin Email';
+                }
+                setSnackbarMessage(message);
+                setSnackbarOpen(true);
+                setIsUnique(false);
+            } finally {
+                setLoading(false);
+            }
+        }, 500),
+        [checkKeyMutation],
+    );
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -85,21 +98,31 @@ export const ProjectCreationPage = () => {
             value: string;
         };
 
-        setCreateFormData({ [name]: value });
-        setErrors((prev) => ({ ...prev, [name]: '' }));
+        const currentData = useProjectStore.getState().createFormData;
+        const updatedData = { ...currentData, [name]: value };
+        setCreateFormData(updatedData);
+
         setApiError(false);
-        if (name === 'jira_project_key' && value.length >= 2) {
+        setTouched((prev) => ({ ...prev, [name]: true }));
+
+        const error = validateField(name, value);
+        setErrors((prev) => ({ ...prev, [name]: error }));
+
+        if (name === 'jira_project_key' && value.length >= 2 && !error) {
             void debouncedCheckKey(value);
+        } else if (name === 'jira_project_key') {
+            setIsUnique(undefined);
         }
     };
+
     const isInvalidFormat =
         createFormData.jira_project_key.length > 0 &&
         !/^[A-Za-z]{2,10}$/.test(createFormData.jira_project_key);
 
     const isKeyDisabled =
-        !createFormData.jira_url ||
-        !createFormData.access_token ||
-        !createFormData.lead_email;
+        !!validateField('jira_url', createFormData.jira_url) ||
+        !!validateField('access_token', createFormData.access_token) ||
+        !!validateField('lead_email', createFormData.lead_email);
 
     const isSubmitDisabled =
         !createFormData.jira_project_key ||
@@ -111,6 +134,16 @@ export const ProjectCreationPage = () => {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        const allFields = Object.keys(
+            createFormData,
+        ) as (keyof typeof createFormData)[];
+        const allTouched = allFields.reduce(
+            (acc, field) => ({ ...acc, [field]: true }),
+            {} as Record<string, boolean>,
+        );
+        setTouched(allTouched);
+
         const result = projectCreateSchema.safeParse(createFormData);
 
         if (!result.success) {
@@ -128,57 +161,62 @@ export const ProjectCreationPage = () => {
                 reset();
                 setIsUnique(false);
                 setErrors({});
+                setTouched({});
+                showSnackbar('Project created successfully.', 'success');
                 useProjectStore.getState().setProject(newProject);
                 void navigate(`/project/${newProject.jira_project_key}`);
             },
+            onError: () => {
+                showSnackbar('Failed to create project. Please try again...', 'error');
+            },
         });
     };
-    console.log(isUnique)
+
     return (
         <form onSubmit={handleSubmit}>
             <CardBox>
                 <Typography variant="h2" textAlign="center">
                     Project Creation
                 </Typography>
-                <TextField
+                <StyledErrorTextField
                     label="Title"
                     name="title"
                     value={createFormData.title}
                     onChange={handleChange}
-                    error={!!errors.title}
-                    helperText={errors.title}
+                    error={touched.title && !!errors.title}
+                    helperText={touched.title ? errors.title : ''}
                     fullWidth
                     required
                 />
-                <TextField
+                <StyledErrorTextField
                     label="Description"
                     name="description"
                     multiline
                     rows={5}
                     value={createFormData.description}
                     onChange={handleChange}
-                    error={!!errors.description}
-                    helperText={errors.description}
+                    error={touched.description && !!errors.description}
+                    helperText={touched.description ? errors.description : ''}
                     fullWidth
                 />
-                <TextField
+                <StyledErrorTextField
                     label="JIRA Instance URL"
                     name="jira_url"
                     value={createFormData.jira_url}
                     onChange={handleChange}
-                    error={!!errors.jira_url}
-                    helperText={errors.jira_url}
+                    error={touched.jira_url && !!errors.jira_url}
+                    helperText={touched.jira_url ? errors.jira_url : ''}
                     fullWidth
                     required
                 />
-                <TextField
+                <StyledErrorTextField
                     label="Access token"
                     name="access_token"
                     type={showPassword ? 'text' : 'password'}
                     value={createFormData.access_token}
                     onChange={handleChange}
-                    error={!!errors.access_token}
-                    helperText={errors.access_token}
+                    error={touched.access_token && !!errors.access_token}
+                    helperText={touched.access_token ? errors.access_token : ''}
                     fullWidth
                     required
                     slotProps={{
@@ -194,59 +232,47 @@ export const ProjectCreationPage = () => {
                                         <VisibilityOff fontSize="small" />
                                     ) : (
                                         <RemoveRedEye fontSize="small" />
-                                    )}{' '}
+                                    )}
                                 </IconButton>
                             ),
                         },
                     }}
                 />
-                <TextField
+                <StyledErrorTextField
                     label="Admin email"
                     name="lead_email"
                     type="email"
                     value={createFormData.lead_email}
                     onChange={handleChange}
-                    error={!!errors.lead_email}
-                    helperText={errors.lead_email}
+                    error={touched.lead_email && !!errors.lead_email}
+                    helperText={touched.lead_email ? errors.lead_email : ''}
                     fullWidth
                     required
                 />
-                <TextField
+                <StyledErrorTextField
                     label="Key"
                     name="jira_project_key"
                     value={createFormData.jira_project_key}
                     onChange={handleChange}
                     fullWidth
                     required
-                    error={!!errors.jira_project_key}
-                    sx={{
-                        '& .MuiInputBase-root': {
-                            borderColor:
-                                isUnique && !isInvalidFormat
-                                    ? theme.palette.success.main
-                                    : theme.palette.error.main,
-                            '&:hover': {
-                                borderColor:
-                                    isUnique && !isInvalidFormat
-                                        ? theme.palette.success.main
-                                        : theme.palette.error.dark,
-                            },
-                        },
-                        '& .MuiFormHelperText-root': {
-                            color:
-                                isUnique && !isInvalidFormat
-                                    ? theme.palette.primary.contrastText
-                                    : theme.palette.error.contrastText,
-                        },
-                    }}
+                    error={
+                        (touched.jira_project_key &&
+                            !createFormData.jira_project_key) ||
+                        isInvalidFormat ||
+                        isUnique === false
+                    }
                     helperText={
-                        isInvalidFormat
-                            ? 'Key must contain only 2-10 letters'
-                            : isUnique === false
-                              ? 'Key Already exists'
-                              : isUnique === true
-                                ? 'Key is available ✓'
-                                : 'Key must be unique with 2-10 letters'
+                        !createFormData.jira_project_key &&
+                        touched.jira_project_key
+                            ? 'Key cannot be blank'
+                            : isInvalidFormat
+                              ? errors.jira_project_key
+                              : isUnique === false
+                                ? 'Key already exists'
+                                : isUnique === true
+                                  ? 'Key is available ✓'
+                                  : ''
                     }
                     slotProps={{
                         input: {
@@ -256,7 +282,7 @@ export const ProjectCreationPage = () => {
                         },
                     }}
                     disabled={isKeyDisabled}
-                />{' '}
+                />
                 <Button
                     type="submit"
                     variant="contained"
@@ -269,6 +295,37 @@ export const ProjectCreationPage = () => {
                         'Submit'
                     )}
                 </Button>
+                <Collapse in>
+                    <TipsBox>
+                        <Typography
+                            variant="subtitle2"
+                            fontWeight="bold"
+                            gutterBottom
+                        >
+                            Pro Tips
+                        </Typography>
+                        <ul
+                            style={{
+                                margin: 0,
+                                paddingLeft: '1.5rem',
+                            }}
+                        >
+                            <li>
+                                Use a short, memorable project key (e.g.,
+                                &quot;DEV&quot;, &quot;MARKET&quot;)
+                            </li>
+                            <li>
+                                Your access token needs{' '}
+                                <strong>write permissions</strong> for project
+                                creation
+                            </li>
+                            <li>
+                                The admin email must be a valid user in your
+                                Jira instance
+                            </li>
+                        </ul>
+                    </TipsBox>
+                </Collapse>
                 <Snackbar
                     open={snackbarOpen}
                     onClose={() => setSnackbarOpen(false)}

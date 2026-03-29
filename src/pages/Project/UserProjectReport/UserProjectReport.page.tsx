@@ -16,7 +16,6 @@ import {
     Alert,
     Box,
     Button,
-    CircularProgress,
     Divider,
     Grid2,
     MenuItem,
@@ -30,10 +29,11 @@ import {
 } from '@mui/material';
 
 import { ChartCard } from '@components';
+import { TicketPriorityMap } from '@components/ProjectCharts/ProjectCharts.config';
 import { useAuthStore } from '@features/auth';
 import { useUserReport } from '@features/user';
-import { useUserBasicDetails } from '@features/user/useUserBasicDetails';
 import { useUserReportPdf } from '@features/user/useUserPDFGenerate';
+import { StyledErrorTextField } from '@pages/Register/Register.styles';
 import { theme } from '@theme';
 
 import { mapTicket } from './userProjectReport.config';
@@ -57,7 +57,6 @@ import {
     UserInfoCard,
 } from './UserProjectReport.style';
 import { RawTicket, UserReportFilters } from './UserProjectReport.type';
-import { TicketPriorityMap } from '@components/ProjectCharts/ProjectCharts.config';
 
 const SummaryCardItem: React.FC<{
     label: string;
@@ -104,10 +103,10 @@ export const UserReportPage: React.FC = () => {
     const [filterErrors, setFilterErrors] = useState<Record<string, string>>(
         {},
     );
-    const { data: userData, isLoading: userLoading } = useUserBasicDetails();
+
     const [searchParams] = useSearchParams();
     const { projectKey } = useParams();
-    const email = searchParams.get('email') ?? userData?.email;
+    const email = searchParams.get('email') ?? user?.email;
     const {
         data: reportData,
         isLoading,
@@ -128,21 +127,6 @@ export const UserReportPage: React.FC = () => {
                 <Alert severity="warning">
                     Please log in to view the report.
                 </Alert>
-            </PageContainer>
-        );
-    }
-
-    if (userLoading || (isLoading && !reportData)) {
-        return (
-            <PageContainer
-                sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    height: '100vh',
-                }}
-            >
-                <CircularProgress />
             </PageContainer>
         );
     }
@@ -176,7 +160,7 @@ export const UserReportPage: React.FC = () => {
 
         return errors;
     };
-    const summary = reportData!.summary ?? {
+    const summary = reportData?.summary ?? {
         totalTickets: 0,
         completedTickets: 0,
         pendingTickets: 0,
@@ -184,9 +168,9 @@ export const UserReportPage: React.FC = () => {
         deadlinesMissed: 0,
     };
 
-    const rawTickets: RawTicket[] = reportData!.tickets ?? [];
+    const rawTickets: RawTicket[] = reportData?.tickets ?? [];
     const tickets = rawTickets.map(mapTicket);
-    const nextCursor = reportData!.next_cursor;
+    const nextCursor = reportData?.next_cursor;
 
     const handleMultiSelectChange =
         (field: keyof UserReportFilters) =>
@@ -354,36 +338,52 @@ export const UserReportPage: React.FC = () => {
             <Divider sx={{ my: 3 }} />
 
             {/* Charts */}
-            <SectionTitle variant="h5">Charts</SectionTitle>
-            <Grid2 container spacing={2} sx={{ mb: 3 }}>
-                {reportData?.charts?.deadline && (
-                    <Grid2 size={{ xs: 12, sm: 6 }}>
-                        <ChartCard
-                            title="Deadlines"
-                            type="pie"
-                            data={reportData.charts.deadline}
-                            dataKey="value"
-                            xKey="label"
-                        />
+            {(reportData?.charts?.deadline?.some((item) => item.value > 0) ||
+                reportData?.charts?.priority?.some(
+                    (item) => item.value > 0,
+                )) && (
+                <>
+                    <SectionTitle variant="h5">Charts</SectionTitle>
+                    <Grid2 container spacing={2} sx={{ mb: 3 }}>
+                        {reportData?.charts?.deadline?.some(
+                            (item) => item.value > 0,
+                        ) && (
+                            <Grid2 size={{ xs: 12, sm: 6 }}>
+                                <ChartCard
+                                    title="Deadlines"
+                                    type="pie"
+                                    data={reportData.charts.deadline}
+                                    dataKey="value"
+                                    xKey="label"
+                                />
+                            </Grid2>
+                        )}
+
+                        {reportData?.charts?.priority?.some(
+                            (item) => item.value > 0,
+                        ) && (
+                            <Grid2 size={{ xs: 12, sm: 6 }}>
+                                <ChartCard
+                                    title="Ticket Priority"
+                                    type="pie"
+                                    data={reportData.charts.priority.map(
+                                        (item) => ({
+                                            label:
+                                                TicketPriorityMap[
+                                                    Number(item.label)
+                                                ] ?? 'Unknown',
+                                            value: item.value,
+                                        }),
+                                    )}
+                                    dataKey="value"
+                                    xKey="label"
+                                />
+                            </Grid2>
+                        )}
                     </Grid2>
-                )}
-                {reportData?.charts?.priority && (
-                    <Grid2 size={{ xs: 12, sm: 6 }}>
-                        <ChartCard
-                            title="Ticket Priority"
-                            type="pie"
-                            data={reportData.charts.priority.map((item) => ({
-                                label:
-                                    TicketPriorityMap[Number(item.label)] ??
-                                    'Unknown',
-                                value: item.value,
-                            }))}
-                            dataKey="value"
-                            xKey="label"
-                        />
-                    </Grid2>
-                )}
-            </Grid2>
+                    <Divider sx={{ my: 3 }} />
+                </>
+            )}
 
             <Divider sx={{ my: 3 }} />
 
@@ -479,7 +479,7 @@ export const UserReportPage: React.FC = () => {
                     </TextField>
                 </Grid2>
                 <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-                    <TextField
+                    <StyledErrorTextField
                         fullWidth
                         type="date"
                         label="Created From"
@@ -492,7 +492,7 @@ export const UserReportPage: React.FC = () => {
                     />
                 </Grid2>
                 <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-                    <TextField
+                    <StyledErrorTextField
                         fullWidth
                         type="date"
                         label="Created To"
@@ -505,7 +505,7 @@ export const UserReportPage: React.FC = () => {
                     />
                 </Grid2>
                 <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-                    <TextField
+                    <StyledErrorTextField
                         fullWidth
                         type="date"
                         label="Deadline From"
@@ -518,7 +518,7 @@ export const UserReportPage: React.FC = () => {
                     />
                 </Grid2>
                 <Grid2 size={{ xs: 12, sm: 6, md: 3 }}>
-                    <TextField
+                    <StyledErrorTextField
                         fullWidth
                         type="date"
                         label="Deadline To"

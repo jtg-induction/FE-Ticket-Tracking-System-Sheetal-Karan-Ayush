@@ -318,7 +318,7 @@ export const ProjectDashboardPage = () => {
         setFilters({
             title: undefined,
             assignee: undefined,
-            deadline: null,
+            deadline: undefined,
             status: undefined,
             sort: 'latest',
         });
@@ -390,10 +390,9 @@ export const ProjectDashboardPage = () => {
                     isLoading={ticketsLoading}
                     isError={ticketsError}
                     hasNextPage={hasNextPage}
-                    fetchNextPage={() => void fetchNextPage}
+                    fetchNextPage={() => void fetchNextPage()}
                     projectKey={projectKey || ''}
                 />
-
                 {/* Dialogs */}
                 <DialogBox
                     open={isProjectDialogOpen}
@@ -406,7 +405,7 @@ export const ProjectDashboardPage = () => {
                 >
                     {project?.status === 1 && (
                         <>
-                            <TextField
+                            <StyledErrorTextField
                                 fullWidth
                                 margin="normal"
                                 label="Project Title"
@@ -460,7 +459,6 @@ export const ProjectDashboardPage = () => {
                         />
                     </Box>
                 </DialogBox>
-
                 <DialogBox
                     open={isDeleteDialogOpen}
                     title="Confirm Delete"
@@ -474,7 +472,6 @@ export const ProjectDashboardPage = () => {
                         Are you sure you want to delete this project?
                     </Typography>
                 </DialogBox>
-
                 <DialogBox
                     open={isImportDialogOpen}
                     title="Import Ticket"
@@ -532,7 +529,6 @@ export const ProjectDashboardPage = () => {
                         </Typography>
                     )}
                 </DialogBox>
-
                 <InviteUser
                     open={isInviteDialogOpen}
                     onClose={() => setIsInviteDialogOpen(false)}

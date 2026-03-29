@@ -1,5 +1,8 @@
-import { Box, BoxProps, styled } from '@mui/material';
-
+import {
+    Box,
+    BoxProps,
+    styled,
+} from '@mui/material';
 export const CardBox = styled(Box)<BoxProps>(({ theme }) => {
     const {
         typography: { pxToRem },
@@ -28,3 +31,10 @@ export const CardBox = styled(Box)<BoxProps>(({ theme }) => {
         },
     };
 });
+
+export const TipsBox = styled(Box)(({ theme }) => ({
+
+    borderRadius: theme.shape.borderRadius,
+    padding: theme.spacing(2),
+    marginTop: theme.spacing(2),
+}));
