@@ -16,8 +16,10 @@ export const ticketCreateSchema = z.object({
     ticket_type: z
         .union([
             z.literal(TicketType.BUG),
-            z.literal(TicketType.FEATURE_REQUEST),
+            z.literal(TicketType.STORY),
             z.literal(TicketType.TASK),
+            z.literal(TicketType.EPIC),
+            z.literal(TicketType.SUBTASK)
         ])
         .refine((val) => Object.values(TicketType).includes(val), {
             message: 'Please select a valid type.',

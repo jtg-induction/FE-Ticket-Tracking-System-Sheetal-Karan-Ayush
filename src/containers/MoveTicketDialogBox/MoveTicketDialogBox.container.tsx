@@ -12,7 +12,7 @@ import { theme } from "@theme";
 import { MAX_PROJECT_KEY_LENGTH, MIN_PROJECT_KEY_LENGTH } from "./moveTicket.constants";
 import { MoveTicketProps } from "./moveTicket.types";
 
-export const MoveTicketContainer = ({open, onClose}: MoveTicketProps) => {
+export const MoveTicketDialog = ({open, onClose}: MoveTicketProps) => {
     const moveTicketMutation = useMoveTicketMutation();
     const [targetProjectKey, setTargetProjectKey] = useState('');
 
@@ -26,17 +26,14 @@ export const MoveTicketContainer = ({open, onClose}: MoveTicketProps) => {
                                trimmedKey.length > MAX_PROJECT_KEY_LENGTH;
 
     const handleMoveTicket = () => {
-        // Guard: ensure required route params exist
         if (!projectKey || !ticketKey) {
-            // If params are missing, do not proceed with API call
             return;
         }
 
-        // Trigger mutation to move the ticket
         moveTicketMutation.mutate({
-            project_key: projectKey,          // Source project key (current project)
-            ticket_key: ticketKey,            // Ticket identifier
-            target_project_key: targetProjectKey, // Destination project key
+            project_key: projectKey,          
+            ticket_key: ticketKey,            
+            target_project_key: targetProjectKey, 
         });
     }
 
@@ -48,7 +45,8 @@ export const MoveTicketContainer = ({open, onClose}: MoveTicketProps) => {
             onSubmit={handleMoveTicket}
             submitText="Confirm"
             cancelText="Cancel"
-            isSubmitDisabled={isInvalidTargetKey}
+            isSubmitDisabled={isInvalidTargetKey || moveTicketMutation.isPending}
+            isSubmitting={moveTicketMutation.isPending}
         >
             <StyledErrorTextField
                 label="Target Jira Project Key"
