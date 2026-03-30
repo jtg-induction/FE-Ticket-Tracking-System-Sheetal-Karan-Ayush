@@ -3,8 +3,6 @@ import { useEffect, useState } from 'react';
 import dayjs, { Dayjs } from 'dayjs';
 import { useParams } from 'react-router-dom';
 
-import 'dayjs/locale/en-in';
-
 import { Alert, Autocomplete, Box, Button, Chip, MenuItem, TextField } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -13,6 +11,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { useDownloadProjectReport } from '@api/reports/downloadProjectReport';
 import { ticketFiltersSchema } from '@features/reports/projectReport.schema';
 import { useReportStore } from '@features/reports/store/projectReportStore';
+
+import 'dayjs/locale/en-in';
 
 export const DownloadProjectReportDialog = () => {
 
@@ -26,6 +26,26 @@ export const DownloadProjectReportDialog = () => {
             setFilter('project_key', projectKey);
         }
     }, [projectKey, filters.project_key, setFilter]);
+
+
+    const validation = ticketFiltersSchema.safeParse(filters);
+
+    const isCreatedRangeInvalid =
+        filters.created_start_date &&
+        filters.created_end_date && (
+            dayjs(filters.created_end_date).isBefore(dayjs(filters.created_start_date)) ||
+            dayjs(filters.created_end_date).isAfter(dayjs()) ||
+            dayjs(filters.created_start_date).isAfter(dayjs()) 
+        );
+
+    const isCompletedRangeInvalid =
+        filters.completed_start_date &&
+        filters.completed_end_date && (
+            dayjs(filters.completed_end_date).isBefore(dayjs(filters.completed_start_date)) ||
+            dayjs(filters.completed_end_date).isAfter(dayjs()) ||
+            dayjs(filters.completed_start_date).isAfter(dayjs()) 
+        );
+    const isFormInvalid = !validation.success || isCreatedRangeInvalid || isCompletedRangeInvalid;
 
 
     const handleDownload = () => {
@@ -224,7 +244,7 @@ export const DownloadProjectReportDialog = () => {
                     <Button
                         variant="contained"
                         onClick={handleDownload}
-                        disabled={isPending}
+                        disabled={isFormInvalid || isPending}
                     >
                         {isPending ? 'Generating PDF...' : 'Download Report'}
                     </Button>
