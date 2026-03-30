@@ -1,17 +1,44 @@
 import { z } from 'zod';
 
 export const projectCreateSchema = z.object({
-    title: z.string().min(1, 'Title is required'),
-    description: z.string().optional(),
-    jira_url: z.string().url('Invalid JIRA URL'),
-    access_token: z.string().min(1, 'Access token required'),
-    lead_email: z.string().email('Invalid email'),
+    title: z
+        .string()
+        .min(2, 'Title must be at least 2 characters')
+        .max(100, 'Title must be at most 100 characters')
+        .regex(/\S/, 'Title cannot be blank'),
+
+    description: z
+        .string()
+        .max(500, 'Description must be at most 500 characters')
+        .optional(),
+
+    jira_url: z
+        .url('Invalid JIRA URL')
+        .refine((val) => val.startsWith('https://'), 'JIRA URL must use HTTPS')
+        .refine(
+            (val) => val.includes('.atlassian.net') || val.includes('.jira.'),
+            'Must be a valid Atlassian/JIRA domain',
+        ),
+
+    access_token: z
+        .string()
+        .min(10, 'Access token must be at least 10 characters')
+        .max(256, 'Access token is too long'),
+
+    lead_email: z
+        .email('Invalid email')
+        .refine(
+            (val) => !val.endsWith('@example.com'),
+            'Please use a real email address',
+        ),
+
     jira_project_key: z
         .string()
         .min(2, 'Minimum 2 letters')
         .max(10, 'Maximum 10 letters')
-        .regex(/^[A-Za-z]+$/, 'Only letters allowed'),
-    status: z.number().optional(),
+        .regex(/^[A-Z]+$/, 'Only uppercase letters allowed'),
+
+    status: z.number().int().min(0).max(10).optional(),
 });
 
 export const projectUpdateSchema = z.object({

@@ -10,3 +10,8 @@ export { ProjectTicketFilters } from './ProjectTicketFilters';
 export { DialogBox } from './DialogBox';
 export type { Filters } from './ProjectTicketFilters';
 export { ChartCard } from './ChartCard';
+export { SnackbarProvider, useSnackbarStore } from './SnackbarContext';
+export { ProjectCharts } from './ProjectCharts';
+export { ProjectHeader } from './ProjectDashboardHeader';
+export { TicketSection } from './ProjectsTicketsSection';
+export { DebouncedSearchField } from './DebouncedTextField';

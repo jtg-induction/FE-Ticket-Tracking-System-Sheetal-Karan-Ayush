@@ -1,8 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 
+import { deleteProject } from '@api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-
-import { deleteProject } from './api';
 
 export const useDeleteProject = () => {
     const queryClient = useQueryClient();

@@ -3,37 +3,26 @@ import { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import DownloadIcon from '@mui/icons-material/Download';
-import UserSidebarIcon from '@mui/icons-material/PeopleAlt';
-import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import {
-    Badge,
+    Alert,
     Box,
-    Button,
     Chip,
-    CircularProgress,
     Divider,
-    FormControl,
     FormControlLabel,
-    Grid2,
-    InputLabel,
-    MenuItem,
-    Select,
+    Skeleton,
     Switch,
-    TableCell,
-    TableHead,
-    TableRow,
     TextField,
     Typography,
 } from '@mui/material';
 
 import {
-    ChartCard,
-    ClampedTooltipText,
     DialogBox,
     Filters,
-    ProjectTicketFilters,
+    ProjectCharts,
+    ProjectHeader,
     SectionLayout,
+    TicketSection,
+    useSnackbarStore,
 } from '@components';
 import { InviteUser } from '@containers/InviteUser';
 import { UserSidebar } from '@containers/UsersList/UsersList.container';
@@ -51,35 +40,36 @@ import { importTicketRequestSchema } from '@features/ticket/importTicket/importT
 import { useImportTicketMutation } from '@features/ticket/importTicket/useImportTicket';
 import { useJqlSearchTickets } from '@features/ticket/jqlSearch/useJqlSearchTicket';
 import { StyledErrorTextField } from '@pages/Register/Register.styles';
-import { TicketConstToPriorityMap, TicketConstToStatusMap } from '@pages/TicketDetails/TicketDetails.util';
 import { useQueryClient } from '@tanstack/react-query';
 import { theme } from '@theme';
 
-import { TICKET_TABLE_HEADER } from './ProjectDashboard.config';
-import { TransformedPriorityItem, TransformedStatusItem } from './ProjectDashboard.types';
-import {
-    ChartLoadingContainer,
-    ChartNoDataContainer,
-    DeleteIcon,
-    DesktopTableCell,
-    EditIcon,
-    IconBox,
-    LineChartLoadingContainer,
-    LineChartNoDataContainer,
-    StatusBadge,
-    StyledButton,
-    StyledHeader,
-    StyledLeftBox,
-    StyledLowerBox,
-    StyledRightBox,
-    StyledTable,
-    StyledTableBody,
-    StyledTableContainer,
-    StyledTableRow,
-    StyledUpperBox,
-} from './ProjectDashboardPage.style';
-
 export const ProjectDashboardPage = () => {
+    const navigate = useNavigate();
+    const queryClient = useQueryClient();
+    const { projectKey } = useParams<{ projectKey: string }>();
+    const { showSnackbar } = useSnackbarStore();
+
+
+    // State
+    const [filterType, setFilterType] = useState<'Custom' | 'JQL'>('Custom');
+    const [jqlQuery, setJqlQuery] = useState('');
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
+    const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+    const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+    const [userSidebarOpen, setUserSidebarOpen] = useState(false);
+    const [importError, setImportError] = useState<string>('');
+    const [importTicketKeys, setImportTicketKeys] = useState<string[]>([]);
+    const [inputTicketKeyValue, setInputTicketKeyValue] = useState<string>('');
+    const [filters, setFilters] = useState<Filters>({
+        title: undefined,
+        assignee: undefined,
+        deadline: null,
+        status: undefined,
+        sort: 'latest',
+    });
+
+    // Store
     const {
         setDeleteTarget,
         deleteTarget,
@@ -88,136 +78,82 @@ export const ProjectDashboardPage = () => {
         setUpdateFormData,
     } = useProjectStore();
 
-    const defaultFilters = {
-        title: undefined,
-        assignee: undefined,
-        deadline: undefined,
-        status: undefined,
-        sort: 'latest',
-    };
-    const navigate = useNavigate();
-    const { projectKey } = useParams<{ projectKey: string }>();
-    const { data: project, isError } = useGetProject(projectKey);
-    const isDeveloper = project?.role === 2;
-    const queryClient = useQueryClient();
-    const { mutate: updateProject } = useUpdateProject();
-    const { mutate: deleteProject } = useDeleteProject();
-    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-    const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
-    const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
-    const [filters, setFilters] = useState<Filters>(defaultFilters);
-    const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-    const [importTicketKeys, setImportTicketKeys] = useState<string[]>([]);
-    const importTicketMutation = useImportTicketMutation();
+    // Project queries
+    const {
+        data: project,
+        isPending: projectLoading,
+        isError: projectIsError,
+        error: projectError,
+    } = useGetProject(projectKey);
 
-    const handleFilterChange = (
-        field: keyof Filters,
-        value: string | dayjs.Dayjs | null,
-    ) => {
-        setFilters((prev) => ({
-            ...prev,
-            [field]: value,
-        }));
-    };
+    // Statistics
+    const {
+        data: statusCounts,
+        isLoading: statusLoading,
+        error: statusError,
+    } = useTicketStatusStats(projectKey);
+    const {
+        data: priorityCounts,
+        isLoading: priorityLoading,
+        error: priorityError,
+    } = useTicketPriorityStats(projectKey);
+    const {
+        data: deadlineCounts,
+        isLoading: deadlineLoading,
+        error: deadlineError,
+    } = useTicketDeadlineStats(projectKey);
 
-    const [filterType, setFilterType] = useState('Custom');
-    const [jqlQuery, setJqlQuery] = useState('');
+    useEffect(() => {
+        if (statusError) {
+            showSnackbar('Failed to load status statistics', 'error');
+        }
+    }, [statusError, showSnackbar]);
 
+    useEffect(() => {
+        if (priorityError) {
+            showSnackbar('Failed to load priority statistics', 'error');
+        }
+    }, [priorityError, showSnackbar]);
+
+    useEffect(() => {
+        if (deadlineError) {
+            showSnackbar('Failed to load deadline statistics', 'error');
+        }
+    }, [deadlineError, showSnackbar]);
+
+    // Ticket queries (infinite)
     const getAllTickets = useGetAllTickets(
         projectKey as string,
         {
             ...filters,
-            deadline: filters.deadline
+            deadline: filters.deadline?.isValid()
                 ? filters.deadline.toISOString()
                 : undefined,
             limit: 10,
         },
-        {
-            enabled: filterType !== 'JQL',
-        },
+        { enabled: filterType !== 'JQL' },
     );
-
     const jqlSearchTickets = useJqlSearchTickets(
         projectKey as string,
-        {
-            jql: jqlQuery,
-            limit: 10,
-        },
-        {
-            enabled: filterType === 'JQL',
-        },
+        { jql: jqlQuery, limit: 10 },
+        { enabled: filterType === 'JQL' },
     );
 
-    const { data, fetchNextPage, hasNextPage, isLoading } =
-        filterType == 'JQL' ? jqlSearchTickets : getAllTickets;
+    const {
+        data: ticketsData,
+        fetchNextPage,
+        hasNextPage,
+        isLoading: ticketsLoading,
+        isError: ticketsError,
+    } = filterType === 'JQL' ? jqlSearchTickets : getAllTickets;
 
-    const handleImportKeyDelete = (key: string) => {
-        setImportTicketKeys((prev) => prev.filter((k) => k !== key));
-    };
+    // Mutations
+    const { mutate: updateProject, isPending: isUpdating } = useUpdateProject();
+    const { mutate: deleteProject, isPending: isDeleting } = useDeleteProject();
+    const importTicketMutation = useImportTicketMutation();
 
-    const addTicketKey = (value: string) => {
-        const key = value.trim();
-        if (!key) return;
-
-        if (importTicketKeys.includes(key)) return;
-
-        setImportTicketKeys((prev) => [...prev, key]);
-    };
-
-    const [inputTicketKeyValue, setInputTicketKeyValue] = useState<string>('');
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        setImportError('');
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            addTicketKey(inputTicketKeyValue);
-            setInputTicketKeyValue('');
-        }
-    };
-    const [userSidebarOpen, setUserSidebarOpen] = useState(false);
-
-  
-    const handleOpenProjectDialog = () => {
-        if (project) {
-            setUpdateFormData({
-                title: project.title,
-                description: project.description || '',
-                status: project.status,
-            });
-        }
-        setIsProjectDialogOpen(true);
-    };
-
-    const handleReset = () => {
-        setFilters(defaultFilters);
-    };
-
-    const handleUpdateProject = () => {
-        if (!project) return;
-        const statusValue = Number(updateFormData.status) || 1;
-        updateProject({
-            jira_project_key: project.jira_project_key,
-            data: {
-                title: updateFormData.title || '',
-                description: updateFormData.description || '',
-                status: statusValue,
-            },
-        });
-        setIsProjectDialogOpen(false);
-    };
-
-    const handleDeleteProject = () => {
-        if (!deleteTarget) return;
-        deleteProject(deleteTarget.jira_project_key);
-        setIsDeleteDialogOpen(false);
-        clearDeleteTarget();
-    };
-    const { data: statusCounts, isLoading: statusLoading } =
-        useTicketStatusStats(projectKey);
-    const { data: priorityCounts, isLoading: priorityLoading } =
-              useTicketPriorityStats(projectKey);
-    const { data: deadlineCounts, isLoading: deadlineLoading } =
-                  useTicketDeadlineStats(projectKey);
+    // Derived data
+    const isDeveloper = project?.role === 2;
 
     const statusChartData = useMemo(() => {
         if (!statusCounts) return null;
@@ -226,7 +162,7 @@ export const ProjectDashboardPage = () => {
             count: item.count,
         }));
     }, [statusCounts]);
-    
+
     const priorityChartData = useMemo(() => {
         if (!priorityCounts) return null;
         return priorityCounts.map((item) => ({
@@ -243,31 +179,9 @@ export const ProjectDashboardPage = () => {
         }));
     }, [deadlineCounts]);
 
-    
-    const [importError, setImportError] = useState<string>('');
-
-    const handleImportTicket = () => {
-        const requestData = {
-            projectKey: projectKey,
-            ticketKey: importTicketKeys,
-        };
-        const result = importTicketRequestSchema.safeParse(requestData);
-
-        if (!result.success) {
-            const fieldError = result.error.issues[0].message;
-            setImportError(fieldError);
-            return;
-        }
-
-        importTicketMutation.mutate(result.data);
-    };
-
-    const handleJqlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setJqlQuery(event.target.value);
-    };
-
+    // Effects
     useEffect(() => {
-        if (filterType == 'JQL') {
+        if (filterType === 'JQL') {
             queryClient.removeQueries({
                 queryKey: ['tickets', 'list', projectKey],
             });
@@ -278,370 +192,232 @@ export const ProjectDashboardPage = () => {
         }
     }, [filterType, projectKey, queryClient]);
 
-    const getStatusString = (status: number): string =>
-        TicketConstToStatusMap[status] ?? 'Unknown';
-    const getPriorityString = (priority: number): string =>
-        TicketConstToPriorityMap[priority] ?? 'Unknown';
-    
-    const transformedStatusData: TransformedStatusItem[] | undefined =
-        statusChartData?.map((item) => ({
-            status: getStatusString(Number(item.status)),
-            count: item?.count,
-        }));
+    useEffect(() => {
+        if (projectIsError) {
+            void navigate('/*');
+        }
+    }, [projectIsError, navigate]);
 
-    const transformedPriorityData: TransformedPriorityItem[] | undefined =
-        priorityChartData?.map((item) => ({
-            priority: getPriorityString(Number(item.priority)),
-            count: item.count,
-            height: 400,
-        }));
-        
+    // Handlers
+    const handleOpenProjectDialog = () => {
+        if (project) {
+            setUpdateFormData({
+                title: project.title,
+                description: project.description || '',
+                status: project.status,
+            });
+        }
+        setIsProjectDialogOpen(true);
+    };
+
+    const handleUpdateProject = () => {
+        if (!project) return;
+        const statusValue = Number(updateFormData.status) || 1;
+        updateProject(
+            {
+                jira_project_key: project.jira_project_key,
+                data: {
+                    title: updateFormData.title || '',
+                    description: updateFormData.description || '',
+                    status: statusValue,
+                },
+            },
+            {
+                onSuccess: () => {
+                    showSnackbar('Project updated successfully', 'success');
+                    setIsProjectDialogOpen(false);
+                },
+                onError: () => {
+                    showSnackbar('Failed to update project', 'error');
+                },
+            },
+        );
+    };
+
+    const handleDeleteProject = () => {
+        if (!deleteTarget) return;
+        deleteProject(deleteTarget.jira_project_key, {
+            onSuccess: () => {
+                showSnackbar('Project deleted successfully', 'success');
+                setIsDeleteDialogOpen(false);
+                clearDeleteTarget();
+            },
+            onError: () => {
+                showSnackbar('Failed to delete project', 'error');
+            },
+        });
+    };
+
+    const handleImportTicket = () => {
+        const requestData = { projectKey, ticketKey: importTicketKeys };
+        const result = importTicketRequestSchema.safeParse(requestData);
+
+        if (!result.success) {
+            const fieldError = result.error.issues[0].message;
+            setImportError(fieldError);
+            return;
+        }
+
+        importTicketMutation.mutate(result.data, {
+            onSuccess: (data) => {
+                showSnackbar(
+                    `${data.success_count} ticket(s) imported successfully`,
+                    'success',
+                );
+                setIsImportDialogOpen(false);
+                setImportTicketKeys([]);
+                setInputTicketKeyValue('');
+                setImportError('');
+                void queryClient.invalidateQueries({
+                    queryKey: ['tickets', 'list', projectKey],
+                });
+            },
+            onError: (error) => {
+                showSnackbar(`Import failed: ${error.message}`, 'error');
+            },
+        });
+    };
+
+    const handleImportKeyDelete = (key: string) => {
+        setImportTicketKeys((prev) => prev.filter((k) => k !== key));
+    };
+
+    const addTicketKey = (value: string) => {
+        const key = value.trim();
+        if (!key) return;
+        if (importTicketKeys.includes(key)) return;
+        setImportTicketKeys((prev) => [...prev, key]);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        setImportError('');
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addTicketKey(inputTicketKeyValue);
+            setInputTicketKeyValue('');
+        }
+    };
+
+    const handleFilterChange = (
+        field: keyof Filters,
+        value: string | dayjs.Dayjs | null,
+    ) => {
+        if (
+            field === 'deadline' &&
+            value &&
+            !(value as dayjs.Dayjs).isValid()
+        ) {
+            showSnackbar('Invalid date entered, filter cleared', 'info');
+            setFilters((prev) => ({ ...prev, deadline: null }));
+            return;
+        }
+        setFilters((prev) => ({ ...prev, [field]: value }));
+    };
+
+    const handleResetFilters = () => {
+        setFilters({
+            title: undefined,
+            assignee: undefined,
+            deadline: undefined,
+            status: undefined,
+            sort: 'latest',
+        });
+    };
+
+    if (projectLoading) {
+        return (
+            <Box p={3}>
+                <Skeleton variant="rectangular" height={100} sx={{ mb: 2 }} />
+                <Skeleton variant="rectangular" height={400} />
+            </Box>
+        );
+    }
+
+    if (projectIsError) {
+        return (
+            <Box p={3}>
+                <Alert severity="error">
+                    Failed to load project:{' '}
+                    {projectError?.message || 'Unknown error'}
+                </Alert>
+            </Box>
+        );
+    }
+
     return (
         <>
-            <StyledHeader>
-                <StyledUpperBox>
-                    <StyledLeftBox>
-                        <ClampedTooltipText variant="h2" lines={2}>
-                            {project?.title}
-                        </ClampedTooltipText>
-                        <StatusBadge
-                            label={
-                                project?.status === 2 ? 'Archived' : 'Active'
-                            }
-                            ownerState={{
-                                archived: project?.status === 2,
-                            }}
-                        />
-                        {!isDeveloper && (
-                            <IconBox>
-                                <IconBox>
-                                    <EditIcon
-                                        onClick={handleOpenProjectDialog}
-                                    />
-                                    <DeleteIcon
-                                        onClick={() => {
-                                            if (project) {
-                                                setDeleteTarget(project);
-                                                setIsDeleteDialogOpen(true);
-                                            }
-                                        }}
-                                    />
-                                </IconBox>
-                            </IconBox>
-                        )}
-                        <Badge />
-                    </StyledLeftBox>
-
-                    <StyledRightBox>
-                        {!isDeveloper && project?.status != 2 && (
-                            <>
-                                <StyledButton
-                                    variant="contained"
-                                    onClick={() => setIsImportDialogOpen(true)}
-                                >
-                                    Import ticket
-                                </StyledButton>
-                                <StyledButton
-                                    variant="contained"
-                                    onClick={() =>
-                                        void navigate('ticket/create')
-                                    }
-                                >
-                                    Create ticket
-                                </StyledButton>
-                                <StyledButton
-                                    sx={{ padding: theme.spacing(0) }}
-                                    onClick={() =>
-                                        void setIsInviteDialogOpen(true)
-                                    }
-                                >
-                                    <PersonAddAltIcon />
-                                </StyledButton>
-                            </>
-                        )}
-                        <StyledButton
-                            sx={{ padding: theme.spacing(0) }}
-                            onClick={() =>
-                                void navigate(
-                                    `/project/${projectKey}/reports/download`,
-                                )
-                            }
-                        >
-                            <DownloadIcon />
-                        </StyledButton>
-                        <StyledButton
-                            sx={{ padding: theme.spacing(0) }}
-                            onClick={() => setUserSidebarOpen((prev) => !prev)}
-                        >
-                            <UserSidebarIcon />
-                        </StyledButton>
-                    </StyledRightBox>
-                </StyledUpperBox>
-                <StyledLowerBox>
-                    <Typography variant="body2">
-                        {project?.description}
-                    </Typography>
-                </StyledLowerBox>
-            </StyledHeader>
+            <ProjectHeader
+                project={project}
+                isDeveloper={isDeveloper}
+                onEdit={handleOpenProjectDialog}
+                onDelete={() => {
+                    if (project) {
+                        setDeleteTarget(project);
+                        setIsDeleteDialogOpen(true);
+                    }
+                }}
+                onImport={() => setIsImportDialogOpen(true)}
+                onCreate={() => void navigate('ticket/create')}
+                onDownload={() =>
+                    void navigate(`/project/${projectKey}/reports/download`)
+                }
+                onToggleUsers={() => setUserSidebarOpen((prev) => !prev)}
+                onInvite={() => setIsInviteDialogOpen(true)}
+            />
             <Divider />
-
             <SectionLayout>
-                <Grid2 container spacing={3} sx={{ mt: 1 }}>
-                    <Grid2 size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
-                        {statusLoading ? (
-                            <ChartLoadingContainer>
-                                <CircularProgress />
-                            </ChartLoadingContainer>
-                        ) : transformedStatusData ? (
-                            <ChartCard
-                                title="Ticket by Status"
-                                type="pie"
-                                data={transformedStatusData}
-                                dataKey="count"
-                                xKey="status"
-                            />
-                        ) : (
-                            <ChartNoDataContainer>
-                                <Typography color="textSecondary">
-                                    No data available
-                                </Typography>
-                            </ChartNoDataContainer>
-                        )}
-                    </Grid2>
-
-                    <Grid2 size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
-                        {priorityLoading ? (
-                            <ChartLoadingContainer>
-                                <CircularProgress />
-                            </ChartLoadingContainer>
-                        ) : priorityChartData ? (
-                            <ChartCard
-                                title="Ticket by Priority"
-                                type="pie"
-                                data={transformedPriorityData}
-                                dataKey="count"
-                                xKey="priority"
-                            />
-                        ) : (
-                            <ChartNoDataContainer>
-                                <Typography color="textSecondary">
-                                    No data available
-                                </Typography>
-                            </ChartNoDataContainer>
-                        )}
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 12, md: 12, lg: 12 }}>
-                        {deadlineLoading ? (
-                            <LineChartLoadingContainer>
-                                <CircularProgress />
-                            </LineChartLoadingContainer>
-                        ) : deadlineChartData &&
-                          deadlineChartData.length > 0 ? (
-                            <ChartCard
-                                title="Ticket Deadline Performance"
-                                type="line"
-                                data={deadlineChartData}
-                                dataKey="count"
-                                xKey="day_difference"
-                                xAxisLabel="Days difference (negative = early, positive = late)"
-                            />
-                        ) : (
-                            <LineChartNoDataContainer>
-                                <Typography color="textSecondary">
-                                    No deadline data available
-                                </Typography>
-                            </LineChartNoDataContainer>
-                        )}
-                    </Grid2>
-                </Grid2>
+                <ProjectCharts
+                    statusData={statusChartData}
+                    statusLoading={statusLoading}
+                    priorityData={priorityChartData}
+                    priorityLoading={priorityLoading}
+                    deadlineData={deadlineChartData}
+                    deadlineLoading={deadlineLoading}
+                />
                 <UserSidebar
                     open={userSidebarOpen}
                     onClose={() => setUserSidebarOpen(false)}
                 />
-                <Box
-                    sx={{
-                        display: 'flex',
-                        flexDirection: { xs: 'column', md: 'row' },
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginBottom: 2,
-                        width: '100%',
-                    }}
-                >
-                    <FormControl
-                        variant="outlined"
-                        sx={{ minWidth: 120, marginBottom: 2, marginRight: 2 }}
-                    >
-                        <InputLabel>Filter Type</InputLabel>
-                        <Select
-                            value={filterType}
-                            onChange={(e) => setFilterType(e.target.value)}
-                            label="Filter Type"
-                        >
-                            <MenuItem value="Custom">Custom</MenuItem>
-                            <MenuItem value="JQL">JQL</MenuItem>
-                        </Select>
-                    </FormControl>
-
-                    {filterType === 'JQL' ? (
-                        <>
-                            <TextField
-                                label="Enter JQL(Project Key is pre included)"
-                                variant="outlined"
-                                fullWidth
-                                value={jqlQuery}
-                                onChange={handleJqlChange}
-                                sx={{
-                                    marginBottom: 2,
-                                    minWidth: theme.spacing(75),
-                                    maxWidth: theme.spacing(200),
-                                }}
-                            />
-                        </>
-                    ) : (
-                        <ProjectTicketFilters
-                            filters={filters}
-                            onChange={handleFilterChange}
-                            onReset={handleReset}
-                        />
-                    )}
-                </Box>
-
-                <StyledTableContainer>
-                    <StyledTable aria-label="Ticket table">
-                        <TableHead>
-                            <StyledTableRow>
-                                {TICKET_TABLE_HEADER.map((headerCell, idx) => {
-                                    if (headerCell.isHiddenInMobile) {
-                                        return (
-                                            <DesktopTableCell key={idx}>
-                                                <Typography
-                                                    variant="subtitle1"
-                                                    color="text.secondary"
-                                                >
-                                                    {headerCell.title}
-                                                </Typography>
-                                            </DesktopTableCell>
-                                        );
-                                    }
-                                    return (
-                                        <TableCell key={idx}>
-                                            <Typography
-                                                variant="subtitle1"
-                                                color="text.secondary"
-                                            >
-                                                {headerCell.title}
-                                            </Typography>
-                                        </TableCell>
-                                    );
-                                })}
-                            </StyledTableRow>
-                        </TableHead>
-                        <StyledTableBody>
-                            {isLoading ? (
-                                <TableRow>
-                                    <TableCell colSpan={4} align="center">
-                                        Loading tickets...
-                                    </TableCell>
-                                </TableRow>
-                            ) : isError ? (
-                                <TableRow>
-                                    <TableCell colSpan={4} align="center">
-                                        Error loading tickets. Please try again
-                                        later.
-                                    </TableCell>
-                                </TableRow>
-                            ) : data?.pages?.length ? (
-                                data.pages
-                                    .flatMap((page) => page.tickets)
-                                    .map((ticket) => (
-                                        <TableRow
-                                            key={ticket.id}
-                                            onClick={() => {
-                                                void navigate(
-                                                    `ticket/${ticket.jira_ticket_key}`,
-                                                );
-                                            }}
-                                            style={{ cursor: 'pointer' }}
-                                        >
-                                            <TableCell
-                                                component="th"
-                                                scope="row"
-                                            >
-                                                {ticket.title}
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography
-                                                    variant="body2"
-                                                    color="text.secondary"
-                                                >
-                                                    {ticket.assignee}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography variant="body2">
-                                                    {ticket.deadline
-                                                        ? dayjs(
-                                                              ticket.deadline,
-                                                          ).format(
-                                                              'MMM DD, YYYY',
-                                                          )
-                                                        : 'N/A'}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography
-                                                    variant="body2"
-                                                    color="text.secondary"
-                                                >
-                                                    {
-                                                        TicketConstToStatusMap[
-                                                            ticket.status
-                                                        ]
-                                                    }
-                                                </Typography>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={4} align="center">
-                                        No tickets available.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </StyledTableBody>
-                    </StyledTable>
-                </StyledTableContainer>
-
-                {/* Load More Button */}
-                {hasNextPage && (
-                    <Box display="flex" my={2}>
-                        <Button
-                            variant="outlined"
-                            onClick={() => void fetchNextPage()}
-                            disabled={isLoading}
-                        >
-                            {isLoading ? 'Loading...' : 'Load More'}
-                        </Button>
-                    </Box>
-                )}
-                {/* Dialogs for Project Update and Delete */}
+                <TicketSection
+                    filterType={filterType}
+                    onFilterTypeChange={setFilterType}
+                    jqlQuery={jqlQuery}
+                    onJqlChange={setJqlQuery}
+                    filters={filters}
+                    onFilterChange={handleFilterChange}
+                    onResetFilters={handleResetFilters}
+                    ticketsData={ticketsData}
+                    isLoading={ticketsLoading}
+                    isError={ticketsError}
+                    hasNextPage={hasNextPage}
+                    fetchNextPage={() => void fetchNextPage()}
+                    projectKey={projectKey || ''}
+                />
+                {/* Dialogs */}
                 <DialogBox
                     open={isProjectDialogOpen}
                     title="Edit Project"
                     onClose={() => setIsProjectDialogOpen(false)}
                     onSubmit={handleUpdateProject}
+                    submitText="Save"
+                    cancelText="Cancel"
+                    submitButtonDisabled={isUpdating}
                 >
-                    {project?.status == 1 && (
+                    {project?.status === 1 && (
                         <>
-                            <TextField
+                            <StyledErrorTextField
                                 fullWidth
                                 margin="normal"
                                 label="Project Title"
                                 value={updateFormData?.title}
                                 onChange={(e) =>
                                     setUpdateFormData({ title: e.target.value })
+                                }
+                                required
+                                error={!updateFormData?.title?.trim()}
+                                helperText={
+                                    !updateFormData?.title?.trim() &&
+                                    'Title is required'
                                 }
                             />
                             <TextField
@@ -659,7 +435,7 @@ export const ProjectDashboardPage = () => {
                             />
                         </>
                     )}
-                    <Box>
+                    <Box mt={2}>
                         <FormControlLabel
                             control={
                                 <Switch
@@ -690,8 +466,11 @@ export const ProjectDashboardPage = () => {
                     onSubmit={handleDeleteProject}
                     submitText="Delete"
                     cancelText="Cancel"
+                    submitButtonDisabled={isDeleting}
                 >
-                    <Typography>Are you sure you want to delete?</Typography>
+                    <Typography>
+                        Are you sure you want to delete this project?
+                    </Typography>
                 </DialogBox>
                 <DialogBox
                     open={isImportDialogOpen}
@@ -717,7 +496,6 @@ export const ProjectDashboardPage = () => {
                                 sx={{ mb: 2 }}
                             />
                         ))}
-
                         {importTicketKeys.length <= 10 && (
                             <StyledErrorTextField
                                 variant="outlined"

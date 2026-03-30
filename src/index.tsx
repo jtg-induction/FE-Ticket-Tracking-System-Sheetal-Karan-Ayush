@@ -5,6 +5,7 @@ import { RouterProvider } from 'react-router-dom';
 
 import { CssBaseline, ThemeProvider } from '@mui/material';
 
+import { SnackbarProvider } from '@components';
 import { useUserBasicDetails } from '@features/user/useUserBasicDetails';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { theme } from '@theme';
@@ -38,8 +39,8 @@ createRoot(rootElement).render(
             <QueryClientProvider client={queryClient}>
                 <AuthInitializer />
                 <RouterProvider router={Router} />
+                <SnackbarProvider />
             </QueryClientProvider>
         </ThemeProvider>
     </StrictMode>,
 );
-<AuthInitializer />;

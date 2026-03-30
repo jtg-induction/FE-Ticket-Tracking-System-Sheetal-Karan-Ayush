@@ -1,10 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-
 import {
     getTicketDeadlineStats,
     getTicketPriorityStats,
     getTicketStatusStats,
-} from './api';
+} from '@api';
+import { useQuery } from '@tanstack/react-query';
 
 export const useTicketDeadlineStats = (projectKey?: string) =>
     useQuery({

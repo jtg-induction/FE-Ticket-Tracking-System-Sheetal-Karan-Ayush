@@ -1,7 +1,7 @@
+import { getAllProjects } from '@api';
 import { useQuery } from '@tanstack/react-query';
 
-import { getAllProjects } from './api';
-import { ProjectResponse } from './schema';
+import { ProjectResponse } from '../schema';
 
 export const useGetMyProjects = () =>
     useQuery<ProjectResponse[]>({

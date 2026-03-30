@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 
+import { createProject } from '@api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { createProject } from './api';
-import { useProjectStore } from './projectStore';
-import { ProjectFormData, ProjectResponse } from './schema';
+import { ProjectFormData, ProjectResponse } from '../schema';
+import { useProjectStore } from '../store/projectStore';
 
 export const useCreateProject = () => {
     const queryClient = useQueryClient();

@@ -62,7 +62,7 @@ export const ticketCreateSchema = z.object({
 });
 
 export const ticketResponseSchema = z.object({
-    id: z.number().int(),
+    id: z.number().int().nullable(),
     title: z.string(),
     description: z.string(),
     ticket_type: z.number().int(),

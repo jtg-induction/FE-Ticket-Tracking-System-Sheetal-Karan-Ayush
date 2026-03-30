@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 export type Filters = {
     title?: string;
     assignee?: string;
-    deadline?: dayjs.Dayjs;
+    deadline?: dayjs.Dayjs | null;
     status?: number;
     sort: string;
 }
@@ -15,4 +15,5 @@ export type ProjectTicketFilterProps = {
         value: string | dayjs.Dayjs | null,
     ) => void;
     onReset: () => void;
+    projectKey: string
 };

@@ -11,4 +11,5 @@ export type DialogBoxProps = {
     isSubmitting?: boolean;
     isSubmitDisabled?: boolean;
     maxWidth?: 'xs' | 'sm' | 'md' | 'lg';
-}
+    submitButtonDisabled?: boolean
+};
