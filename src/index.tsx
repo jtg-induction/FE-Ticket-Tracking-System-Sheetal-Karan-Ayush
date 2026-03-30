@@ -12,12 +12,14 @@ import { theme } from '@theme';
 import { Router } from './routes';
 
 const rootElement = document.getElementById('root') as HTMLElement;
+
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
             retry: 1,
             refetchOnWindowFocus: true,
             staleTime: 1000 * 30,
+            refetchInterval: 1000 * 30
         },
         mutations: {
             retry: 0,

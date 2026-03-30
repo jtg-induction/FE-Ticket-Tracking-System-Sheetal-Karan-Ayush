@@ -13,5 +13,5 @@ export const useGetProject = (projectKey?: string) =>
             return getProject(projectKey);
         },
         enabled: !!projectKey,
-        staleTime: 1000 * 60 * 5, 
+        refetchInterval: 1000 * 60, 
     });
