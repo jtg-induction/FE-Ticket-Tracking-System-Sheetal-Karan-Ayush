@@ -1,6 +1,6 @@
 import { createBrowserRouter, Navigate, RouteObject } from 'react-router-dom';
 
-import { DownloadProjectReportDialog, Layout } from '@containers';
+import { Layout } from '@containers';
 import {
     CreateTicket,
     Login,
@@ -29,7 +29,7 @@ const routes: RouteObject[] = [
                     },
                     {
                         index: true,
-                        element: <Navigate to="project/create" />,
+                        element: <Navigate to="user" replace />,
                     },
                     {
                         path: 'project/create',
@@ -46,10 +46,6 @@ const routes: RouteObject[] = [
                     {
                         path: 'project/:projectKey/ticket/:ticketKey',
                         element: <TicketDetails />,
-                    },
-                    {
-                        path: 'project/:projectKey/reports/download',
-                        element: <DownloadProjectReportDialog />,
                     },
                     {
                         path: 'project/:projectKey/user',

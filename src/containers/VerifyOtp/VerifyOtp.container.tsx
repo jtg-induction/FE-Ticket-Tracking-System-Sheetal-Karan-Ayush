@@ -14,6 +14,7 @@ export const VerifyOtpDialog = ({
     setOpen,
     handleVerify,
     errorMsg,
+    userMail
 }: VerifyOtpProps) => {
     const [otp, setOtp] = useState<string>('');
 
@@ -21,7 +22,7 @@ export const VerifyOtpDialog = ({
         <AppDialog
             open={open}
             onClose={() => setOpen(false)}
-            title="Enter OTP"
+            title={`To complete registration, enter OTP sent to ${userMail}`}
             actions={
                 <Button
                     variant="contained"

@@ -3,4 +3,5 @@ export type VerifyOtpProps = {
     setOpen: (val: boolean) => void;
     handleVerify: (val: number) => void;
     errorMsg: string;
+    userMail: string;
 };

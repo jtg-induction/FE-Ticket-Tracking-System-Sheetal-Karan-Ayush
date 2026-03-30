@@ -8,6 +8,8 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 
+import 'dayjs/locale/en-in';
+
 import { DialogBox } from "@components/DialogBox";
 import { useTicketStore } from "@features/ticket/store/ticketStore";
 import { TicketUpdateFormData, ticketUpdateRequestSchema } from "@features/ticket/updateTicket/updateTicket.schema";
@@ -20,11 +22,11 @@ import { EditTicketProps } from "./editTicket.types";
 
 
 export const EditTicketDialog = ({ open, onClose }: EditTicketProps) => {
-    
+
     const [errors, setErrors] = useState<Record<string, string>>({});
     const { updateFormData, setUpdateFormData } = useTicketStore();
     const updateTicketMutation = useUpdateTicketMutation();
-    
+
     const { projectKey, ticketKey } = useParams<{
         projectKey?: string;
         ticketKey?: string;
@@ -37,7 +39,7 @@ export const EditTicketDialog = ({ open, onClose }: EditTicketProps) => {
         setUpdateFormData({ [field]: value });
         setErrors((prev) => ({ ...prev, [field]: '' }));
     };
-    
+
     const handleSaveChanges = () => {
         const payload = {
             ...updateFormData,
@@ -55,9 +57,9 @@ export const EditTicketDialog = ({ open, onClose }: EditTicketProps) => {
             setErrors(fieldErrors);
             return;
         }
-        updateTicketMutation.mutate(result.data, {onSuccess: () => onClose()});
+        updateTicketMutation.mutate(result.data, { onSuccess: () => onClose() });
     };
-    
+
 
     return (
         <DialogBox
@@ -160,12 +162,17 @@ export const EditTicketDialog = ({ open, onClose }: EditTicketProps) => {
             </FormControl>
 
             {/* Deadline */}
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en-in">
                 <DatePicker
                     label="Deadline"
                     name="deadline"
-                    value={updateFormData?.deadline ? dayjs(updateFormData.deadline): null}
+                    value={updateFormData?.deadline ? dayjs(updateFormData.deadline) : null}
                     onChange={(value) => handleFieldChange('deadline', value?.toISOString())}
+                    slotProps={{
+                        actionBar: {
+                            actions: ['clear'],
+                        },
+                    }}
                 />
             </LocalizationProvider>
 

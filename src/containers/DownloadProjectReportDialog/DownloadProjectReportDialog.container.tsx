@@ -12,6 +12,8 @@ import { useDownloadProjectReport } from '@api/reports/downloadProjectReport';
 import { ticketFiltersSchema } from '@features/reports/projectReport.schema';
 import { useReportStore } from '@features/reports/store/projectReportStore';
 
+import 'dayjs/locale/en-in';
+
 export const DownloadProjectReportDialog = () => {
 
     const { projectKey } = useParams<{ projectKey: string }>();
@@ -24,6 +26,26 @@ export const DownloadProjectReportDialog = () => {
             setFilter('project_key', projectKey);
         }
     }, [projectKey, filters.project_key, setFilter]);
+
+
+    const validation = ticketFiltersSchema.safeParse(filters);
+
+    const isCreatedRangeInvalid =
+        filters.created_start_date &&
+        filters.created_end_date && (
+            dayjs(filters.created_end_date).isBefore(dayjs(filters.created_start_date)) ||
+            dayjs(filters.created_end_date).isAfter(dayjs()) ||
+            dayjs(filters.created_start_date).isAfter(dayjs()) 
+        );
+
+    const isCompletedRangeInvalid =
+        filters.completed_start_date &&
+        filters.completed_end_date && (
+            dayjs(filters.completed_end_date).isBefore(dayjs(filters.completed_start_date)) ||
+            dayjs(filters.completed_end_date).isAfter(dayjs()) ||
+            dayjs(filters.completed_start_date).isAfter(dayjs()) 
+        );
+    const isFormInvalid = !validation.success || isCreatedRangeInvalid || isCompletedRangeInvalid;
 
 
     const handleDownload = () => {
@@ -45,7 +67,7 @@ export const DownloadProjectReportDialog = () => {
 
 
     return (
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale='en-in'>
             <Box display={'flex'} flexDirection={'column'} gap={2} padding={2}>
 
                 <Box display={'flex'} gap={2}>
@@ -132,38 +154,81 @@ export const DownloadProjectReportDialog = () => {
                     </TextField>
 
                     <DatePicker
-                        sx={{ flex: 1 }}
+                        sx={{
+                            flex: 1,
+                            '& .MuiOutlinedInput-root': {
+                                '&.Mui-error fieldset': {
+                                    borderColor: 'error',
+                                },
+                            },
+                            '& .MuiInputLabel-root.Mui-error': {
+                                color: 'error.contrastText',
+                            },
+                        }}
                         label="Search by Deadline"
                         value={filters.deadline ? dayjs(filters.deadline) : null}
                         onChange={(val) => handleDateChange('deadline', val)}
+                        slotProps={{
+                            actionBar: {
+                                actions: ['clear'],
+                            },
+                        }}
                     />
                 </Box>
 
                 <Box display={'flex'} gap={2}>
+
+
                     <DatePicker
                         sx={{ flex: 1 }}
                         label="Created after"
                         value={filters.created_start_date ? dayjs(filters.created_start_date) : null}
                         onChange={(val) => handleDateChange('created_start_date', val)}
+                        maxDate={dayjs()}
+                        slotProps={{
+                            actionBar: {
+                                actions: ['clear'],
+                            },
+                        }}
                     />
                     <DatePicker
                         sx={{ flex: 1 }}
                         label="Created before"
                         value={filters.created_end_date ? dayjs(filters.created_end_date) : null}
                         onChange={(val) => handleDateChange('created_end_date', val)}
+                        maxDate={dayjs()}
+                        minDate={filters.created_start_date ? dayjs(filters.created_start_date) : undefined}
+                        slotProps={{
+                            actionBar: {
+                                actions: ['clear'],
+                            },
+                        }}
                     />
 
                     <DatePicker
                         sx={{ flex: 1 }}
                         label="Completed after"
                         value={filters.completed_start_date ? dayjs(filters.completed_start_date) : null}
+                        maxDate={dayjs()}
                         onChange={(val) => handleDateChange('completed_start_date', val)}
+                        slotProps={{
+                            actionBar: {
+                                actions: ['clear'],
+                            },
+                        }}
                     />
                     <DatePicker
                         sx={{ flex: 1 }}
                         label="Completed before"
                         value={filters.completed_end_date ? dayjs(filters.completed_end_date) : null}
                         onChange={(val) => handleDateChange('completed_end_date', val)}
+                        maxDate={dayjs()}
+                        minDate={filters.completed_start_date ? dayjs(filters.completed_start_date) : undefined}
+                        slotProps={{
+                            actionBar: {
+                                actions: ['clear'],
+                            },
+                        }}
                     />
                 </Box>
 
@@ -179,7 +244,7 @@ export const DownloadProjectReportDialog = () => {
                     <Button
                         variant="contained"
                         onClick={handleDownload}
-                        disabled={isPending}
+                        disabled={isFormInvalid || isPending}
                     >
                         {isPending ? 'Generating PDF...' : 'Download Report'}
                     </Button>

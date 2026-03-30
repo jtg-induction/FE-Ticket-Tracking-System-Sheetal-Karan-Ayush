@@ -19,6 +19,8 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
+import 'dayjs/locale/en-in';
+
 import { SelectInput } from '@components';
 import { ticketCreateSchema } from '@features/ticket/createTicket/createTicket.schema';
 import { useCreateTicketMutation } from '@features/ticket/createTicket/useCreateTicketMutation';
@@ -41,7 +43,7 @@ export const CreateTicket = () => {
     const createTicketMutation = useCreateTicketMutation();
     const isSubmitting = createTicketMutation.isPending;
     const { projectKey } = useParams<{ projectKey: string }>();
-     const [labels, setLabels] = useState<string[]>([]);
+    const [labels, setLabels] = useState<string[]>([]);
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     ): void => {
@@ -181,12 +183,17 @@ export const CreateTicket = () => {
                             />
                         )}
                     />
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale='en-in'>
                         <DatePicker
                             label="Deadline"
                             name="deadline"
                             value={deadline}
                             onChange={(value) => setDeadline(value)}
+                            slotProps={{
+                                actionBar: {
+                                    actions: ['clear'],
+                                },
+                            }}
                         />
                     </LocalizationProvider>
 

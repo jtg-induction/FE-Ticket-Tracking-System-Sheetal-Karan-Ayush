@@ -190,12 +190,12 @@ export const UserReportPage: React.FC = () => {
 
     const handleMultiSelectChange =
         (field: keyof UserReportFilters) =>
-        (event: React.ChangeEvent<{ value: unknown }>) => {
-            setFilters((prev) => ({
-                ...prev,
-                [field]: event.target.value as string[],
-            }));
-        };
+            (event: React.ChangeEvent<{ value: unknown }>) => {
+                setFilters((prev) => ({
+                    ...prev,
+                    [field]: event.target.value as string[],
+                }));
+            };
 
     const handleLimitChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setFilters((prev) => ({
@@ -245,14 +245,14 @@ export const UserReportPage: React.FC = () => {
     };
     const handleDateChange =
         (field: keyof UserReportFilters) =>
-        (e: React.ChangeEvent<HTMLInputElement>) => {
-            const value = e.target.value;
-            setFilters((prev) => {
-                const updatedFilters = { ...prev, [field]: value };
-                setFilterErrors(validateFilters(updatedFilters));
-                return updatedFilters;
-            });
-        };
+            (e: React.ChangeEvent<HTMLInputElement>) => {
+                const value = e.target.value;
+                setFilters((prev) => {
+                    const updatedFilters = { ...prev, [field]: value };
+                    setFilterErrors(validateFilters(updatedFilters));
+                    return updatedFilters;
+                });
+            };
     const getProjectKeyFromTicket = (ticketKey: string) => {
         const match = ticketKey.match(/^([A-Z]+)-\d+$/);
         return match ? match[1] : undefined;
@@ -323,7 +323,7 @@ export const UserReportPage: React.FC = () => {
                     <SummaryCardItem
                         label="Completed"
                         value={summary.completedTickets}
-                        icon={<CheckIcon color="success" />}
+                        icon={<CheckIcon sx={{ color: 'success.contrastText' }} />}
                     />
                 </Grid2>
                 <Grid2 size={{ xs: 12, sm: 6, md: 2.4 }}>
@@ -337,14 +337,14 @@ export const UserReportPage: React.FC = () => {
                     <SummaryCardItem
                         label="Deadlines Met"
                         value={summary.deadlinesMet}
-                        icon={<DeadlineMetIcon color="info" />}
+                        icon={<DeadlineMetIcon sx={{ color: 'info.contrastText' }} />}
                     />
                 </Grid2>
                 <Grid2 size={{ xs: 12, sm: 6, md: 2.4 }}>
                     <SummaryCardItem
                         label="Deadlines Missed"
                         value={summary.deadlinesMissed}
-                        icon={<DeadlineMissedIcon color="error" />}
+                        icon={<DeadlineMissedIcon sx={{ color: 'error.contrastText' }} />}
                     />
                 </Grid2>
             </Grid2>
@@ -581,8 +581,8 @@ export const UserReportPage: React.FC = () => {
                                         <DeadlineCell>
                                             {ticket.deadline
                                                 ? new Date(
-                                                      ticket.deadline,
-                                                  ).toLocaleDateString()
+                                                    ticket.deadline,
+                                                ).toLocaleDateString()
                                                 : '—'}
                                         </DeadlineCell>
                                     </StyledTableRow>
@@ -610,8 +610,8 @@ export const UserReportPage: React.FC = () => {
                     {isLoading
                         ? 'Loading...'
                         : nextCursor
-                          ? 'Load More'
-                          : 'No More'}
+                            ? 'Load More'
+                            : 'No More'}
                 </LoadMoreButton>
             </LoadMoreContainer>
         </PageContainer>

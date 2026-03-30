@@ -3,8 +3,8 @@ import { handleApiError } from "api/apiErrorHandling/handleApiError";
 import { api } from "@api";
 import { AuthResponse, authResponseSchema } from "@features/auth";
 
-import { LoginInput } from "./login.types";
 import { config } from "../constants";
+import { LoginInput } from "@features/auth/loginSchema";
 
 /**
  * Logs in a user by sending their email and password to the authentication API.
