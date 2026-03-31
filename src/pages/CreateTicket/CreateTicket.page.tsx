@@ -19,8 +19,6 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
-import 'dayjs/locale/en-in';
-
 import { SelectInput } from '@components';
 import { ticketCreateSchema } from '@features/ticket/createTicket/createTicket.schema';
 import { useCreateTicketMutation } from '@features/ticket/createTicket/useCreateTicketMutation';
@@ -31,6 +29,8 @@ import {
     ticketTypeOptions,
 } from './CreateTicket.config';
 import { StyledErrorTextField, StyledWrapper } from './CreateTicket.styles';
+
+import 'dayjs/locale/en-in';
 
 export const CreateTicket = () => {
     const theme = useTheme();
@@ -53,7 +53,7 @@ export const CreateTicket = () => {
         };
 
         setCreateFormData({ [name]: value });
-        setErrors({});
+        setErrors({...errors, [name]: ''})
     };
 
     const handleCreateSubmit = () => {
@@ -157,7 +157,11 @@ export const CreateTicket = () => {
                         freeSolo
                         options={[]}
                         value={labels}
-                        onChange={(_, newValue) => setLabels(newValue)}
+                        onChange={(_, newValue) => {
+                            setErrors({...errors, 'labels': ''})
+                            setLabels(newValue)
+                        }}
+
                         renderTags={(value, getTagProps) =>
                             value.map((option, index) => {
                                 const { key, ...tagProps } = getTagProps({

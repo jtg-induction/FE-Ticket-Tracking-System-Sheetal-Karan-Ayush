@@ -14,12 +14,12 @@ import {
 import { VerifyOtpDialog } from '@containers/VerifyOtp';
 import { useSignupMutation, useVerifyMutation } from '@features/auth';
 import { useAuthStore } from '@features/auth';
+import { RegisterInput, registerSchema } from '@features/auth/registerShema';
+import { useRegisterStore } from '@features/auth/store/registerStore';
 
 import {
     StyledErrorTextField,
 } from './RegisterForm.styles';
-import { RegisterInput, registerSchema } from '@features/auth/registerShema';
-import { useRegisterStore } from '@features/auth/store/registerStore';
 
 export const RegisterForm = () => {
     const navigate = useNavigate();
@@ -64,9 +64,6 @@ export const RegisterForm = () => {
             onSuccess: () => {
                 setOtpOpen(true);
             },
-            onError: (error: any) => {
-                console.error("Signup failed:", error.message);
-            },
         });
     };
 
@@ -77,7 +74,7 @@ export const RegisterForm = () => {
                 setOtpOpen(false);
                 localStorage.setItem('access_token', data.access_token);
                 localStorage.setItem('refresh_token', data.refresh_token);
-                navigate('/project/create');
+                void navigate('/project/create');
             }
         });
     };

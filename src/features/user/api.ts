@@ -78,7 +78,7 @@ export const getUserReport = async (
         const baseParams = buildReportParams(filters, email);
 
         const response = await api.get<UserReportResponse>(
-            '/user/full-details',
+            '/reports/users',
             {
                 params: {
                     ...baseParams,

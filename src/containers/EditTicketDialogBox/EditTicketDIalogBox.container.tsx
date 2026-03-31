@@ -8,8 +8,6 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 
-import 'dayjs/locale/en-in';
-
 import { DialogBox } from "@components/DialogBox";
 import { useTicketStore } from "@features/ticket/store/ticketStore";
 import { TicketUpdateFormData, ticketUpdateRequestSchema } from "@features/ticket/updateTicket/updateTicket.schema";
@@ -19,6 +17,8 @@ import { TicketConstToPriorityMap, TicketConstToStatusMap, TicketConstToTypeMap 
 import { theme } from "@theme";
 
 import { EditTicketProps } from "./editTicket.types";
+
+import 'dayjs/locale/en-in';
 
 
 export const EditTicketDialog = ({ open, onClose }: EditTicketProps) => {
@@ -93,6 +93,16 @@ export const EditTicketDialog = ({ open, onClose }: EditTicketProps) => {
                 sx={{ marginBottom: theme.spacing(2) }}
                 error={!!errors.description}
                 helperText={errors.description}
+            />
+
+            <StyledErrorTextField
+                label="Assignee"
+                fullWidth
+                value={updateFormData?.assignee}
+                onChange={(e) => handleFieldChange('assignee', e.target.value)}
+                sx={{ marginBottom: theme.spacing(2) }}
+                error={!!errors.assignee}
+                helperText={errors.assignee}
             />
 
             {/* Priority */}

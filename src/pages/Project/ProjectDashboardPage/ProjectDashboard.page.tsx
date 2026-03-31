@@ -36,6 +36,7 @@ import {
     SectionLayout,
 } from '@components';
 import { InviteUser } from '@containers/InviteUser';
+import { StyledErrorTextField } from '@containers/RegisterForm/RegisterForm.styles';
 import { UserSidebar } from '@containers/UsersList/UsersList.container';
 import {
     useDeleteProject,
@@ -50,7 +51,6 @@ import { useGetAllTickets } from '@features/ticket/getAllTickets/usegetAllTicket
 import { importTicketRequestSchema } from '@features/ticket/importTicket/importTicket.schema';
 import { useImportTicketMutation } from '@features/ticket/importTicket/useImportTicket';
 import { useJqlSearchTickets } from '@features/ticket/jqlSearch/useJqlSearchTicket';
-import { StyledErrorTextField } from '@containers/RegisterForm/RegisterForm.styles';
 import { TicketConstToPriorityMap, TicketConstToStatusMap } from '@pages/TicketDetails/TicketDetails.util';
 import { useQueryClient } from '@tanstack/react-query';
 import { theme } from '@theme';

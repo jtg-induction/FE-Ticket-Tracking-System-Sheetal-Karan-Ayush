@@ -24,7 +24,7 @@ export const createComment = async (
 ): Promise<CommentResponse> => {
     try {
         const response = await api.post(
-            `/api/tickets/${data.ticket_key}/comments`,
+            `/api/projects/${data.project_key}/tickets/${data.ticket_key}/comments`,
             data,
         );
         const parsed = commentResponseSchema.safeParse(response.data);

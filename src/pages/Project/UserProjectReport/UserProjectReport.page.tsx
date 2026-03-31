@@ -11,6 +11,7 @@ import {
     PendingOutlined as PendingIcon,
     PictureAsPdf as PdfIcon,
     Refresh as RefreshIcon,
+    Upgrade as UpgradeIcon,
 } from '@mui/icons-material';
 import {
     Alert,
@@ -30,6 +31,7 @@ import {
 } from '@mui/material';
 
 import { ChartCard } from '@components';
+import { UpgradeRoleDialog } from '@containers/UpgradeRoleDialogBox/UpgradeRoleDialogBox.container';
 import { useAuthStore } from '@features/auth';
 import { useUserReport } from '@features/user';
 import { useUserBasicDetails } from '@features/user/useUserBasicDetails';
@@ -98,7 +100,7 @@ export const UserReportPage: React.FC = () => {
 
     const [cursor, setCursor] = useState<string | undefined>(undefined);
     const [page, setPage] = useState(0);
-
+    const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
     const { user, clearAuth } = useAuthStore();
     const navigate = useNavigate();
     const [filterErrors, setFilterErrors] = useState<Record<string, string>>(
@@ -114,7 +116,7 @@ export const UserReportPage: React.FC = () => {
         isError,
         error,
     } = useUserReport(email, filters, cursor, projectKey);
-
+    const [isRoleButtonVisible, setIsRoleButtonVisible] = useState(null)
     const { downloadPdf, isLoading: isPdfLoading } = useUserReportPdf();
 
     useEffect(() => {
@@ -269,6 +271,14 @@ export const UserReportPage: React.FC = () => {
                     >
                         {!isSmallScreen && 'Reset'}
                     </Button>
+                    {reportData?.user_info?.role ==  2 && isRoleButtonVisible && <Button
+                        variant="contained"
+                        startIcon={<UpgradeIcon />}
+                        onClick={() => setIsUpgradeDialogOpen(true)}
+                    >
+                        {!isSmallScreen && 'Role'}
+                    </Button>
+                    }
                     <Button
                         variant="contained"
                         startIcon={<PdfIcon />}
@@ -614,6 +624,7 @@ export const UserReportPage: React.FC = () => {
                             : 'No More'}
                 </LoadMoreButton>
             </LoadMoreContainer>
+            <UpgradeRoleDialog open={isUpgradeDialogOpen} onClose={() => setIsUpgradeDialogOpen(false)} userId={reportData?.user_info.id} setRoleButtonInvisible ={setIsRoleButtonVisible}  />
         </PageContainer>
     );
 };

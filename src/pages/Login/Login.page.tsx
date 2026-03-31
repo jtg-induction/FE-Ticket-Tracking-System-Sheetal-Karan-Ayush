@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 
 import { HeroCard } from '@components';
+import { LoginForm } from '@containers';
 
 import {
     StyledContent,
@@ -17,7 +18,6 @@ import {
     StyledStackWrapper,
     StyledWrapper,
 } from './Login.styles';
-import { LoginForm } from '@containers';
 
 export const Login = () => {
     const theme = useTheme();

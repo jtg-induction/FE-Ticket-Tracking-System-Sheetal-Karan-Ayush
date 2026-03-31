@@ -5,7 +5,6 @@ import { Box, Button, Card, Divider, Stack, TextField, Typography } from "@mui/m
 import { CommentItem } from "@components";
 import { useCreateCommentMutation } from "@features/comments/createComment/useCreateCommentMutation";
 import { useGetAllComments } from "@features/comments/getAllComments/useGetAllComments";
-import { useQueryClient } from "@tanstack/react-query";
 
 import { COMMENTS_COUNT_LIMIT, MAX_COMMENT_LENGTH } from "./commentCard.config";
 import { CommentCardProps } from "./commentCard.types";
@@ -15,12 +14,12 @@ import { CommentCardProps } from "./commentCard.types";
 export const CommentCard = ({ticketKey, projectKey}: CommentCardProps) => {
 
     const createCommentMutation = useCreateCommentMutation();
-    const queryClient = useQueryClient();
     const [newComment, setNewComment] = useState('');
 
     const { data: comments, fetchNextPage: fetchCommentsNextPage, hasNextPage: hasCommentsNextPage, isLoading } = useGetAllComments({
         limit: COMMENTS_COUNT_LIMIT,
         ticket_key: ticketKey,
+        project_key: projectKey,
         parent_comment_id: null,
     });
     
@@ -34,7 +33,6 @@ export const CommentCard = ({ticketKey, projectKey}: CommentCardProps) => {
         createCommentMutation.mutate(payload, {
             onSuccess: () => {
                 setNewComment('');
-                void queryClient.invalidateQueries({ queryKey: ['comments'] });
             },
         });
     }
@@ -76,7 +74,7 @@ export const CommentCard = ({ticketKey, projectKey}: CommentCardProps) => {
                     variant="contained"
                     size="small"
                     onClick={handleAddComment}
-                    disabled={!newComment.trim() || newComment.length > MAX_COMMENT_LENGTH}
+                    disabled={!newComment.trim() || newComment.length > MAX_COMMENT_LENGTH || createCommentMutation.isPending}
                 >
                     Comment
                 </Button>

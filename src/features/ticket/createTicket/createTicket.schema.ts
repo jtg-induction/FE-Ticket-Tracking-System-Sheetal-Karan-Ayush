@@ -6,7 +6,7 @@ export const ticketCreateSchema = z.object({
     title: z
         .string()
         .min(2, 'Title is required and must be at least 2 characters long.')
-        .max(50, 'Title must be at most 50 characters long.'),
+        .max(5000, 'Title must be at most 50 characters long.'),
 
     description: z
         .string()

@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 
 import { HeroCard } from '@components';
+import { RegisterForm } from '@containers/RegisterForm';
 
 import {
     StyledContent,
@@ -17,8 +18,6 @@ import {
     StyledStackWrapper,
     StyledWrapper,
 } from './Register.styles';
-
-import { RegisterForm } from '@containers/RegisterForm';
 
 export const Register = () => {
     const theme = useTheme();

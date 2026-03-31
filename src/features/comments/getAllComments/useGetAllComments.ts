@@ -15,7 +15,5 @@ export const useGetAllComments = (
         getNextPageParam: (lastPage) => lastPage.next_cursor ?? undefined,
 
         initialPageParam: undefined,
-        staleTime: 1000 * 30,
-        refetchInterval: 1000 * 120,
         enabled,
     });

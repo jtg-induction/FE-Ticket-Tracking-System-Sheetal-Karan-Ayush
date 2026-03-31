@@ -1,10 +1,9 @@
 import { useState } from 'react';
 
 import { Typography } from '@mui/material';
-import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 
-import { AppDialog } from '@components/AppDialog/AppDialog.component';
+import { DialogBox } from '@components';
 import { theme } from '@theme';
 
 import { VerifyOtpProps } from './VerifyOtp.types';
@@ -19,19 +18,13 @@ export const VerifyOtpDialog = ({
     const [otp, setOtp] = useState<string>('');
 
     return (
-        <AppDialog
+        <DialogBox
             open={open}
             onClose={() => setOpen(false)}
-            title={`To complete registration, enter OTP sent to ${userMail}`}
-            actions={
-                <Button
-                    variant="contained"
-                    onClick={() => handleVerify(Number(otp))}
-                    disabled={otp.length !== 6}
-                >
-                    Verify
-                </Button>
-            }
+            title={`Enter OTP sent to ${userMail}`}
+            isSubmitDisabled={otp.length !== 6}
+            onSubmit={() => handleVerify(Number(otp))}
+            submitText='Verify'
         >
             <TextField
                 type="text"
@@ -49,6 +42,6 @@ export const VerifyOtpDialog = ({
             >
                 {errorMsg}
             </Typography>
-        </AppDialog>
+        </DialogBox>
     );
 };

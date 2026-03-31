@@ -35,11 +35,17 @@ export const ticketsResponseSchema = z.object({
     labels: z.array(z.string()),
 });
 
+export const resultSchema = z.object({
+    ticket_key: z.string(),
+    status: z.string(),
+    ticket_id: z.int().nullable(),
+    reason: z.string().nullable(),
+})
 export const ticketsImportResponseSchema = z.object({
     total: z.int(),
     success_count: z.int(),
     failed_count: z.int(),
-    results: z.array(ticketsResponseSchema)
+    results: z.array(resultSchema)
 })
 
 export const getTicketResponseSchema = z.object({
@@ -56,6 +62,7 @@ export const getTicketResponseSchema = z.object({
     created_at: z.string(),
     labels: z.array(z.string()),
     role: z.int(),
+    is_archived: z.boolean(),
     is_subscribed: z.boolean(),
 });
 
