@@ -35,6 +35,7 @@ import {
     ProjectTicketFilters,
     SectionLayout,
 } from '@components';
+import { DownloadProjectReportDialog } from '@containers';
 import { InviteUser } from '@containers/InviteUser';
 import { StyledErrorTextField } from '@containers/RegisterForm/RegisterForm.styles';
 import { UserSidebar } from '@containers/UsersList/UsersList.container';
@@ -109,6 +110,7 @@ export const ProjectDashboardPage = () => {
     const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
     const [importTicketKeys, setImportTicketKeys] = useState<string[]>([]);
     const importTicketMutation = useImportTicketMutation();
+    const [isDownloadDialogOpen, setIsDownloadDialogOpen] = useState(false);
 
     const handleFilterChange = (
         field: keyof Filters,
@@ -361,11 +363,7 @@ export const ProjectDashboardPage = () => {
                         )}
                         <StyledButton
                             sx={{ padding: theme.spacing(0) }}
-                            onClick={() =>
-                                void navigate(
-                                    `/project/${projectKey}/reports/download`,
-                                )
-                            }
+                            onClick={() => setIsDownloadDialogOpen(true)}
                         >
                             <DownloadIcon />
                         </StyledButton>
@@ -692,6 +690,14 @@ export const ProjectDashboardPage = () => {
                     cancelText="Cancel"
                 >
                     <Typography>Are you sure you want to delete?</Typography>
+                </DialogBox>
+                {/* dialog box for download project report*/}
+                <DialogBox
+                    open={isDownloadDialogOpen}
+                    title='Select filters'
+                    onClose={() => setIsDownloadDialogOpen(false)}
+                >
+                    <DownloadProjectReportDialog/>
                 </DialogBox>
                 <DialogBox
                     open={isImportDialogOpen}

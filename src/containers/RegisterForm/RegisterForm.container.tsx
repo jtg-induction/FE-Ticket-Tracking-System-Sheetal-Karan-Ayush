@@ -55,7 +55,6 @@ export const RegisterForm = () => {
         e.preventDefault();
         setIsSubmitted(true);
 
-        const validation = registerSchema.safeParse({ name, email, password, confirmPassword });
         if (!validation.success) {
             return;
         }
