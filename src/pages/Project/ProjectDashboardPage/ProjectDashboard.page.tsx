@@ -24,6 +24,7 @@ import {
     TableHead,
     TableRow,
     TextField,
+    Tooltip,
     Typography,
 } from '@mui/material';
 
@@ -112,6 +113,22 @@ export const ProjectDashboardPage = () => {
     const importTicketMutation = useImportTicketMutation();
     const [isDownloadDialogOpen, setIsDownloadDialogOpen] = useState(false);
 
+    const handleCreateSession = () => {
+        if (project?.id) {
+            void navigate("/sessions/create", {
+                state: { projectId: project.id, projectKey: project.jira_project_key }
+            });
+        }
+    };
+
+    const handleViewSessions = () => {
+        if (project?.id) {
+            void navigate(`/projects/${project.jira_project_key}/sessions`, {
+                state: { projectId: project.id, projectKey: project.jira_project_key, isDeveloper: project?.role === 2 }
+            });
+        }
+    };
+
     const handleFilterChange = (
         field: keyof Filters,
         value: string | dayjs.Dayjs | null,
@@ -178,7 +195,7 @@ export const ProjectDashboardPage = () => {
     };
     const [userSidebarOpen, setUserSidebarOpen] = useState(false);
 
-  
+
     const handleOpenProjectDialog = () => {
         if (project) {
             setUpdateFormData({
@@ -217,9 +234,9 @@ export const ProjectDashboardPage = () => {
     const { data: statusCounts, isLoading: statusLoading } =
         useTicketStatusStats(projectKey);
     const { data: priorityCounts, isLoading: priorityLoading } =
-              useTicketPriorityStats(projectKey);
+        useTicketPriorityStats(projectKey);
     const { data: deadlineCounts, isLoading: deadlineLoading } =
-                  useTicketDeadlineStats(projectKey);
+        useTicketDeadlineStats(projectKey);
 
     const statusChartData = useMemo(() => {
         if (!statusCounts) return null;
@@ -228,7 +245,7 @@ export const ProjectDashboardPage = () => {
             count: item.count,
         }));
     }, [statusCounts]);
-    
+
     const priorityChartData = useMemo(() => {
         if (!priorityCounts) return null;
         return priorityCounts.map((item) => ({
@@ -245,7 +262,7 @@ export const ProjectDashboardPage = () => {
         }));
     }, [deadlineCounts]);
 
-    
+
     const [importError, setImportError] = useState<string>('');
 
     const handleImportTicket = () => {
@@ -284,7 +301,7 @@ export const ProjectDashboardPage = () => {
         TicketConstToStatusMap[status] ?? 'Unknown';
     const getPriorityString = (priority: number): string =>
         TicketConstToPriorityMap[priority] ?? 'Unknown';
-    
+
     const transformedStatusData: TransformedStatusItem[] | undefined =
         statusChartData?.map((item) => ({
             status: getStatusString(Number(item.status)),
@@ -297,7 +314,7 @@ export const ProjectDashboardPage = () => {
             count: item.count,
             height: 400,
         }));
-        
+
     return (
         <>
             <StyledHeader>
@@ -335,6 +352,36 @@ export const ProjectDashboardPage = () => {
                     </StyledLeftBox>
 
                     <StyledRightBox>
+
+                        {!isDeveloper && project?.status != 2 && (
+                            <Tooltip title="add member">
+                                <StyledButton
+                                    sx={{ padding: theme.spacing(0) }}
+                                    onClick={() =>
+                                        void setIsInviteDialogOpen(true)
+                                    }
+                                >
+                                    <PersonAddAltIcon />
+                                </StyledButton>
+                            </Tooltip>)}
+                        <Tooltip title="download project report">
+                            <StyledButton
+                                sx={{ padding: theme.spacing(0) }}
+                                onClick={() => setIsDownloadDialogOpen(true)}
+                            >
+                                <DownloadIcon />
+                            </StyledButton>
+                        </Tooltip>
+                        <Tooltip title="view project members">
+                            <StyledButton
+                                sx={{ padding: theme.spacing(0) }}
+                                onClick={() => setUserSidebarOpen((prev) => !prev)}
+                            >
+                                <UserSidebarIcon />
+                            </StyledButton>
+                        </Tooltip>
+
+
                         {!isDeveloper && project?.status != 2 && (
                             <>
                                 <StyledButton
@@ -351,28 +398,8 @@ export const ProjectDashboardPage = () => {
                                 >
                                     Create ticket
                                 </StyledButton>
-                                <StyledButton
-                                    sx={{ padding: theme.spacing(0) }}
-                                    onClick={() =>
-                                        void setIsInviteDialogOpen(true)
-                                    }
-                                >
-                                    <PersonAddAltIcon />
-                                </StyledButton>
                             </>
                         )}
-                        <StyledButton
-                            sx={{ padding: theme.spacing(0) }}
-                            onClick={() => setIsDownloadDialogOpen(true)}
-                        >
-                            <DownloadIcon />
-                        </StyledButton>
-                        <StyledButton
-                            sx={{ padding: theme.spacing(0) }}
-                            onClick={() => setUserSidebarOpen((prev) => !prev)}
-                        >
-                            <UserSidebarIcon />
-                        </StyledButton>
                     </StyledRightBox>
                 </StyledUpperBox>
                 <StyledLowerBox>
@@ -381,6 +408,28 @@ export const ProjectDashboardPage = () => {
                     </Typography>
                 </StyledLowerBox>
             </StyledHeader>
+            <Divider />
+
+            {/* poker planning */}
+            <Box padding={4} display={'flex'} justifyContent={'space-between'}>
+                <Typography variant='h4' alignContent={'center'}>POKER PLANNING</Typography>
+
+                <Box display={'flex'} gap={2}>
+                    <StyledButton
+                        variant="contained"
+                        onClick={handleViewSessions}
+                    >
+                        View all sessions
+                    </StyledButton>
+                    {!isDeveloper && (<StyledButton
+                        variant="contained"
+                        onClick={handleCreateSession}
+                    >
+                        Create new Session
+                    </StyledButton>)}
+                </Box>
+
+            </Box>
             <Divider />
 
             <SectionLayout>
@@ -434,7 +483,7 @@ export const ProjectDashboardPage = () => {
                                 <CircularProgress />
                             </LineChartLoadingContainer>
                         ) : deadlineChartData &&
-                          deadlineChartData.length > 0 ? (
+                            deadlineChartData.length > 0 ? (
                             <ChartCard
                                 title="Ticket Deadline Performance"
                                 type="line"
@@ -580,10 +629,10 @@ export const ProjectDashboardPage = () => {
                                                 <Typography variant="body2">
                                                     {ticket.deadline
                                                         ? dayjs(
-                                                              ticket.deadline,
-                                                          ).format(
-                                                              'MMM DD, YYYY',
-                                                          )
+                                                            ticket.deadline,
+                                                        ).format(
+                                                            'MMM DD, YYYY',
+                                                        )
                                                         : 'N/A'}
                                                 </Typography>
                                             </TableCell>
@@ -594,7 +643,7 @@ export const ProjectDashboardPage = () => {
                                                 >
                                                     {
                                                         TicketConstToStatusMap[
-                                                            ticket.status
+                                                        ticket.status
                                                         ]
                                                     }
                                                 </Typography>
@@ -697,7 +746,7 @@ export const ProjectDashboardPage = () => {
                     title='Select filters'
                     onClose={() => setIsDownloadDialogOpen(false)}
                 >
-                    <DownloadProjectReportDialog/>
+                    <DownloadProjectReportDialog />
                 </DialogBox>
                 <DialogBox
                     open={isImportDialogOpen}
