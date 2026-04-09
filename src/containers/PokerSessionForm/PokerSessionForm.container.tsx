@@ -61,7 +61,9 @@ export const CreateSessionForm = () => {
         isLoading,
     } = useGetAllTickets(passedProjectKey, debouncedFilters, { enabled: !!passedProjectKey });
 
-    const tickets: Ticket[] = data?.pages.flatMap((page) => page.tickets as Ticket[]) ?? [];
+    const tickets: Ticket[] = data?.pages.flatMap((page) =>
+        (page.tickets as Ticket[]).filter(ticket => ticket.status !== 3)
+    ) ?? [];
 
     const [formData, setFormData] = useState<SessionCreateType>({
         title: "",
@@ -209,7 +211,7 @@ export const CreateSessionForm = () => {
                                 value={customValueBuffer}
                                 onChange={(e) => {
                                     const rawValue = e.target.value;
-                                    setCustomValueBuffer(rawValue); 
+                                    setCustomValueBuffer(rawValue);
 
                                     const values = rawValue
                                         .split(',')
