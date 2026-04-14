@@ -1,6 +1,6 @@
 import { createBrowserRouter, Navigate, RouteObject } from 'react-router-dom';
 
-import { Layout } from '@containers';
+import { CreateSessionForm, Layout, ProjectSessionsList, SessionDetails } from '@containers';
 import {
     CreateTicket,
     Login,
@@ -48,8 +48,20 @@ const routes: RouteObject[] = [
                         element: <TicketDetails />,
                     },
                     {
+                        path: 'projects/:projectKey/sessions',
+                        element: <ProjectSessionsList />
+                    },
+                    {
                         path: 'project/:projectKey/user',
                         element: <UserReportPage />,
+                    },
+                    {
+                        path: 'sessions/create',
+                        element: <CreateSessionForm />
+                    },
+                    {
+                        path: 'sessions/:sessionId',
+                        element: <SessionDetails />
                     },
                     {
                         path: '*',
