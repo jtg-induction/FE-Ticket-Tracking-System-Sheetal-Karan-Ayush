@@ -1,3 +1,5 @@
+import { AxiosRequestConfig } from 'axios';
+
 import { handleApiError } from '@api/apiErrorHandling';
 import { api } from '@api/axios';
 import {
@@ -42,7 +44,7 @@ const buildReportParams = (
     limit?: number;
     cursor?: string;
 } => {
-   
+
     const status = filters.status?.map((s) => STATUS_MAP[s]) ?? [];
 
     const priority =
@@ -95,12 +97,17 @@ export const getUserReport = async (
         throw new Error(getErrorMessage(error));
     }
 };
+
 export const getUserBasicDetails = async (): Promise<UserBasicDetails> => {
     try {
-        const response = await api.get<UserBasicDetails>('/user');
+        const config: AxiosRequestConfig & { skipAuthRefresh?: boolean } = {
+            skipAuthRefresh: true
+        };
+
+        const response = await api.get<UserBasicDetails>('/user', config);
         return response.data;
     } catch (error: unknown) {
-        throw new Error(getErrorMessage(error));
+        throw error;
     }
 };
 

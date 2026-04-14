@@ -11,6 +11,7 @@ import {
     TicketDetails,
     UserReportPage,
 } from '@pages';
+import { PokerBoard } from '@pages/PokerBoardLive/PokerBoardLive.page';
 
 import { ProtectedRoute } from './ProtectedRoutes';
 
@@ -62,6 +63,10 @@ const routes: RouteObject[] = [
                     {
                         path: 'sessions/:sessionId',
                         element: <SessionDetails />
+                    },
+                    {
+                        path: 'sessions/:sessionId/board',
+                        element: <PokerBoard />
                     },
                     {
                         path: '*',

@@ -3,13 +3,15 @@ import { createRoot } from 'react-dom/client';
 
 import { RouterProvider } from 'react-router-dom';
 
-import { CssBaseline, ThemeProvider } from '@mui/material';
+import { CircularProgress, CssBaseline, ThemeProvider } from '@mui/material';
 
+import { useAuthStore } from '@features/auth';
 import { useUserBasicDetails } from '@features/user/useUserBasicDetails';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { theme } from '@theme';
 
 import { Router } from './routes';
+
 
 const rootElement = document.getElementById('root') as HTMLElement;
 
@@ -18,8 +20,8 @@ const queryClient = new QueryClient({
         queries: {
             retry: 1,
             refetchOnWindowFocus: true,
-            staleTime: 1000 * 30,
-            refetchInterval: 1000 * 30
+            staleTime: 1000 * 60,
+            refetchInterval: 1000 * 60
         },
         mutations: {
             retry: 0,
@@ -28,9 +30,17 @@ const queryClient = new QueryClient({
 });
 
 const AuthInitializer = () => {
-    const accessToken = localStorage.getItem('access_token');
-    useUserBasicDetails(!!accessToken);
-    return null;
+    const isInitializing = useAuthStore((state) => state.isInitializing);
+    const { pathname } = window.location;
+    const isAuthPage = pathname === '/login' || pathname === '/register';
+
+    useUserBasicDetails(!isAuthPage);
+
+    if (isInitializing && !isAuthPage) {
+        return <CircularProgress />;
+    }
+
+    return <RouterProvider router={Router} />;
 };
 
 createRoot(rootElement).render(
@@ -39,9 +49,7 @@ createRoot(rootElement).render(
             <CssBaseline />
             <QueryClientProvider client={queryClient}>
                 <AuthInitializer />
-                <RouterProvider router={Router} />
             </QueryClientProvider>
         </ThemeProvider>
     </StrictMode>,
 );
-<AuthInitializer />;

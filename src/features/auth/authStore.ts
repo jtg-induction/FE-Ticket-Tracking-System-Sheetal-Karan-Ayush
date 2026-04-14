@@ -9,8 +9,7 @@ type AuthStore = {
         email: string;
     } | null;
 
-    accessToken: string | null;
-    refreshToken: string | null;
+    isAuthenticated: boolean;
 
     setAuth: (data: AuthResponse) => void;
     clearAuth: () => void;
@@ -18,8 +17,8 @@ type AuthStore = {
 
 export const useAuthStore = create<AuthStore>((set) => ({
     user: null,
-    accessToken: null,
-    refreshToken: null,
+    isAuthenticated: false,
+
     setAuth: (data) =>
         set({
             user: {
@@ -27,8 +26,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
                 name: data.name,
                 email: data.email,
             },
-            accessToken: data.access_token,
-            refreshToken: data.refresh_token,
+            isAuthenticated: true,
         }),
-    clearAuth: () => set({ accessToken: null, user: null, refreshToken: null }),
+    clearAuth: () => set({ user: null, isAuthenticated: false }),
 }));

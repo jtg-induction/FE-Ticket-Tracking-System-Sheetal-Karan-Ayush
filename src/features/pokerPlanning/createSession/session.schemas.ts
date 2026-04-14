@@ -32,15 +32,17 @@ export const SessionCreateSchema = z.object({
 
 export const SessionResponseSchema = z.object({
     id: z.number().int(),
-    title: z.string(),
+    title: z.string().min(TITLE_MIN_LENGTH)
+        .max(TITLE_MAX_LENGTH),
     description: z.string(),
     project_id: z.number().int(),
-    status: z.number(),
-    duration: z.number().int(),
+    status: z.number().int().min(1).max(3).optional(),
+    duration: z.number().int().gt(0),
     active_ticket_id: z.number().int().nullable().optional(),
     started_at: z.coerce.date().nullable().optional(),
-    scale_type: z.number().int(),
+    scale_type: z.number().int().min(1).max(5),
     custom_scale_values: z.array(z.number().int()).nullable().optional(),
+    organizer_id: z.number().int().nullable().optional(),
 });
 
 

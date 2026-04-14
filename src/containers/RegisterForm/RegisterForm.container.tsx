@@ -71,8 +71,6 @@ export const RegisterForm = () => {
             onSuccess: (data) => {
                 setAuth(data);
                 setOtpOpen(false);
-                localStorage.setItem('access_token', data.access_token);
-                localStorage.setItem('refresh_token', data.refresh_token);
                 void navigate('/project/create');
             }
         });

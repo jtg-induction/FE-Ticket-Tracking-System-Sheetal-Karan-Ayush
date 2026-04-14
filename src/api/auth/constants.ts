@@ -1,8 +1,5 @@
-import { AxiosHeaders } from "axios";
+import { AxiosRequestConfig } from "axios";
 
-import { CustomAxiosRequestConfig } from "@api/axios";
-
-export const config: CustomAxiosRequestConfig = {
+export const config: AxiosRequestConfig & { skipAuthRefresh?: boolean } = {
     skipAuthRefresh: true,
-    headers: new AxiosHeaders(),
 };
