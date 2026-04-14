@@ -2,7 +2,7 @@ import React, { useState } from "react";
 
 import { TICKET_PRIORITY, TICKET_STATUS, TICKET_TYPE } from "constant/ticketEnums";
 import { useDebounce } from "hooks/useDebounce";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -34,6 +34,7 @@ type FormErrors = Partial<Record<keyof SessionCreateType | "server", string>>;
 
 
 export const CreateSessionForm = () => {
+    const navigate = useNavigate();
     const setSession = useSessionStore((s) => s.setSession);
     const [formErrors, setFormErrors] = useState<FormErrors>({});
     const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -85,6 +86,7 @@ export const CreateSessionForm = () => {
         },
         onSuccess: (responseData) => {
             setSession(responseData);
+            void navigate(`/sessions/${responseData.id}`);
             setSnackbarOpen(true);
         },
     });
@@ -265,6 +267,14 @@ export const CreateSessionForm = () => {
                                                             {ticket.title}
                                                         </Typography>
 
+                                                        {ticket.points &&
+                                                            (<Chip
+                                                                label={`${ticket.points} pts`}
+                                                                size="small"
+                                                                color="primary"
+                                                                variant="outlined"
+                                                            />)}
+
                                                         <Chip
                                                             label={type?.label || "Task"}
                                                             size="small"
@@ -344,7 +354,6 @@ export const CreateSessionForm = () => {
                             variant="contained"
                             size="large"
                             disabled={mutation.isPending}
-                            sx={{ py: 1.5, fontWeight: 'bold' }}
                         >
                             {mutation.isPending ? "Creating..." : "Create Session"}
                         </Button>

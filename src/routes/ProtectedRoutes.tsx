@@ -1,11 +1,22 @@
 import { Navigate, Outlet } from 'react-router-dom';
 
-export const ProtectedRoute = () => {
-    const token = localStorage.getItem('access_token');
+import { CircularProgress } from '@mui/material';
 
-    if (!token) {
-        return <Navigate to="/login" />;
+import { useAuthStore } from '@features/auth';
+import { useUserBasicDetails } from '@features/user/useUserBasicDetails';
+
+export const ProtectedRoute = () => {
+    const { isAuthenticated } = useAuthStore();
+    const { isLoading } = useUserBasicDetails();
+
+    if (isLoading) {
+        return (
+            <CircularProgress />
+        );
     }
 
+    if (!isAuthenticated) {
+        return <Navigate to="/login" replace />;
+    }
     return <Outlet />;
 };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import { useNavigate } from 'react-router-dom';
+import z from 'zod';
 
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import {
@@ -12,13 +13,12 @@ import {
 } from '@mui/material';
 
 import { useLoginMutation } from '@features/auth';
+import { LoginInput, loginSchema } from '@features/auth/loginSchema';
+import { useLoginStore } from '@features/auth/store/loginStore';
 
 import {
     StyledErrorTextField,
 } from './LoginForm.styles';
-import { LoginInput, loginSchema } from '@features/auth/loginSchema';
-import { useLoginStore } from '@features/auth/store/loginStore';
-import z from 'zod';
 
 export const LoginForm = () => {
     const navigate = useNavigate();
@@ -47,20 +47,15 @@ export const LoginForm = () => {
         e.preventDefault();
         setIsSubmitted(true);
 
-        const validation = loginSchema.safeParse({ email, password });
         if (!validation.success) {
             return;
         }
 
         loginMutation.mutate(validation.data, {
             onSuccess: (data) => {
-                localStorage.setItem('access_token', data.access_token);
-                localStorage.setItem('refresh_token', data.refresh_token);
                 void navigate('/');
             },
-            onError: (error: any) => {
-                console.error("Login failed:", error.message);
-            },
+            onError: () => {},
         });
     };
 

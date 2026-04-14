@@ -2,6 +2,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { Box, Card, CardContent, Chip, CircularProgress, Divider, Grid2, Paper, Stack, Typography } from "@mui/material";
 
+import { BackButton } from "@components";
 import { LocationState } from "@containers/PokerSessionForm/PokerSessionForm.types";
 import { useGetSessions } from "@features/pokerPlanning/getProjectSessions/useGetSessions";
 import { useSessionStore } from "@features/pokerPlanning/sessionDetails/useSessionStore";
@@ -23,7 +24,7 @@ export const ProjectSessionsList = () => {
 
     const handleCardClick = (sessionId: number) => {
         setActiveSessionId(sessionId);
-        void navigate(`/sessions/${sessionId}`, { state: projectKey});
+        void navigate(`/sessions/${sessionId}`, { state: projectKey });
     };
 
     const getStatusChip = (status: number) => {
@@ -46,9 +47,12 @@ export const ProjectSessionsList = () => {
     return (
         <Box padding={3} display={'flex'} flexDirection={'column'} gap={2}>
             <Box display={'flex'} justifyContent={'space-between'} alignItems={'center'}>
-                <Typography variant="h3">
-                    Project Key: {projectKey}
-                </Typography>
+                <Box display={'flex'} gap={2} alignItems={'center'}>
+                    <BackButton />
+                    <Typography variant="h3">
+                        Project Key: {projectKey}
+                    </Typography>
+                </Box>
                 {!isDeveloper && (<StyledButton
                     variant="contained"
                     onClick={() => {

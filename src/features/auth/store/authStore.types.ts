@@ -7,9 +7,10 @@ export type AuthStore = {
         email: string;
     } | null;
 
-    accessToken: string | null;
-    refreshToken: string | null;
+    isAuthenticated: boolean;
+    isInitializing: boolean;
 
     setAuth: (data: AuthResponse) => void;
     clearAuth: () => void;
+    finishInitializing: () => void;
 };

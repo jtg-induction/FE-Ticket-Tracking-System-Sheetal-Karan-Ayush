@@ -13,4 +13,5 @@ export type Ticket = {
     ticket_type?: number;
     status?: number;
     assignee?: string;
+    points?: number;
 }
