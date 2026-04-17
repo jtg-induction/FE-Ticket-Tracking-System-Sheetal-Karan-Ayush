@@ -81,6 +81,7 @@ import {
     StyledUpperBox,
 } from './ProjectDashboardPage.style';
 
+
 export const ProjectDashboardPage = () => {
     const {
         setDeleteTarget,
@@ -88,6 +89,7 @@ export const ProjectDashboardPage = () => {
         clearDeleteTarget,
         updateFormData,
         setUpdateFormData,
+        setProject,
     } = useProjectStore();
 
     const defaultFilters = {
@@ -100,6 +102,13 @@ export const ProjectDashboardPage = () => {
     const navigate = useNavigate();
     const { projectKey } = useParams<{ projectKey: string }>();
     const { data: project, isError } = useGetProject(projectKey);
+
+    useEffect(() => {
+        if (project) {
+            setProject(project);
+        }
+    }, [project, setProject]);
+
     const isDeveloper = project?.role === 2;
     const queryClient = useQueryClient();
     const { mutate: updateProject } = useUpdateProject();
@@ -115,7 +124,7 @@ export const ProjectDashboardPage = () => {
 
     const handleCreateSession = () => {
         if (project?.id) {
-            void navigate("/sessions/create", {
+            void navigate(`/projects/${projectKey}/sessions/create`, {
                 state: { projectId: project.id, projectKey: project.jira_project_key }
             });
         }
@@ -646,6 +655,14 @@ export const ProjectDashboardPage = () => {
                                                         ticket.status
                                                         ]
                                                     }
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography
+                                                    variant="body2"
+                                                    color="text.secondary"
+                                                >
+                                                    {!!ticket.points ? ticket.points : "N/A"}
                                                 </Typography>
                                             </TableCell>
                                         </TableRow>

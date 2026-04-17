@@ -7,13 +7,13 @@ import { Box, Button, Stack, Typography } from "@mui/material";
 
 import { BackButton } from "@components";
 import { useAuthStore } from "@features/auth";
-import { useSessionStore } from "@features/pokerPlanning/createSession/useSessionCreateStore";
-import { usePokerBoardStore } from "@features/pokerPlanning/pokerBoard/pokerStore";
+import { usePokerBoardStore } from "@features/pokerPlanning/livePokerBoard/pokerStore";
+import { useSessionStore } from "@features/pokerPlanning/pokerSession/useSessionCreateStore";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { BoardHeaderProps } from "./BoardHeader.types";
 
-export const BoardHeader = ({ sendAction }: BoardHeaderProps) => {
+export const BoardHeader = ({projectKey, sendAction }: BoardHeaderProps) => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
@@ -30,14 +30,6 @@ export const BoardHeader = ({ sendAction }: BoardHeaderProps) => {
     useEffect(() => {
         if (remainingTime !== null) {
             setTimeLeft(remainingTime);
-            if (remainingTime <= 0) {
-                if (session?.id) {
-                    void queryClient.invalidateQueries({
-                        queryKey: ['poker-session', session?.id]
-                    });
-                }
-                void navigate(-1);
-            }
         }
     }, [remainingTime]);
 
@@ -45,12 +37,14 @@ export const BoardHeader = ({ sendAction }: BoardHeaderProps) => {
     useEffect(() => {
         if (timeLeft !== null && timeLeft <= 0) {
             void queryClient.invalidateQueries({
-                queryKey: ['poker-session', session?.id]
+                queryKey: ['session', session?.id],
+                refetchType: 'all',
             });
-            void queryClient.invalidateQueries({ queryKey: ['session', session?.id] });
-
-            void navigate(-1);
-            return;
+            void queryClient.invalidateQueries({
+                queryKey: ['session-tickets', session?.id],
+                refetchType: 'all',
+            });
+            void navigate(`/projects/${projectKey}/sessions/${session?.id}`);
         }
 
         const interval = setInterval(() => {
@@ -58,11 +52,13 @@ export const BoardHeader = ({ sendAction }: BoardHeaderProps) => {
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [timeLeft]);
+    }, [timeLeft, session?.id, session?.status]);
 
 
     const formatTime = (seconds: number | null) => {
-        if (seconds === null) return "--:--";
+        if (seconds === null) {
+            return "--/--";
+        }
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
         return `${mins}:${secs.toString().padStart(2, "0")}`;
@@ -71,20 +67,20 @@ export const BoardHeader = ({ sendAction }: BoardHeaderProps) => {
 
     const handleEndSession = () => {
         sendAction("END", {});
-        if (session?.id) {
+        void navigate(`/projects/${projectKey}/sessions/${session?.id}`);
+        return;
+    };
 
-            void queryClient.invalidateQueries({
-                queryKey: ['poker-session', session?.id]
-            });
-            void queryClient.invalidateQueries({ queryKey: ['session', session.id] });
-        }
-        void navigate(-1);
+    const handleLeaveSession = () => {
+        // TODO: sendAction("LEAVE", {});
+        void navigate(`/projects/${projectKey}/sessions/${session?.id}`);
+        return;
     };
 
     return (
         <Stack direction="row" justifyContent="space-between" alignItems="center" padding={2}>
             <Box display={'flex'} gap={2} alignItems={'center'}>
-                <BackButton />
+                <BackButton onClick={handleLeaveSession}/>
 
                 <Typography variant="h4" fontWeight="bold" color="primary">
                     Session: {session?.title}

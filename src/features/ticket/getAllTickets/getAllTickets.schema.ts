@@ -15,6 +15,8 @@ export const getAllTicketsRequestSchema = z.object({
 
     sort: z.string().optional().default('latest'),
 
+    showResolved: z.boolean().optional().nullable(),
+
     cursor: z.string().optional(),
 
     limit: z.number().int().min(1).max(100).default(20),

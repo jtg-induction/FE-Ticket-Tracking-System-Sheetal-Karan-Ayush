@@ -1,5 +1,5 @@
 import { api } from "@api/axios";
-import { SessionResponseSchema } from "@features/pokerPlanning/createSession/session.schemas";
+import { SessionResponseSchema } from "@features/pokerPlanning/pokerSession/session.schemas";
 
 export const joinSessionApi = async (sessionId: number, role: number) => {
     const response = await api.post(

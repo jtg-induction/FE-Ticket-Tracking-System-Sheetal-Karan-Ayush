@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { POSSIBLE_ESTIMATE_VALUES, SCALE_TYPE, SESSION_STATUS } from 'constant/sessionEnums';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import { PlayArrow } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -12,179 +12,95 @@ import {
     MenuItem,
     Paper,
     Select,
-    Stack, TextField, Typography
+    Stack, TextField, Tooltip, Typography
 } from '@mui/material';
 
-import { deleteSessionApi } from '@api/pokerPlanning/deleteSessionApi';
-import { fetchSessionDetails } from '@api/pokerPlanning/getSessionDetailsApi';
-import { fetchSessionTickets } from '@api/pokerPlanning/getSessionTicketsApi';
-import { joinSessionApi } from '@api/pokerPlanning/joinSessionApi';
-import { updateSessionApi } from '@api/pokerPlanning/updateSessionApi';
 import { BackButton, DialogBox } from '@components';
 import { StyledErrorTextField } from '@containers/RegisterForm/RegisterForm.styles';
 import { TicketList } from '@containers/TicketList';
 import { useAuthStore } from '@features/auth';
-import { SessionResponseType, SessionUpdateSchema, SessionUpdateType } from '@features/pokerPlanning/createSession/session.schemas';
-import { usePokerBoardStore } from '@features/pokerPlanning/pokerBoard/pokerStore';
-import { usePokerWebSocket } from '@features/pokerPlanning/pokerBoard/usePokerWebSocket';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { usePokerWebSocket } from '@features/pokerPlanning/livePokerBoard/usePokerWebSocket';
+import { SessionResponseType, SessionUpdateSchema } from '@features/pokerPlanning/pokerSession/session.schemas';
+import { usePokerSessionMutations } from '@features/pokerPlanning/pokerSession/usePokerSessionMutation';
+import { usePokerSessionData, usePokerSessionTicketsData } from '@features/pokerPlanning/sessionDetails/usePokerSessionData';
+import { useGetProject } from '@features/project/useGetProjectMutation';
 
 
 export const SessionDetails = () => {
-    const { sessionId } = useParams<{ sessionId: string }>();
-    const id = Number(sessionId);
+    const { projectKey, sessionId } = useParams<{ projectKey: string, sessionId: string }>();
 
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
-    const { state } = useLocation()
 
     const [isEditing, setIsEditing] = useState(false);
     const [editData, setEditData] = useState<SessionResponseType | undefined>();
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [customValueBuffer, setCustomValueBuffer] = useState("");
-    const remainingTime = usePokerBoardStore((pokerState) => pokerState.timeLeft);
 
-    const { data: session, isLoading, error } = useQuery({
-        queryKey: ['session', sessionId],
-        queryFn: () => fetchSessionDetails(Number(sessionId)),
-        enabled: !!sessionId,
-        refetchOnMount: true,
-    });
+    const { data: session, isLoading, error } = usePokerSessionData(Number(sessionId));
+    const { data: project, isLoading: isProjectLoading } = useGetProject(projectKey as string);
 
     const user = useAuthStore((userState) => userState.user);
-
     const isOrganizer = user?.id === session?.organizer_id;
+    const isSessionRunning = session?.status === 2;
+    const canEdit = isOrganizer && !isSessionRunning;
 
-
-    const { sendAction, lastJsonMessage } = usePokerWebSocket(Number(sessionId));
-
-    useEffect(() => {
-
-        if (remainingTime === 0) {
-            const timeout = setTimeout(() => {
-                void queryClient.invalidateQueries({ queryKey: ['session', id] });
-                void queryClient.invalidateQueries({ queryKey: ['sessions', state] });
-            }, Math.random() * 500);
-            return () => clearTimeout(timeout);
-        }
-
-        if (!lastJsonMessage) return;
-
-        const stateChangingEvents = ['SUCCESS', 'STARTED', 'ENDED'];
-
-        if (stateChangingEvents.includes(lastJsonMessage.event)) {
-            void queryClient.invalidateQueries({ queryKey: ['session', id] });
-            void queryClient.invalidateQueries({ queryKey: ['sessions', state] });
-        }
-
-    }, [lastJsonMessage, queryClient, sessionId, remainingTime]);
-
-    const { data: tickets } = useQuery({
-        queryKey: ['session-tickets', sessionId],
-        queryFn: () => fetchSessionTickets(Number(sessionId)),
-        enabled: !!sessionId,
-        refetchOnMount: true,
-    });
-
+    const { data: tickets } = usePokerSessionTicketsData(Number(sessionId));
     const ticketsData = tickets || [];
     const pendingTicketsList = ticketsData.filter(ticket => ticket.points === null);
     const resolvedTicketsList = ticketsData.filter(ticket => ticket.points !== null);
 
+    const { sendAction } = usePokerWebSocket(Number(sessionId), projectKey as string);
 
 
-    const updateMutation = useMutation({
-        mutationFn: (payload: SessionUpdateType) => updateSessionApi(Number(sessionId), payload),
-        onSuccess: () => {
-            void queryClient.invalidateQueries({ queryKey: ['session', id] });
-            void queryClient.invalidateQueries({ queryKey: ['sessions', state] });
-            setIsEditing(false);
-        }
-    });
-
-    const deleteMutation = useMutation({
-        mutationFn: () => deleteSessionApi(Number(sessionId)),
-        onSuccess: () => {
-            void queryClient.invalidateQueries({ queryKey: ['sessions', state] });
-            void navigate(-1);
-        }
-    });
-
-    const joinMutation = useMutation({
-        mutationFn: (role: number) => joinSessionApi(Number(sessionId), role),
-        onSuccess: () => {
-            void navigate(`/sessions/${sessionId}/board`);
-        },
-    });
+    const { updateMutation, deleteMutation, joinMutation } = usePokerSessionMutations(Number(sessionId), projectKey);
 
     const handleDelete = () => {
         deleteMutation.mutate();
         setDeleteDialogOpen(false);
+        void navigate(`/projects/${projectKey}/sessions/`);
     };
 
     const handleSave = () => {
         if (!editData) return;
         const result = SessionUpdateSchema.safeParse(editData);
-
         if (!result.success) {
             return;
         }
-
         updateMutation.mutate(result.data);
+        setIsEditing(false);
     };
-
 
     const handleStart = (customDuration?: number) => {
         sendAction("START", {
             duration: customDuration ?? session?.duration,
         });
-        void queryClient.invalidateQueries({
-            queryKey: ['poker-session', id],
-            refetchType: 'all',
-        });
-        void queryClient.invalidateQueries({
-            queryKey: ['sessions', state],
-            refetchType: 'all',
-        });
-
-        void navigate(`/sessions/${sessionId}/board`);
+        void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
     };
 
     const handleRestart = () => {
         sendAction("START", {
             duration: session?.duration,
         });
-        void queryClient.invalidateQueries({
-            queryKey: ['poker-session', id],
-            refetchType: 'all',
-        });
-        void queryClient.invalidateQueries({
-            queryKey: ['sessions', state],
-            refetchType: 'all',
-        });
-        void navigate(`/sessions/${sessionId}/board`);
+        void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
+    };
+
+    const handleJoinAsOrganizer = () => {
+        joinMutation.mutate(1);
+        void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
     };
 
     const handleJoinAsVoter = () => {
         joinMutation.mutate(2);
-        void navigate(`/sessions/${sessionId}/board`);
+        void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
     };
 
     const handleJoinAsSpectator = () => {
         joinMutation.mutate(3);
-        void navigate(`/sessions/${sessionId}/board`);
+        void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
     };
 
     const handleEnd = () => {
         sendAction("END", {});
-        void queryClient.invalidateQueries({
-            queryKey: ['poker-session', id],
-            refetchType: 'all',
-        });
-        void queryClient.invalidateQueries({
-            queryKey: ['sessions', state],
-            refetchType: 'all',
-        });
-        void queryClient.invalidateQueries({ queryKey: ['session', id] });
     };
 
     useEffect(() => {
@@ -193,17 +109,35 @@ export const SessionDetails = () => {
         }
     }, [isEditing]);
 
-    if (isLoading) return <Box textAlign="center" mt={10}><CircularProgress /></Box>;
+    if (isLoading || isProjectLoading) return <Box textAlign="center" mt={10}><CircularProgress /></Box>;
     if (error || !session) return <Typography color="error">Session not found.</Typography>;
 
     return (
         <>
             <Stack spacing={4} padding={4}>
 
-                <Paper sx={{ padding: 4 }}>
+                <Box display={'flex'} gap={2} >
+                    <BackButton onClick={() => void navigate(`/projects/${projectKey}/sessions/`)} />
                     <Box>
-                        <BackButton />
+                        <Tooltip title="View Project Details">
+                            <Box
+                                onClick={() => void navigate(`/project/${projectKey}`)}
+                                sx={{ cursor: 'pointer' }}
+                            >
+                                <Typography variant="h5" color="text.primary" fontWeight={700}>
+                                    {projectKey} : {project?.title}
+                                </Typography>
+                            </Box>
+                        </Tooltip>
+                        <Box maxHeight={60}>
+                            <Typography variant="caption" color="text.secondary">
+                                {project?.description}
+                            </Typography>
+                        </Box>
                     </Box>
+                </Box>
+
+                <Paper sx={{ padding: 4 }}>
                     <Stack spacing={3} >
                         <Box display={'flex'} gap={2} justifyContent={'space-between'} alignItems={'start'}>
                             <Box flex={1}>
@@ -270,7 +204,9 @@ export const SessionDetails = () => {
                                     <Box display={'flex'} flexDirection={'column'} gap={2}>
                                         <Box>
                                             <Typography variant="h3" fontWeight={800} color="primary">{session.title.toUpperCase()}</Typography>
-                                            <Typography variant="body1" color="text.secondary">{session.description}</Typography>
+                                            <Box maxHeight={72} overflow={'auto'}>
+                                                <Typography variant="body1" color="text.secondary">{session.description}</Typography>
+                                            </Box>
                                         </Box>
                                         <Divider />
                                         <Box display={'flex'} flexDirection={'column'} gap={2}>
@@ -293,7 +229,7 @@ export const SessionDetails = () => {
                                 )}
                             </Box>
 
-                            {isOrganizer && (
+                            {canEdit && (
                                 <Stack direction="row" spacing={1}>
                                     {!isEditing ? (
                                         <>
@@ -328,9 +264,10 @@ export const SessionDetails = () => {
                                     <TextField
                                         type="number"
                                         fullWidth
-                                        value={(editData?.duration || 0) / 60}
+                                        value={editData?.duration ? editData.duration / 60 : null} 
                                         onChange={(e) => {
-                                            const minutes = Number(e.target.value);
+                                            const val = Number(e.target.value);
+                                            const minutes = val === null ? 0 : Number(val);
                                             setEditData((prev) => prev ? { ...prev, duration: minutes * 60 } : prev);
                                         }}
                                         slotProps={{ htmlInput: { min: 1 } }}
@@ -342,8 +279,6 @@ export const SessionDetails = () => {
                             </Grid2>
 
                         </Grid2>
-
-
 
                         <Box sx={{ maxWidth: 900, }}>
                             <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
@@ -415,18 +350,14 @@ export const SessionDetails = () => {
                                         <Button
                                             variant="contained"
                                             color="info"
-                                            onClick={() => void navigate(`/sessions/${sessionId}/board`)}
+                                            onClick={handleJoinAsOrganizer}
                                         >
                                             Join
                                         </Button>
                                     }
                                 </Stack>
                             </Box>
-
-
                         </Box>
-
-
                     </Stack>
                 </Paper>
 

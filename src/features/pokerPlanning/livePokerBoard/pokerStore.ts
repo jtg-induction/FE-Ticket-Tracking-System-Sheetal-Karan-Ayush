@@ -60,15 +60,29 @@ export const usePokerBoardStore = create<PokerBoardState>((set) => ({
                 break;
 
 
+            // case 'VOTES_REVEALED':
+            //     set((state) => ({
+            //         isRevealed: true,
+            //         activeTicketId: message.data.ticket_id,
+            //         participants: state.participants.map((p) => {
+            //             const vote = message.data.results.find((v) => v.user_id === p.user_id);
+            //             return vote
+            //                 ? { ...p, estimate: vote.estimated_points }
+            //                 : p;
+            //         }),
+            //     }));
+            //     break;
+
             case 'VOTES_REVEALED':
                 set((state) => ({
                     isRevealed: true,
                     activeTicketId: message.data.ticket_id,
                     participants: state.participants.map((p) => {
                         const vote = message.data.results.find((v) => v.user_id === p.user_id);
-                        return vote
-                            ? { ...p, estimate: vote.estimated_points }
-                            : p;
+                        return {
+                            ...p,
+                            estimate: vote ? vote.estimated_points : undefined
+                        };
                     }),
                 }));
                 break;
@@ -81,7 +95,7 @@ export const usePokerBoardStore = create<PokerBoardState>((set) => ({
                 set((state) => ({
                     activeTicketId: null,
                     isRevealed: false,
-                    participants: state.participants.map((p) => ({ ...p, estimate: null }))
+                    participants: state.participants.map((p) => ({ ...p, estimate: undefined }))
                 }));
                 break;
 

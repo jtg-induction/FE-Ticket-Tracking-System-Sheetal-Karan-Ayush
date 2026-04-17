@@ -1,14 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useNavigate } from "react-router-dom";
+
 import { useAuthStore } from "@features/auth";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { PokerEvent, PokerEventSchema } from "./pokerBoard.schema";
 import { usePokerBoardStore } from "./pokerStore";
 
-export const usePokerWebSocket = (sessionId: number) => {
+export const usePokerWebSocket = (sessionId: number, projectKey: string) => {
     const baseWsUrl = import.meta.env.VITE_WS_URL as string;
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
 
     const socket = useRef<WebSocket | null>(null);
     const [lastJsonMessage, setLastJsonMessage] = useState<PokerEvent | null>(null);
@@ -49,22 +52,26 @@ export const usePokerWebSocket = (sessionId: number) => {
                 if (!result.success) {
                     return;
                 }
-
+                const eventType = result.data.event;
                 const refreshEvents = ['SUCCESS', 'STARTED', 'ENDED', 'TICKET_SKIPPED', 'TICKET_SELECTED'];
+                if (refreshEvents.includes(eventType)) {
+                    void queryClient.invalidateQueries({ queryKey: ['session', Number(sessionId)], refetchType: 'all' });
+                    void queryClient.invalidateQueries({ queryKey: ['session-tickets', Number(sessionId)], refetchType: 'all' });
+                }
 
-                if (refreshEvents.includes(result.data.event)) {
-                    void queryClient.invalidateQueries({
-                        queryKey: ['poker-session', sessionId],
-                        refetchType: 'all',
-                    });
-                    void queryClient.invalidateQueries({ queryKey: ['session', sessionId] , refetchType: 'all' });
-                    void queryClient.invalidateQueries({ queryKey: ['session-tickets', sessionId], refetchType: 'all' });
+                if (result.data?.event == 'STARTED') {
+                    void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
+                }
+                if (result.data?.event == 'ENDED') {
+                    void queryClient.invalidateQueries({ queryKey: ['session', Number(sessionId)], refetchType: 'all' });
                 }
 
                 updateFromEvent(result.data, user?.id);
                 setLastJsonMessage(result.data);
-            } catch {
-                return
+
+            } catch (err) {
+                console.error(err)
+                return;
             }
         };
 
@@ -73,7 +80,6 @@ export const usePokerWebSocket = (sessionId: number) => {
         };
 
         return () => {
-
             if (socket.current === ws) {
                 ws.close();
                 socket.current = null;

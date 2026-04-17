@@ -1,4 +1,4 @@
-import { ParticipantType } from "@features/pokerPlanning/pokerBoard/pokerBoard.schema";
+import { ParticipantType, PokerEvent } from "@features/pokerPlanning/livePokerBoard/pokerBoard.schema";
 
 export interface AdminControlsProps {
     activeTicketId: number | null | undefined;
@@ -7,4 +7,5 @@ export interface AdminControlsProps {
     onConfirm: (estimate: number) => void;
     participants: ParticipantType[];
     allowedValues: readonly number[];
+    lastJsonMessage: PokerEvent | null,
 }

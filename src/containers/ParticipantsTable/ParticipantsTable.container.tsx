@@ -2,14 +2,16 @@ import { CheckCircle, HelpOutline } from "@mui/icons-material";
 import { Avatar, Box, Card, Grid2 as Grid, Typography } from "@mui/material";
 
 import { useAuthStore } from "@features/auth";
-import { ParticipantType } from "@features/pokerPlanning/pokerBoard/pokerBoard.schema";
-import { usePokerBoardStore } from "@features/pokerPlanning/pokerBoard/pokerStore";
+import { ParticipantType } from "@features/pokerPlanning/livePokerBoard/pokerBoard.schema";
+import { usePokerBoardStore } from "@features/pokerPlanning/livePokerBoard/pokerStore";
 
 import { ParticipantsTableProps } from "./ParticipantsTable.types";
 
 export const ParticipantsTable = ({ isRevealed, organizer_id }: ParticipantsTableProps) => {
-    const participants = usePokerBoardStore((state) => state.participants);
+    const allParticipants = usePokerBoardStore((state) => state.participants);
     const currentUser = useAuthStore((state) => state.user);
+
+    const participants = allParticipants.filter(p => p.is_online);
 
     const isUserOrganizer = currentUser?.id === organizer_id;
     return (
@@ -24,8 +26,8 @@ export const ParticipantsTable = ({ isRevealed, organizer_id }: ParticipantsTabl
                 :
                 (
                     participants.map((p: ParticipantType) => {
-                        const shouldShowValue = isRevealed || isUserOrganizer || p.user_id == currentUser?.id;
-                        const hasVoted = p.estimate !== undefined;
+                        const hasVoted = p.estimate !== null && p.estimate !== undefined;
+                        const shouldShowValue = (isRevealed || isUserOrganizer || p.user_id == currentUser?.id) && p.estimate != -1;
 
                         return (
                             <Grid key={p.user_id} >

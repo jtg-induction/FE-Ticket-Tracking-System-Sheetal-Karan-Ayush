@@ -2,28 +2,27 @@ import { useEffect, useState } from "react";
 
 import { POSSIBLE_ESTIMATE_VALUES } from "constant/sessionEnums";
 import { TICKET_PRIORITY, TICKET_TYPE } from "constant/ticketEnums";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-import { Alert, Box, Card, Chip, CircularProgress, Container, Divider, Grid2, Snackbar, Stack, Typography } from "@mui/material";
+import { Alert, Box, Card, Chip, CircularProgress, Container, Divider, Grid2, Snackbar, Stack, Tooltip, Typography } from "@mui/material";
 
-import { fetchSessionTickets } from "@api/pokerPlanning/getSessionTicketsApi";
 import { AdminControls, BoardHeader, EstimationDeck, ParticipantsTable, TicketList } from "@containers";
 import { useAuthStore } from "@features/auth";
-import { useSessionStore } from "@features/pokerPlanning/createSession/useSessionCreateStore";
-import { usePokerBoardStore } from "@features/pokerPlanning/pokerBoard/pokerStore";
-import { usePokerSessionData } from "@features/pokerPlanning/pokerBoard/queries";
-import { usePokerWebSocket } from "@features/pokerPlanning/pokerBoard/usePokerWebSocket";
-import { useQuery } from "@tanstack/react-query";
+import { usePokerBoardStore } from "@features/pokerPlanning/livePokerBoard/pokerStore";
+import { usePokerWebSocket } from "@features/pokerPlanning/livePokerBoard/usePokerWebSocket";
+import { useSessionStore } from "@features/pokerPlanning/pokerSession/useSessionCreateStore";
+import { usePokerSessionData, usePokerSessionTicketsData } from "@features/pokerPlanning/sessionDetails/usePokerSessionData";
+import { useGetProject } from "@features/project";
 
 
 export const PokerBoard = () => {
-    const { sessionId } = useParams<{ sessionId: string }>();
+    const { projectKey, sessionId } = useParams<{ projectKey: string; sessionId: string }>();
     const id = Number(sessionId);
 
-
+    const navigate = useNavigate();
     const { data: session, isLoading: sessionLoading, error } = usePokerSessionData(id);
 
-    const { sendAction, lastJsonMessage } = usePokerWebSocket(id);
+    const { sendAction, lastJsonMessage } = usePokerWebSocket(id, projectKey as string);
 
 
     const isRevealed = usePokerBoardStore((state) => state.isRevealed);
@@ -66,17 +65,15 @@ export const PokerBoard = () => {
         }
     }, [lastJsonMessage, user?.id]);
 
-    const { data: tickets, isLoading: ticketsLoading } = useQuery({
-        queryKey: ['session-tickets', id],
-        queryFn: () => fetchSessionTickets(id),
-        enabled: !!id,
-    });
+    const { data: project, isLoading: isProjectLoading } = useGetProject(projectKey);
+    const { data: tickets, isLoading: ticketsLoading } = usePokerSessionTicketsData(Number(sessionId))
+
 
     const ticketsData = tickets || [];
     const pendingTicketsList = ticketsData.filter(ticket => ticket.points === null);
     const resolvedTicketsList = ticketsData.filter(ticket => ticket.points !== null);
 
-    if (sessionLoading || ticketsLoading) {
+    if (sessionLoading || ticketsLoading || isProjectLoading) {
         return <Box display="flex" justifyContent="center" alignItems="center" height="100vh"><CircularProgress /></Box>;
     }
 
@@ -125,7 +122,30 @@ export const PokerBoard = () => {
 
     return (
         <Stack sx={{ padding: 4 }} spacing={2} >
+
+
+            <Box>
+                <Tooltip title="View Project Details">
+                    <Box
+                        onClick={() => void navigate(`/project/${projectKey}`)}
+                        sx={{ cursor: 'pointer' }}
+                    >
+                        <Typography variant="h5" color="text.primary" fontWeight={700}>
+                            {projectKey} : {project?.title}
+                        </Typography>
+                    </Box>
+                </Tooltip>
+                <Box maxHeight={60}>
+                    <Typography variant="caption" color="text.secondary">
+                        {project?.description}
+                    </Typography>
+                </Box>
+            </Box>
+
+            <Divider/>
+
             <BoardHeader
+                projectKey={projectKey}
                 timeleft={timeLeft}
                 sendAction={sendAction}
             />
@@ -223,6 +243,7 @@ export const PokerBoard = () => {
                                 onConfirm={handleConfirm}
                                 participants={participants}
                                 allowedValues={estimateOptions}
+                                lastJsonMessage={lastJsonMessage}
                             />
                         }
 
@@ -240,7 +261,7 @@ export const PokerBoard = () => {
                             <TicketList
                                 tickets={resolvedTicketsList}
                                 activeTicketId={activeTicketId}
-                                showControls={false}
+                                showControls={true}
                                 isOrganizer={isOrganizer}
                                 onActivate={handleActivateTicket}
                                 resolvedTickets={resolvedTickets}
@@ -254,7 +275,7 @@ export const PokerBoard = () => {
 
             {/* Bottom Voting Cards */}
             <Box position={'fixed'} bottom={0} bgcolor={'common.white'} alignSelf={'center'}>
-                <Typography variant="body1" textAlign={'center'}>SELECT POINT FOR THE TICKET.</Typography>
+                <Typography variant="body1" textAlign={'center'}>Select points for the ticket.</Typography>
 
                 <Snackbar
                     open={voteSuccess}
@@ -276,6 +297,8 @@ export const PokerBoard = () => {
                     options={estimateOptions}
                     activeTicketId={activeTicketId}
                     onVote={handleVote}
+                    participants={participants}
+                    currentUserId={user?.id}
                 />
             </Box>
         </Stack>

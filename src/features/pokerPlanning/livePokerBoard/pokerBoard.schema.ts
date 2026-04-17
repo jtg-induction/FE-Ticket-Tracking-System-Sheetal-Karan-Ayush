@@ -5,6 +5,7 @@ export const ParticipantSchema = z.object({
     user_id: z.number(),
     name: z.string(),
     role: z.number(),
+    is_online: z.boolean(),
     estimate: z.number().nullable().optional(),
 });
 
@@ -24,8 +25,13 @@ export const PokerEventSchema = z.discriminatedUnion('event', [
 
     z.object({
         event: z.literal('ACTIVE_TICKET'),
-        data: z.number()
+        data: z.number().optional().nullable(),
     }),
+
+    // z.object({
+    //     event: z.literal('LEAVE'),
+    //     data: z.object({}),
+    // }),
 
     z.object({
         event: z.literal('SUCCESSFULLY_VOTED'),
@@ -66,9 +72,9 @@ export const PokerEventSchema = z.discriminatedUnion('event', [
 
     z.object({
         event: z.literal('FINAL_ESTIMATE_TICKET'),
-        data: z.object({ 
-            ticket_id: z.number(), 
-            estimate: z.number().int() 
+        data: z.object({
+            ticket_id: z.number(),
+            estimate: z.number().int()
         })
     }),
 
@@ -126,7 +132,7 @@ export const PokerEventSchema = z.discriminatedUnion('event', [
     }),
     z.object({
         event: z.literal('ENDED'),
-        data: z.object({ session_id: z.number() })
+        data: z.object({ message: z.string() })
     }),
 ]);
 

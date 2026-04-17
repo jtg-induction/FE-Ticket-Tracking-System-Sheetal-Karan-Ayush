@@ -57,15 +57,15 @@ const routes: RouteObject[] = [
                         element: <UserReportPage />,
                     },
                     {
-                        path: 'sessions/create',
+                        path: 'projects/:projectKey/sessions/create',
                         element: <CreateSessionForm />
                     },
                     {
-                        path: 'sessions/:sessionId',
+                        path: 'projects/:projectKey/sessions/:sessionId',
                         element: <SessionDetails />
                     },
                     {
-                        path: 'sessions/:sessionId/board',
+                        path: 'projects/:projectKey/sessions/:sessionId/board',
                         element: <PokerBoard />
                     },
                     {

@@ -85,8 +85,8 @@ export const ProjectTicketFilters = ({
                     onChange={(e) => onChange('resolved', e.target.value)}
                 >
                     <MenuItem value={undefined}>All</MenuItem>
-                    <MenuItem value='true'>True</MenuItem>
-                    <MenuItem value='false'>False</MenuItem>
+                    <MenuItem value='false' >No</MenuItem>
+                    <MenuItem value='true'>Yes</MenuItem>
                 </SmallFilterField>
 
                 <SmallFilterField

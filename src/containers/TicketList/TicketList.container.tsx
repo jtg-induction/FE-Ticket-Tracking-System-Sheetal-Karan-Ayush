@@ -85,15 +85,7 @@ export const TicketList = ({
                                                         size="small"
                                                         color={statusInfo.color as ChipProps['color']}
                                                     />
-                                                    {resolvedData && (
-                                                        <Chip
-                                                            label={`${resolvedData.estimate} pt`}
-                                                            color="success"
-                                                            size="small"
-                                                            variant="filled"
-                                                        />
-                                                    )}
-                                                    {!resolvedData && ticket.points !== null && (
+                                                    {(resolvedData || ticket.points !== null) && (
                                                         <Chip
                                                             label={`${ticket.points} pts`}
                                                             size="small"
@@ -107,10 +99,12 @@ export const TicketList = ({
                                                 <Button
                                                     size="small"
                                                     variant={isActive ? "outlined" : "contained"}
-                                                    disabled={isActive || !!resolvedData || !!ticket.points}
+                                                    // disabled={isActive || !!resolvedData || !!ticket.points}
+                                                    disabled={isActive}
                                                     onClick={() => onActivate?.(ticket.id)}
                                                 >
-                                                    {resolvedData || ticket.points ? "Resolved" : isActive ? "Active" : "Select"}
+                                                    {/* {resolvedData || ticket.points ? "Resolved" : isActive ? "Active" : "Select"} */}
+                                                    {isActive ? "Active" : "Select"}
                                                 </Button>
                                             )}
                                         </Stack>

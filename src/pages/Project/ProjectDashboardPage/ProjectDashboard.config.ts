@@ -15,6 +15,10 @@ export const TICKET_TABLE_HEADER = [
         title: 'STATUS',
         isHiddenInMobile: false,
     },
+    {
+        title: 'POINTS',
+        isHiddenInMobile: false,
+    }
 ];
 export const ticketData = [
     {

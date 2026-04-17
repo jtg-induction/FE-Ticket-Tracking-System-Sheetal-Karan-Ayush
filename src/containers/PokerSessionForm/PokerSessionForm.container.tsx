@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { TICKET_PRIORITY, TICKET_STATUS, TICKET_TYPE } from "constant/ticketEnums";
 import { useDebounce } from "hooks/useDebounce";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -18,16 +18,16 @@ import {
     TextField, Typography
 } from "@mui/material";
 
-import { createSession } from "@api/pokerPlanning/createSessionApi";
 import { ProjectTicketFilters } from "@components";
 import { StyledErrorTextField } from "@containers/RegisterForm/RegisterForm.styles";
-import { SessionCreateSchema, SessionCreateType } from "@features/pokerPlanning/createSession/session.schemas";
-import { useSessionStore } from "@features/pokerPlanning/createSession/useSessionCreateStore";
+import { SessionCreateSchema, SessionCreateType } from "@features/pokerPlanning/pokerSession/session.schemas";
+import { usePokerSessionMutations } from "@features/pokerPlanning/pokerSession/usePokerSessionMutation";
+import { useSessionStore } from "@features/pokerPlanning/pokerSession/useSessionCreateStore";
+import { useGetProject } from "@features/project/useGetProjectMutation";
 import { QueryParams } from "@features/ticket/getAllTickets/getAllTickets.schema";
 import { useGetAllTickets } from "@features/ticket/getAllTickets/usegetAllTickets";
-import { useMutation } from "@tanstack/react-query";
 
-import { LocationState, Ticket } from "./PokerSessionForm.types";
+import { Ticket } from "./PokerSessionForm.types";
 
 
 type FormErrors = Partial<Record<keyof SessionCreateType | "server", string>>;
@@ -40,11 +40,28 @@ export const CreateSessionForm = () => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [customValueBuffer, setCustomValueBuffer] = useState("");
 
-    const location = useLocation();
-    const state = location.state as LocationState | null;
-    const passedProjectId = state?.projectId ?? 0;
-    const passedProjectKey = state?.projectKey ?? "N/A";
+    const { projectKey } = useParams<{ projectKey: string }>();
 
+    const { data: project } = useGetProject(projectKey as string);
+    const projectId = project?.id;
+
+    const { createMutation } = usePokerSessionMutations();
+
+    const [formData, setFormData] = useState<SessionCreateType>({
+        title: "",
+        description: "",
+        project_id: projectId ?? 0,
+        duration: 30,
+        tickets_list: [],
+        scale_type: 1,
+        custom_scale_values: [] as number[],
+    });
+
+    useEffect(() => {
+        if (projectId) {
+            setFormData(prev => ({ ...prev, project_id: projectId }));
+        }
+    }, [projectId]);
 
     const defaultFilters: QueryParams = {
         title: "",
@@ -60,36 +77,12 @@ export const CreateSessionForm = () => {
     const {
         data,
         isLoading,
-    } = useGetAllTickets(passedProjectKey, debouncedFilters, { enabled: !!passedProjectKey });
+    } = useGetAllTickets(projectKey ?? "", debouncedFilters, { enabled: !!projectKey });
 
     const tickets: Ticket[] = data?.pages.flatMap((page) =>
         (page.tickets as Ticket[]).filter(ticket => ticket.status !== 3)
     ) ?? [];
 
-    const [formData, setFormData] = useState<SessionCreateType>({
-        title: "",
-        description: "",
-        project_id: passedProjectId,
-        duration: 30,
-        tickets_list: [],
-        scale_type: 1,
-        custom_scale_values: [] as number[],
-    });
-
-    const mutation = useMutation({
-        mutationFn: async (payload: SessionCreateType) => {
-            const transformedData = {
-                ...payload,
-                duration: payload.duration * 60
-            };
-            return createSession(transformedData);
-        },
-        onSuccess: (responseData) => {
-            setSession(responseData);
-            void navigate(`/sessions/${responseData.id}`);
-            setSnackbarOpen(true);
-        },
-    });
 
     const handleCloseSnackbar = (_?: React.SyntheticEvent | Event, reason?: string) => {
         if (reason === 'clickaway') return;
@@ -130,7 +123,13 @@ export const CreateSessionForm = () => {
         }
 
         setFormErrors({});
-        mutation.mutate(result.data);
+        createMutation.mutate(result.data, {
+            onSuccess: (responseData) => {
+                setSession(responseData);
+                void navigate(`/projects/${projectKey}/sessions/${responseData.id}`);
+                setSnackbarOpen(true);
+            }
+        })
     };
 
     return (
@@ -146,7 +145,8 @@ export const CreateSessionForm = () => {
                     <Stack spacing={3}>
                         <TextField
                             label="Project"
-                            value={passedProjectKey}
+                            // value={passedProjectKey}
+                            value={projectKey}
                             disabled
                             fullWidth
                             variant="outlined"
@@ -175,15 +175,13 @@ export const CreateSessionForm = () => {
                         <StyledErrorTextField
                             label="Duration (minutes)"
                             type="number"
-                            value={formData.duration}
+                            value={formData.duration ? formData.duration : null}
                             onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) || 0 })}
                             error={!!formErrors.duration}
                             helperText={formErrors.duration}
                             fullWidth
                             slotProps={{ htmlInput: { min: 1 } }}
                         />
-
-
 
                         <FormControl fullWidth error={!!formErrors.scale_type}>
                             <InputLabel>Estimation Scale</InputLabel>
@@ -353,9 +351,9 @@ export const CreateSessionForm = () => {
                             type="submit"
                             variant="contained"
                             size="large"
-                            disabled={mutation.isPending}
+                            disabled={createMutation.isPending}
                         >
-                            {mutation.isPending ? "Creating..." : "Create Session"}
+                            {createMutation.isPending ? "Creating..." : "Create Session"}
                         </Button>
                     </Stack>
                 </Box>

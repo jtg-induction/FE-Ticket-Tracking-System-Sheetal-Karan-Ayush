@@ -36,7 +36,7 @@ import {
 
 
 export const TicketDetails: React.FC = () => {
-    
+
     const theme = useTheme();
     const { projectKey, ticketKey } = useParams<{
         projectKey?: string;
@@ -45,30 +45,27 @@ export const TicketDetails: React.FC = () => {
     const { data: ticket } = useGetTicket(
         projectKey as string,
         ticketKey as string,
-        
     );
-    
+
     const { setUpdateFormData } = useTicketStore();
-    
-    
 
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
     const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false)
     const [isSubsribeDialogOpen, setIsSubsribeDialogOpen] = useState(false)
-    
-    useEffect (() => {
-        if(ticket) {
+
+    useEffect(() => {
+        if (ticket) {
             setUpdateFormData(ticket)
         }
-    },[setUpdateFormData, ticket])
+    }, [setUpdateFormData, ticket])
 
-    
+
     if (!ticket) return <Box>Ticket Not Found</Box>;
 
     return (
         <>
-            
+
             <Card
                 sx={{
                     maxWidth: theme.spacing(200),
@@ -106,46 +103,46 @@ export const TicketDetails: React.FC = () => {
 
                         {/* Icon Box with Edit and Delete icons */}
                         <Box>
-                            {ticket.role == ADMIN && !ticket.is_archived && 
-                            <>
-                            <Button
-                                variant="contained"
-                                size="small"
-                                onClick={() => setIsMoveDialogOpen(true)}
-                            >
-                                Move
-                            </Button>
+                            {ticket.role == ADMIN && !ticket.is_archived &&
+                                <>
+                                    <Button
+                                        variant="contained"
+                                        size="small"
+                                        onClick={() => setIsMoveDialogOpen(true)}
+                                    >
+                                        Move
+                                    </Button>
 
-                            <IconButton
-                                sx={{
-                                    backgroundColor: COLORS.GRAY.BACKGROUND,
-                                    '&:hover': {
-                                        backgroundColor:
-                                            COLORS.GRAY.SECONDARY,
-                                    },
-                                    padding: theme.spacing(1),
-                                }}
-                                onClick={() =>{
-                                    setIsEditDialogOpen(true)
-                                }}
-                            >
-                                <EditIcon />
-                            </IconButton>
+                                    <IconButton
+                                        sx={{
+                                            backgroundColor: COLORS.GRAY.BACKGROUND,
+                                            '&:hover': {
+                                                backgroundColor:
+                                                    COLORS.GRAY.SECONDARY,
+                                            },
+                                            padding: theme.spacing(1),
+                                        }}
+                                        onClick={() => {
+                                            setIsEditDialogOpen(true)
+                                        }}
+                                    >
+                                        <EditIcon />
+                                    </IconButton>
 
-                            <IconButton
-                                sx={{
-                                    backgroundColor: COLORS.GRAY.BACKGROUND,
-                                    '&:hover': {
-                                        backgroundColor:
-                                            COLORS.GRAY.SECONDARY,
-                                    },
-                                    padding: theme.spacing(1),
-                                }}
-                                onClick={() => setIsDeleteDialogOpen(true)}
-                            >
-                                <DeleteIcon />
-                            </IconButton>
-                            </>}
+                                    <IconButton
+                                        sx={{
+                                            backgroundColor: COLORS.GRAY.BACKGROUND,
+                                            '&:hover': {
+                                                backgroundColor:
+                                                    COLORS.GRAY.SECONDARY,
+                                            },
+                                            padding: theme.spacing(1),
+                                        }}
+                                        onClick={() => setIsDeleteDialogOpen(true)}
+                                    >
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </>}
                             <IconButton
                                 sx={{
                                     backgroundColor: COLORS.GRAY.BACKGROUND,
@@ -218,6 +215,13 @@ export const TicketDetails: React.FC = () => {
                             size="small"
                             variant="filled"
                         />
+                        <Chip
+                            label={`${ticket.points} pts`}
+                            color="info"
+                            size="small"
+                            variant="filled"
+                        />
+
                     </Stack>
 
                     {/* Assignee, Reporter, Deadline, Created On */}
@@ -251,7 +255,7 @@ export const TicketDetails: React.FC = () => {
                         </span>
                     </StyledLabel>
 
-                    
+
 
                     {/* Labels */}
                     <Stack
@@ -274,13 +278,13 @@ export const TicketDetails: React.FC = () => {
 
                     {/* Add Comment Button */}
                     <CommentCard projectKey={projectKey as string} ticketKey={ticketKey as string} />
-                </CardContent>            
+                </CardContent>
             </Card>
-            
+
             <DeleteTicketDialog open={isDeleteDialogOpen} onClose={() => setIsDeleteDialogOpen(false)} />
             <EditTicketDialog open={isEditDialogOpen} onClose={() => setIsEditDialogOpen(false)} />
             <MoveTicketDialog open={isMoveDialogOpen} onClose={() => setIsMoveDialogOpen(false)} />
-            <SubscribeTicketDialog open={isSubsribeDialogOpen} onClose={() => setIsSubsribeDialogOpen(false)} isSubscribed={ticket?.is_subscribed}/>
+            <SubscribeTicketDialog open={isSubsribeDialogOpen} onClose={() => setIsSubsribeDialogOpen(false)} isSubscribed={ticket?.is_subscribed} />
         </>
     );
 };

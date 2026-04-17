@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { Box, Button, FormControl, InputLabel, MenuItem, Select, Stack } from "@mui/material";
+import { Alert, Box, Button, FormControl, InputLabel, MenuItem, Select, Snackbar, Stack } from "@mui/material";
 
 import { AdminControlsProps } from "./AdminControls.types";
 
@@ -11,14 +11,33 @@ export const AdminControls = ({
     onConfirm,
     participants,
     allowedValues = [],
+    lastJsonMessage,
 }: AdminControlsProps) => {
 
     const [selectedValue, setSelectedValue] = useState<string>("");
+    const [isConfirming, setIsConfirming] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
 
     const votes = participants
         .map((p) => p.estimate)
         .filter((e): e is number => typeof e === "number");
-    const maxVote = votes.length > 0 ? Math.max(...votes) : null;
+
+    const hasAnyoneVoted = votes.length > 0;
+
+    const maxVote = votes.length > 0
+        ? votes.reduce((acc, current, _, arr) =>
+            arr.filter(v => v === current).length > arr.filter(v => v === acc).length
+                ? current
+                : acc
+            , votes[0])
+        : null;
+
+    const isDisabled = !activeTicketId;
+
+    const handleConfirm = () => {
+        setIsConfirming(true);
+        onConfirm(Number(selectedValue));
+    };
 
     useEffect(() => {
         if (maxVote !== null && allowedValues.includes(maxVote)) {
@@ -26,7 +45,19 @@ export const AdminControls = ({
         }
     }, [maxVote, allowedValues]);
 
-    const isDisabled = !activeTicketId;
+    useEffect(() => {
+        setIsConfirming(false);
+    }, [activeTicketId]);
+
+    useEffect(() => {
+        if (lastJsonMessage?.event === "SUCCESS") {
+            setIsConfirming(false);
+            setShowSuccess(true);
+        }
+        if (lastJsonMessage?.event === "ERROR") {
+            setIsConfirming(false);
+        }
+    }, [lastJsonMessage]);
 
     return (
         <Stack spacing={2}>
@@ -34,7 +65,7 @@ export const AdminControls = ({
             <Button
                 variant="contained"
                 color="info"
-                disabled={isDisabled}
+                disabled={isDisabled || !hasAnyoneVoted}
                 onClick={onReveal}
             >
                 Reveal Votes
@@ -69,12 +100,23 @@ export const AdminControls = ({
                 <Button
                     variant="contained"
                     color="success"
-                    disabled={isDisabled || !selectedValue}
-                    onClick={() => onConfirm(Number(selectedValue))}
+                    disabled={isDisabled || !selectedValue || isConfirming}
+                    onClick={handleConfirm}
                 >
-                    Confirm
+                    {isConfirming ? "Confirming" : "Confirm"}
                 </Button>
             </Box>
+
+            <Snackbar
+                open={showSuccess}
+                autoHideDuration={2000}
+                onClose={() => setShowSuccess(false)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            >
+                <Alert severity="success" variant="filled">
+                    Points updated to Jira successfully!
+                </Alert>
+            </Snackbar>
         </Stack>
     );
 };

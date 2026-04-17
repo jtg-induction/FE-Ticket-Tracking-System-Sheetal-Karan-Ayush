@@ -1,4 +1,4 @@
-import { TicketResponseType } from "@features/pokerPlanning/createSession/session.schemas";
+import { TicketResponseType } from "@features/pokerPlanning/pokerSession/session.schemas";
 
 export type TicketListProps = {
     tickets: TicketResponseType[];
