@@ -64,10 +64,10 @@ const routes: RouteObject[] = [
                         path: 'projects/:projectKey/sessions/:sessionId',
                         element: <SessionDetails />
                     },
-                    {
-                        path: 'projects/:projectKey/sessions/:sessionId/board',
-                        element: <PokerBoard />
-                    },
+                    // {
+                    //     path: 'projects/:projectKey/sessions/:sessionId/board',
+                    //     element: <PokerBoard />
+                    // },
                     {
                         path: '*',
                         element: <PageNotFound />,

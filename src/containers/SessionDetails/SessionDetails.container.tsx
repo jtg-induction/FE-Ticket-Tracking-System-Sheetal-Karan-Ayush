@@ -24,6 +24,7 @@ import { SessionResponseType, SessionUpdateSchema } from '@features/pokerPlannin
 import { usePokerSessionMutations } from '@features/pokerPlanning/pokerSession/usePokerSessionMutation';
 import { usePokerSessionData, usePokerSessionTicketsData } from '@features/pokerPlanning/sessionDetails/usePokerSessionData';
 import { useGetProject } from '@features/project/useGetProjectMutation';
+import { PokerBoard } from '@pages/PokerBoardLive/PokerBoardLive.page';
 
 
 export const SessionDetails = () => {
@@ -35,6 +36,8 @@ export const SessionDetails = () => {
     const [editData, setEditData] = useState<SessionResponseType | undefined>();
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [customValueBuffer, setCustomValueBuffer] = useState("");
+
+    const [view, setView] = useState<'details' | 'live'>('details');
 
     const { data: session, isLoading, error } = usePokerSessionData(Number(sessionId));
     const { data: project, isLoading: isProjectLoading } = useGetProject(projectKey as string);
@@ -49,7 +52,7 @@ export const SessionDetails = () => {
     const pendingTicketsList = ticketsData.filter(ticket => ticket.points === null);
     const resolvedTicketsList = ticketsData.filter(ticket => ticket.points !== null);
 
-    const { sendAction } = usePokerWebSocket(Number(sessionId), projectKey as string);
+    const { sendAction, lastJsonMessage } = usePokerWebSocket(Number(sessionId), projectKey as string, (newView) => setView(newView));
 
 
     const { updateMutation, deleteMutation, joinMutation } = usePokerSessionMutations(Number(sessionId), projectKey);
@@ -74,29 +77,34 @@ export const SessionDetails = () => {
         sendAction("START", {
             duration: customDuration ?? session?.duration,
         });
-        void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
+        // void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
+        setView('live');
     };
 
     const handleRestart = () => {
         sendAction("START", {
             duration: session?.duration,
         });
-        void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
+        // void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
+        setView('live');
     };
 
     const handleJoinAsOrganizer = () => {
         joinMutation.mutate(1);
-        void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
+        // void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
+        setView('live');
     };
 
     const handleJoinAsVoter = () => {
         joinMutation.mutate(2);
-        void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
+        // void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
+        setView('live');
     };
 
     const handleJoinAsSpectator = () => {
         joinMutation.mutate(3);
-        void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
+        // void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
+        setView('live');
     };
 
     const handleEnd = () => {
@@ -111,6 +119,10 @@ export const SessionDetails = () => {
 
     if (isLoading || isProjectLoading) return <Box textAlign="center" mt={10}><CircularProgress /></Box>;
     if (error || !session) return <Typography color="error">Session not found.</Typography>;
+
+    if (view === 'live') {
+        return <PokerBoard session={session} sendAction={sendAction} lastJsonMessage={lastJsonMessage} onBack={() => setView('details')} />;
+    }
 
     return (
         <>
@@ -264,7 +276,7 @@ export const SessionDetails = () => {
                                     <TextField
                                         type="number"
                                         fullWidth
-                                        value={editData?.duration ? editData.duration / 60 : null} 
+                                        value={editData?.duration ? editData.duration / 60 : null}
                                         onChange={(e) => {
                                             const val = Number(e.target.value);
                                             const minutes = val === null ? 0 : Number(val);

@@ -8,7 +8,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { PokerEvent, PokerEventSchema } from "./pokerBoard.schema";
 import { usePokerBoardStore } from "./pokerStore";
 
-export const usePokerWebSocket = (sessionId: number, projectKey: string) => {
+export const usePokerWebSocket = (sessionId: number, projectKey: string, onViewChange?: (view: 'details' | 'live') => void) => {
     const baseWsUrl = import.meta.env.VITE_WS_URL as string;
     const queryClient = useQueryClient();
     const navigate = useNavigate();
@@ -52,17 +52,26 @@ export const usePokerWebSocket = (sessionId: number, projectKey: string) => {
                 if (!result.success) {
                     return;
                 }
+                console.log(result.data.event);
+                console.log(event);
                 const eventType = result.data.event;
-                const refreshEvents = ['SUCCESS', 'STARTED', 'ENDED', 'TICKET_SKIPPED', 'TICKET_SELECTED'];
+                const refreshEvents = ['SUCCESS', 'STARTED', 'END', 'ENDED', 'TICKET_SKIPPED', 'TICKET_SELECTED'];
                 if (refreshEvents.includes(eventType)) {
                     void queryClient.invalidateQueries({ queryKey: ['session', Number(sessionId)], refetchType: 'all' });
                     void queryClient.invalidateQueries({ queryKey: ['session-tickets', Number(sessionId)], refetchType: 'all' });
+                    void queryClient.invalidateQueries({ queryKey: ['sessions', projectKey], refetchType: 'all' });
                 }
 
                 if (result.data?.event == 'STARTED') {
-                    void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
+                    ws.send(JSON.stringify({
+                        event: "GET_REMAINING_TIME",
+                        data: { session_id: sessionId }
+                    }));
+                    // onViewChange?.('live');
+                    // void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
                 }
                 if (result.data?.event == 'ENDED') {
+                    onViewChange?.('details');
                     void queryClient.invalidateQueries({ queryKey: ['session', Number(sessionId)], refetchType: 'all' });
                 }
 
@@ -76,6 +85,7 @@ export const usePokerWebSocket = (sessionId: number, projectKey: string) => {
         };
 
         ws.onclose = () => {
+            // TODO: can navigate to all sessions page once websocket closes
             if (socket.current === ws) socket.current = null;
         };
 

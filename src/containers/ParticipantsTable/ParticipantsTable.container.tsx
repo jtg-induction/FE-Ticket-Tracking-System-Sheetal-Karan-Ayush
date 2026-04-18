@@ -26,8 +26,10 @@ export const ParticipantsTable = ({ isRevealed, organizer_id }: ParticipantsTabl
                 :
                 (
                     participants.map((p: ParticipantType) => {
-                        const hasVoted = p.estimate !== null && p.estimate !== undefined;
-                        const shouldShowValue = (isRevealed || isUserOrganizer || p.user_id == currentUser?.id) && p.estimate != -1;
+                        const hasVoted = p.estimate !== undefined && p.estimate !== null;
+                        const hasNotVoted = p.estimate === -1;
+                        const isMaskedVote = p.estimate === -2;
+                        const shouldShowValue = ((isRevealed && p.user_id !== currentUser?.id) || (isUserOrganizer || p.user_id === currentUser?.id)) && !isMaskedVote;
 
                         return (
                             <Grid key={p.user_id} >
@@ -47,7 +49,7 @@ export const ParticipantsTable = ({ isRevealed, organizer_id }: ParticipantsTabl
                                     </Box>
 
                                     <Box>
-                                        {hasVoted ? (
+                                        {hasVoted && !hasNotVoted ? (
                                             shouldShowValue ? (
                                                 <Typography variant="h6" fontWeight="bold" color="primary">
                                                     {p.estimate}

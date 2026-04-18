@@ -14,15 +14,17 @@ import { useSessionStore } from "@features/pokerPlanning/pokerSession/useSession
 import { usePokerSessionData, usePokerSessionTicketsData } from "@features/pokerPlanning/sessionDetails/usePokerSessionData";
 import { useGetProject } from "@features/project";
 
+import { PokerBoardProps } from "./PokerBoardLive.types";
 
-export const PokerBoard = () => {
+
+export const PokerBoard = ({ session, sendAction, lastJsonMessage, onBack }: PokerBoardProps) => {
     const { projectKey, sessionId } = useParams<{ projectKey: string; sessionId: string }>();
     const id = Number(sessionId);
 
     const navigate = useNavigate();
-    const { data: session, isLoading: sessionLoading, error } = usePokerSessionData(id);
+    // const { data: session, isLoading: sessionLoading, error } = usePokerSessionData(id);
 
-    const { sendAction, lastJsonMessage } = usePokerWebSocket(id, projectKey as string);
+    // const { sendAction, lastJsonMessage } = usePokerWebSocket(id, projectKey as string);
 
 
     const isRevealed = usePokerBoardStore((state) => state.isRevealed);
@@ -73,11 +75,11 @@ export const PokerBoard = () => {
     const pendingTicketsList = ticketsData.filter(ticket => ticket.points === null);
     const resolvedTicketsList = ticketsData.filter(ticket => ticket.points !== null);
 
-    if (sessionLoading || ticketsLoading || isProjectLoading) {
+    if ( ticketsLoading || isProjectLoading) {
         return <Box display="flex" justifyContent="center" alignItems="center" height="100vh"><CircularProgress /></Box>;
     }
 
-    if (error || !session) {
+    if ( !session) {
         return <Container sx={{ mt: 4 }}><Typography color="error">Failed to load session.</Typography></Container>;
     }
 
@@ -142,21 +144,22 @@ export const PokerBoard = () => {
                 </Box>
             </Box>
 
-            <Divider/>
+            <Divider />
 
             <BoardHeader
                 projectKey={projectKey}
                 timeleft={timeLeft}
                 sendAction={sendAction}
+                onBack={onBack}
             />
 
-            <Grid2 container spacing={3} >
+            <Grid2 container spacing={3}>
 
                 <Grid2 size={{ xs: 12, md: 8 }}>
                     <Grid2 container spacing={4}>
 
                         {/* active ticket details*/}
-                        <Grid2 size={12}>
+                        <Grid2 size={12} >
                             <Card
                                 elevation={2}
                                 sx={{
@@ -244,6 +247,7 @@ export const PokerBoard = () => {
                                 participants={participants}
                                 allowedValues={estimateOptions}
                                 lastJsonMessage={lastJsonMessage}
+                                isRevealed={isRevealed}
                             />
                         }
 

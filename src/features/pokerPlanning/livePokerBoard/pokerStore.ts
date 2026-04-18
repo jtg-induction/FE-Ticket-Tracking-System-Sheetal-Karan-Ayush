@@ -51,6 +51,7 @@ export const usePokerBoardStore = create<PokerBoardState>((set) => ({
 
             case 'SUCCESSFULLY_VOTED':
                 set((state) => ({
+                    isRevealed: false,
                     participants: state.participants.map((p) =>
                         p.user_id === message.data.user_id
                             ? { ...p, estimate: message.data.estimate }
@@ -104,7 +105,7 @@ export const usePokerBoardStore = create<PokerBoardState>((set) => ({
                     activeTicketId: null,
                     isRevealed: false,
                     resolvedTickets: [...state.resolvedTickets, message.data],
-                    participants: state.participants.map((p) => ({ ...p, estimate: null }))
+                    participants: state.participants.map((p) => ({ ...p, estimate: undefined }))
                 }));
                 break;
 

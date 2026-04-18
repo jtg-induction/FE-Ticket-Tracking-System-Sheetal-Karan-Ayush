@@ -13,7 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { BoardHeaderProps } from "./BoardHeader.types";
 
-export const BoardHeader = ({projectKey, sendAction }: BoardHeaderProps) => {
+export const BoardHeader = ({projectKey, sendAction, onBack }: BoardHeaderProps) => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
@@ -44,7 +44,8 @@ export const BoardHeader = ({projectKey, sendAction }: BoardHeaderProps) => {
                 queryKey: ['session-tickets', session?.id],
                 refetchType: 'all',
             });
-            void navigate(`/projects/${projectKey}/sessions/${session?.id}`);
+            // void navigate(`/projects/${projectKey}/sessions/${session?.id}`);
+            onBack(); 
         }
 
         const interval = setInterval(() => {
@@ -67,13 +68,15 @@ export const BoardHeader = ({projectKey, sendAction }: BoardHeaderProps) => {
 
     const handleEndSession = () => {
         sendAction("END", {});
-        void navigate(`/projects/${projectKey}/sessions/${session?.id}`);
+        // void navigate(`/projects/${projectKey}/sessions/${session?.id}`);
+        onBack(); 
         return;
     };
 
     const handleLeaveSession = () => {
         // TODO: sendAction("LEAVE", {});
-        void navigate(`/projects/${projectKey}/sessions/${session?.id}`);
+        // void navigate(`/projects/${projectKey}/sessions/${session?.id}`);
+        onBack(); 
         return;
     };
 

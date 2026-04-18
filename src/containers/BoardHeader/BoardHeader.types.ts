@@ -4,4 +4,5 @@ export type BoardHeaderProps = {
     projectKey?: string | null,
     timeleft: number | null;
     sendAction: (event: PokerEvent['event'], payload: Record<string, unknown>) => void;
+    onBack?: () => void;
 }

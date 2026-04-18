@@ -43,14 +43,6 @@ export const PokerEventSchema = z.discriminatedUnion('event', [
     }),
 
     z.object({
-        event: z.literal('VOTES_REVEALED'),
-        data: z.object({
-            ticket_id: z.number(),
-            results: z.array(VoteDetailSchema),
-        })
-    }),
-
-    z.object({
         event: z.literal('TICKET_SELECTED'),
         data: z.object({ ticket_id: z.number() })
     }),
@@ -68,6 +60,14 @@ export const PokerEventSchema = z.discriminatedUnion('event', [
     z.object({
         event: z.literal('REVEAL'),
         data: z.object({ ticket_id: z.number() })
+    }),
+
+    z.object({
+        event: z.literal('VOTES_REVEALED'),
+        data: z.object({
+            ticket_id: z.number(),
+            results: z.array(VoteDetailSchema),
+        })
     }),
 
     z.object({

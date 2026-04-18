@@ -12,6 +12,7 @@ export const AdminControls = ({
     participants,
     allowedValues = [],
     lastJsonMessage,
+    isRevealed,
 }: AdminControlsProps) => {
 
     const [selectedValue, setSelectedValue] = useState<string>("");
@@ -65,7 +66,7 @@ export const AdminControls = ({
             <Button
                 variant="contained"
                 color="info"
-                disabled={isDisabled || !hasAnyoneVoted}
+                disabled={isDisabled || !hasAnyoneVoted || isRevealed}
                 onClick={onReveal}
             >
                 Reveal Votes

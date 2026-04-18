@@ -8,4 +8,5 @@ export interface AdminControlsProps {
     participants: ParticipantType[];
     allowedValues: readonly number[];
     lastJsonMessage: PokerEvent | null,
+    isRevealed: boolean,
 }
