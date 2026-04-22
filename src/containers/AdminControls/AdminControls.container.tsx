@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { Alert, Box, Button, FormControl, InputLabel, MenuItem, Select, Snackbar, Stack } from "@mui/material";
+import { Box, Button, FormControl, InputLabel, MenuItem, Select, Stack } from "@mui/material";
 
 import { AdminControlsProps } from "./AdminControls.types";
 
@@ -17,7 +17,6 @@ export const AdminControls = ({
 
     const [selectedValue, setSelectedValue] = useState<string>("");
     const [isConfirming, setIsConfirming] = useState(false);
-    const [showSuccess, setShowSuccess] = useState(false);
 
     const votes = participants
         .map((p) => p.estimate)
@@ -53,7 +52,6 @@ export const AdminControls = ({
     useEffect(() => {
         if (lastJsonMessage?.event === "SUCCESS") {
             setIsConfirming(false);
-            setShowSuccess(true);
         }
         if (lastJsonMessage?.event === "ERROR") {
             setIsConfirming(false);
@@ -108,16 +106,6 @@ export const AdminControls = ({
                 </Button>
             </Box>
 
-            <Snackbar
-                open={showSuccess}
-                autoHideDuration={2000}
-                onClose={() => setShowSuccess(false)}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            >
-                <Alert severity="success" variant="filled">
-                    Points updated to Jira successfully!
-                </Alert>
-            </Snackbar>
         </Stack>
     );
 };

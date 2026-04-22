@@ -35,7 +35,7 @@ export const ProjectSessionsList = () => {
     };
 
     if (queryError) {
-        return <Typography color="error" textAlign="center">
+        return <Typography color="error.contrastText" textAlign="center">
             {queryError instanceof Error ? queryError.message : "An unexpected error occurred"}
         </Typography>;
     }

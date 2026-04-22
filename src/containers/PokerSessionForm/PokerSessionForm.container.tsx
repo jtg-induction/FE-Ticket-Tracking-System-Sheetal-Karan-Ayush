@@ -18,7 +18,7 @@ import {
     TextField, Typography
 } from "@mui/material";
 
-import { ProjectTicketFilters } from "@components";
+import { BackButton, ProjectTicketFilters } from "@components";
 import { StyledErrorTextField } from "@containers/RegisterForm/RegisterForm.styles";
 import { SessionCreateSchema, SessionCreateType } from "@features/pokerPlanning/pokerSession/session.schemas";
 import { usePokerSessionMutations } from "@features/pokerPlanning/pokerSession/usePokerSessionMutation";
@@ -68,7 +68,7 @@ export const CreateSessionForm = () => {
         assignee: "",
         status: undefined,
         sort: "latest",
-        limit: 10,
+        limit: 25,
         deadline: undefined,
     };
     const [filters, setFilters] = useState<QueryParams>(defaultFilters);
@@ -135,7 +135,8 @@ export const CreateSessionForm = () => {
     return (
         <>
             <Paper sx={{ p: 4, maxWidth: 724, mx: "auto", mt: 5 }}>
-                <Typography variant="h4" align="center" color="primary" mb={4} fontWeight="bold">
+                <BackButton onClick={() => void navigate(`/project/${projectKey}`)}></BackButton>
+                <Typography variant="h4" align="center" color="primary" sx={{ padding: 2 }}>
                     CREATE NEW POKER PLANNING SESSION
                 </Typography>
 
@@ -145,7 +146,6 @@ export const CreateSessionForm = () => {
                     <Stack spacing={3}>
                         <TextField
                             label="Project"
-                            // value={passedProjectKey}
                             value={projectKey}
                             disabled
                             fullWidth
@@ -237,7 +237,7 @@ export const CreateSessionForm = () => {
                             onReset={() => setFilters(defaultFilters)}
                         />
 
-                        <Typography variant="subtitle2" color="text.secondary">AVAILABLE TICKETS</Typography>
+                        <Typography variant="subtitle2" color="text.secondary">Available Tickets</Typography>
                         <Paper variant="outlined" sx={{ maxHeight: 250, overflow: 'auto' }}>
                             {isLoading ? (
                                 <CircularProgress />
@@ -301,7 +301,7 @@ export const CreateSessionForm = () => {
                         {formData.tickets_list.length > 0 && (
                             <Box sx={{ mt: 2 }}>
                                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                                    ESTIMATION ORDER (TOP TO BOTTOM)
+                                    Selected Tickets
                                 </Typography>
                                 <Paper variant="outlined">
 

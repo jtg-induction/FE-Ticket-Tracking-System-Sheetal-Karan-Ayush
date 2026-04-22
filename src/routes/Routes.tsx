@@ -11,7 +11,6 @@ import {
     TicketDetails,
     UserReportPage,
 } from '@pages';
-import { PokerBoard } from '@pages/PokerBoardLive/PokerBoardLive.page';
 
 import { ProtectedRoute } from './ProtectedRoutes';
 
@@ -64,10 +63,6 @@ const routes: RouteObject[] = [
                         path: 'projects/:projectKey/sessions/:sessionId',
                         element: <SessionDetails />
                     },
-                    // {
-                    //     path: 'projects/:projectKey/sessions/:sessionId/board',
-                    //     element: <PokerBoard />
-                    // },
                     {
                         path: '*',
                         element: <PageNotFound />,

@@ -17,7 +17,6 @@ export const ParticipantsTable = ({ isRevealed, organizer_id }: ParticipantsTabl
     return (
         <Grid container spacing={2}>
 
-
             {participants.length === 0 ? (
                 <Typography color="text.secondary" sx={{ p: 2 }}>
                     Waiting for participants to join
@@ -58,7 +57,7 @@ export const ParticipantsTable = ({ isRevealed, organizer_id }: ParticipantsTabl
                                                 <CheckCircle color="primary" />
                                             )
                                         ) : (
-                                            <HelpOutline color="disabled" />
+                                            p.role === 3 ? <></> : <HelpOutline color="disabled" />
                                         )}
                                     </Box>
                                 </Card>

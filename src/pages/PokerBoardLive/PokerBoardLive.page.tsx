@@ -9,9 +9,8 @@ import { Alert, Box, Card, Chip, CircularProgress, Container, Divider, Grid2, Sn
 import { AdminControls, BoardHeader, EstimationDeck, ParticipantsTable, TicketList } from "@containers";
 import { useAuthStore } from "@features/auth";
 import { usePokerBoardStore } from "@features/pokerPlanning/livePokerBoard/pokerStore";
-import { usePokerWebSocket } from "@features/pokerPlanning/livePokerBoard/usePokerWebSocket";
 import { useSessionStore } from "@features/pokerPlanning/pokerSession/useSessionCreateStore";
-import { usePokerSessionData, usePokerSessionTicketsData } from "@features/pokerPlanning/sessionDetails/usePokerSessionData";
+import { usePokerSessionTicketsData } from "@features/pokerPlanning/sessionDetails/usePokerSessionData";
 import { useGetProject } from "@features/project";
 
 import { PokerBoardProps } from "./PokerBoardLive.types";
@@ -22,11 +21,7 @@ export const PokerBoard = ({ session, sendAction, lastJsonMessage, onBack }: Pok
     const id = Number(sessionId);
 
     const navigate = useNavigate();
-    // const { data: session, isLoading: sessionLoading, error } = usePokerSessionData(id);
-
-    // const { sendAction, lastJsonMessage } = usePokerWebSocket(id, projectKey as string);
-
-
+    
     const isRevealed = usePokerBoardStore((state) => state.isRevealed);
     const user = useAuthStore((state) => state.user);
 
@@ -39,6 +34,13 @@ export const PokerBoard = ({ session, sendAction, lastJsonMessage, onBack }: Pok
 
     const { setSession, currentSession } = useSessionStore();
     const [voteSuccess, setVoteSuccess] = useState(false);
+
+    const [successSnackbar, setSuccessSnackbar] = useState({
+        open: false,
+        message: "",
+    });
+
+    const handleCloseSuccess = () => setSuccessSnackbar({ ...successSnackbar, open: false });
 
 
     useEffect(() => {
@@ -67,6 +69,17 @@ export const PokerBoard = ({ session, sendAction, lastJsonMessage, onBack }: Pok
         }
     }, [lastJsonMessage, user?.id]);
 
+    useEffect(() => {
+        if (lastJsonMessage?.event === 'SUCCESS') {
+            const points = lastJsonMessage.data.estimate;
+            setSuccessSnackbar({
+                open: true,
+                message: `Ticket finalized at ${points} pts. Points updated in Jira!`
+            });
+        }
+    }, [lastJsonMessage]);
+
+
     const { data: project, isLoading: isProjectLoading } = useGetProject(projectKey);
     const { data: tickets, isLoading: ticketsLoading } = usePokerSessionTicketsData(Number(sessionId))
 
@@ -75,12 +88,12 @@ export const PokerBoard = ({ session, sendAction, lastJsonMessage, onBack }: Pok
     const pendingTicketsList = ticketsData.filter(ticket => ticket.points === null);
     const resolvedTicketsList = ticketsData.filter(ticket => ticket.points !== null);
 
-    if ( ticketsLoading || isProjectLoading) {
+    if (ticketsLoading || isProjectLoading) {
         return <Box display="flex" justifyContent="center" alignItems="center" height="100vh"><CircularProgress /></Box>;
     }
 
-    if ( !session) {
-        return <Container sx={{ mt: 4 }}><Typography color="error">Failed to load session.</Typography></Container>;
+    if (!session) {
+        return <Container sx={{ mt: 4 }}><Typography color="error.contrastText">Failed to load session.</Typography></Container>;
     }
 
 
@@ -305,6 +318,22 @@ export const PokerBoard = ({ session, sendAction, lastJsonMessage, onBack }: Pok
                     currentUserId={user?.id}
                 />
             </Box>
+
+            <Snackbar
+                open={successSnackbar.open}
+                autoHideDuration={2000}
+                onClose={handleCloseSuccess}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            >
+                <Alert
+                    onClose={handleCloseSuccess}
+                    severity="success"
+                    variant="filled"
+                >
+                    {successSnackbar.message}
+                </Alert>
+            </Snackbar>
+
         </Stack>
     );
 };

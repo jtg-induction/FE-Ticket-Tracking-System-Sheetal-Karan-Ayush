@@ -25,13 +25,27 @@ export const usePokerBoardStore = create<PokerBoardState>((set) => ({
                 break;
 
             case 'ACTIVE_TICKET':
-                set({ activeTicketId: message.data });
+                set({ activeTicketId: message.data.ticket_id, isRevealed: message.data.votes_revealed });
+                break;
+
+            case 'VOTE_REVEALED_STATUS':
+                set({ isRevealed: message.data.votes_revealed });
+                break;
+
+            case 'JOINED_SUCCESSFULLY':
+                set((state) => ({
+                    participants: state.participants.map((p) =>
+                        p.user_id === message.data.user_id
+                            ? { ...p, role: message.data.role, is_online: true }
+                            : p
+                    ),
+                }));
                 break;
 
             case 'TICKET_SELECTED':
                 set((state) => ({
                     activeTicketId: message.data.ticket_id,
-                    isRevealed: false,
+                    isRevealed: message.data.votes_revealed,
                     participants: state.participants.map((p) => ({
                         ...p,
                         estimate: undefined
@@ -59,20 +73,6 @@ export const usePokerBoardStore = create<PokerBoardState>((set) => ({
                     ),
                 }));
                 break;
-
-
-            // case 'VOTES_REVEALED':
-            //     set((state) => ({
-            //         isRevealed: true,
-            //         activeTicketId: message.data.ticket_id,
-            //         participants: state.participants.map((p) => {
-            //             const vote = message.data.results.find((v) => v.user_id === p.user_id);
-            //             return vote
-            //                 ? { ...p, estimate: vote.estimated_points }
-            //                 : p;
-            //         }),
-            //     }));
-            //     break;
 
             case 'VOTES_REVEALED':
                 set((state) => ({

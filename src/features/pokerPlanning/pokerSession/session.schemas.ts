@@ -40,8 +40,11 @@ export const SessionResponseSchema = z.object({
     duration: z.number().int().gt(0),
     active_ticket_id: z.number().int().nullable().optional(),
     started_at: z.coerce.date().nullable().optional(),
+
+    tickets_list: z.array(TicketRequestSchema).optional().default([]),
+    
     scale_type: z.number().int().min(1).max(5),
-    custom_scale_values: z.array(z.number().int()).nullable().optional(),
+    custom_scale_values: z.array(z.number().int()).optional().default([]),
     organizer_id: z.number().int().nullable().optional(),
 });
 
@@ -55,8 +58,19 @@ export const SessionUpdateSchema = z.object({
     duration: z.number().int().gt(0).optional(),
     status: z.number().int().min(1).max(3).optional(),
     active_ticket_id: z.number().int().nullable().optional(),
+
+    tickets_list: z.array(TicketRequestSchema).optional().default([]),
+
     scale_type: z.number().int().min(1).max(5).optional(),
-    custom_scale_values: z.array(z.number().int()).optional().nullable(),
+    custom_scale_values: z.array(z.number().int()).optional().default([]),
+}).refine((data) => {
+    if (data.scale_type === 5) {
+        return data.custom_scale_values.length > 0;
+    }
+    return true;
+}, {
+    message: "Add custom scale values",
+    path: ["custom_scale_values"],
 });
 
 

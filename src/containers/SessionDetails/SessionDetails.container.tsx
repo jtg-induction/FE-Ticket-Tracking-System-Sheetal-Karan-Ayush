@@ -1,29 +1,37 @@
 import { useEffect, useState } from 'react';
 
 import { POSSIBLE_ESTIMATE_VALUES, SCALE_TYPE, SESSION_STATUS } from 'constant/sessionEnums';
+import { TICKET_PRIORITY, TICKET_STATUS, TICKET_TYPE } from "constant/ticketEnums";
+import { useDebounce } from 'hooks/useDebounce';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { PlayArrow } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import {
-    Box, Button, Chip, ChipProps, CircularProgress, Divider, FormControl, Grid2,
+    Box, Button, Checkbox, Chip, ChipProps, CircularProgress, Divider, FormControl, Grid2,
     InputLabel,
+    List,
+    ListItem,
+    ListItemButton,
     MenuItem,
     Paper,
     Select,
     Stack, TextField, Tooltip, Typography
 } from '@mui/material';
 
-import { BackButton, DialogBox } from '@components';
+import { BackButton, DialogBox, ProjectTicketFilters } from '@components';
+import { Ticket } from '@containers/PokerSessionForm/PokerSessionForm.types';
 import { StyledErrorTextField } from '@containers/RegisterForm/RegisterForm.styles';
 import { TicketList } from '@containers/TicketList';
 import { useAuthStore } from '@features/auth';
 import { usePokerWebSocket } from '@features/pokerPlanning/livePokerBoard/usePokerWebSocket';
-import { SessionResponseType, SessionUpdateSchema } from '@features/pokerPlanning/pokerSession/session.schemas';
+import { SessionResponseType, SessionUpdateSchema, TicketResponseType } from '@features/pokerPlanning/pokerSession/session.schemas';
 import { usePokerSessionMutations } from '@features/pokerPlanning/pokerSession/usePokerSessionMutation';
 import { usePokerSessionData, usePokerSessionTicketsData } from '@features/pokerPlanning/sessionDetails/usePokerSessionData';
 import { useGetProject } from '@features/project/useGetProjectMutation';
+import { QueryParams } from '@features/ticket/getAllTickets/getAllTickets.schema';
+import { useGetAllTickets } from '@features/ticket/getAllTickets/usegetAllTickets';
 import { PokerBoard } from '@pages/PokerBoardLive/PokerBoardLive.page';
 
 
@@ -55,12 +63,58 @@ export const SessionDetails = () => {
     const { sendAction, lastJsonMessage } = usePokerWebSocket(Number(sessionId), projectKey as string, (newView) => setView(newView));
 
 
-    const { updateMutation, deleteMutation, joinMutation } = usePokerSessionMutations(Number(sessionId), projectKey);
+    const defaultFilters: QueryParams = {
+        title: "",
+        assignee: "",
+        status: undefined,
+        sort: "latest",
+        limit: 25,
+        deadline: undefined,
+    };
+
+    const [filters, setFilters] = useState<QueryParams>(defaultFilters);
+    const debouncedFilters = useDebounce(filters, 500);
+
+    const { data: availableTicketsData, isLoading: isFetchingTickets } = useGetAllTickets(
+        projectKey ?? "",
+        debouncedFilters,
+        { enabled: isEditing && !!projectKey }
+    );
+
+    const allAvailableTickets = availableTicketsData?.pages.flatMap((page) =>
+        (page.tickets as Ticket[]).filter(ticket => ticket.status !== 3)
+    ) ?? [];
+
+    const selectedFullTickets = editData?.tickets_list?.map(selected =>
+        ticketsData.find(t => t.id === selected.id) ||
+        allAvailableTickets.find(t => t.id === selected.id) ||
+        selected
+    ) || [];
+
+
+    const { updateMutation, deleteMutation } = usePokerSessionMutations(Number(sessionId), projectKey);
+
+    const toggleTicket = (ticket: TicketResponseType) => {
+        setEditData((prev) => {
+            if (!prev) return prev;
+            const currentList = prev.tickets_list || [];
+            const isSelected = currentList.some((t) => t.id === ticket.id);
+
+            const newList = isSelected
+                ? currentList.filter((t) => t.id !== ticket?.id)
+                : [...currentList, { id: ticket?.id, jira_ticket_key: ticket?.jira_ticket_key }];
+
+            return { ...prev, tickets_list: newList };
+        });
+    };
 
     const handleDelete = () => {
-        deleteMutation.mutate();
+        deleteMutation.mutate(undefined, {
+            onSuccess: () => {
+                sendAction("BROADCAST_SESSION_DELETED", {});
+            }
+        });
         setDeleteDialogOpen(false);
-        void navigate(`/projects/${projectKey}/sessions/`);
     };
 
     const handleSave = () => {
@@ -69,7 +123,11 @@ export const SessionDetails = () => {
         if (!result.success) {
             return;
         }
-        updateMutation.mutate(result.data);
+        updateMutation.mutate(result.data, {
+            onSuccess: () => {
+                sendAction("BROADCAST_SESSION_UPDATED", {});
+            }
+        });
         setIsEditing(false);
     };
 
@@ -77,7 +135,6 @@ export const SessionDetails = () => {
         sendAction("START", {
             duration: customDuration ?? session?.duration,
         });
-        // void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
         setView('live');
     };
 
@@ -85,30 +142,27 @@ export const SessionDetails = () => {
         sendAction("START", {
             duration: session?.duration,
         });
-        // void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
         setView('live');
     };
 
     const handleJoinAsOrganizer = () => {
-        joinMutation.mutate(1);
-        // void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
+        sendAction("JOIN", { role: 1 });
         setView('live');
     };
 
     const handleJoinAsVoter = () => {
-        joinMutation.mutate(2);
-        // void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
+        sendAction("JOIN", { role: 2 });
         setView('live');
     };
 
     const handleJoinAsSpectator = () => {
-        joinMutation.mutate(3);
-        // void navigate(`/projects/${projectKey}/sessions/${sessionId}/board`);
+        sendAction("JOIN", { role: 3 });
         setView('live');
     };
 
     const handleEnd = () => {
         sendAction("END", {});
+        setView('details');
     };
 
     useEffect(() => {
@@ -117,8 +171,8 @@ export const SessionDetails = () => {
         }
     }, [isEditing]);
 
-    if (isLoading || isProjectLoading) return <Box textAlign="center" mt={10}><CircularProgress /></Box>;
-    if (error || !session) return <Typography color="error">Session not found.</Typography>;
+    if (isLoading || isProjectLoading || isFetchingTickets) return <Box textAlign="center" mt={10}><CircularProgress /></Box>;
+    if (error || !session) return <Typography variant='h2' color="error.contrastText" textAlign='center'>Session not found.</Typography>;
 
     if (view === 'live') {
         return <PokerBoard session={session} sendAction={sendAction} lastJsonMessage={lastJsonMessage} onBack={() => setView('details')} />;
@@ -246,7 +300,14 @@ export const SessionDetails = () => {
                                     {!isEditing ? (
                                         <>
                                             <Button startIcon={<EditIcon />} onClick={() => {
-                                                setEditData(session);
+                                                const currentTickets = ticketsData.map(t => ({
+                                                    id: t.id,
+                                                    jira_ticket_key: t.jira_ticket_key
+                                                }));
+                                                setEditData({
+                                                    ...session,
+                                                    tickets_list: currentTickets
+                                                });
                                                 setIsEditing(true);
                                             }}>Edit</Button>
                                             <Button
@@ -306,7 +367,7 @@ export const SessionDetails = () => {
 
                                 <Stack direction="row" spacing={2}>
 
-                                    {isOrganizer && (
+                                    {isOrganizer && !isEditing && (
                                         <>
                                             {session.status === 1 && (
                                                 <Button
@@ -373,18 +434,102 @@ export const SessionDetails = () => {
                     </Stack>
                 </Paper>
 
-                <Stack spacing={2}>
-                    <TicketList
-                        tickets={pendingTicketsList}
-                        heading="Pending Tickets"
-                        defaultExpanded={true}
-                    />
-                    <TicketList
-                        tickets={resolvedTicketsList}
-                        heading="Completed Tickets"
-                        defaultExpanded={false}
-                    />
-                </Stack>
+                {isEditing ?
+
+                    (
+                        <Stack spacing={3}>
+
+                            <Typography variant="h6">Edit Tickets</Typography>
+
+                            <ProjectTicketFilters
+                                filters={filters}
+                                onChange={(field, val) => setFilters(prev => ({ ...prev, [field]: val }))}
+                                onReset={() => setFilters(defaultFilters)}
+                            />
+                            <Paper sx={{ padding: 2, maxHeight: 428, overflow: 'auto' }}>
+                                <Typography variant="subtitle2">Available Tickets</Typography>
+                                <List dense>
+
+
+                                    {allAvailableTickets.map((ticket: Ticket) => {
+
+                                        const status = TICKET_STATUS[ticket.status as 1 | 2 | 3];
+                                        const priority = TICKET_PRIORITY[ticket.priority as 1 | 2 | 3];
+                                        const type = TICKET_TYPE[ticket.ticket_type as 1 | 2 | 3 | 4 | 5];
+
+                                        const isSelected = editData?.tickets_list.some(t => t.id === ticket.id);
+
+                                        return (
+                                            <ListItem key={ticket.id} divider disablePadding>
+                                                <ListItemButton onClick={() => toggleTicket(ticket)}>
+                                                    <Checkbox checked={isSelected} disableRipple />
+
+                                                    <Stack direction="row" spacing={2} alignItems="center" width="100%">
+                                                        <Typography variant="body2" sx={{ minWidth: 80 }}>
+                                                            {ticket.jira_ticket_key}
+                                                        </Typography>
+                                                        <Typography variant="body2" sx={{ flexGrow: 1 }}>
+                                                            {ticket.title}
+                                                        </Typography>
+
+                                                        {ticket.points &&
+                                                            (<Chip
+                                                                label={`${ticket.points} pts`}
+                                                                size="small"
+                                                                color="primary"
+                                                                variant="outlined"
+                                                            />)}
+
+                                                        <Chip
+                                                            label={type?.label || "Task"}
+                                                            size="small"
+                                                            color={(type?.color as ChipProps["color"]) || "default"}
+                                                        />
+                                                        <Chip
+                                                            label={priority?.label || "Low"}
+                                                            size="small"
+                                                            color={(priority?.color as ChipProps["color"]) || "default"}
+                                                        />
+                                                        <Chip
+                                                            label={status?.label || "Open"}
+                                                            size="small"
+                                                            color={(status?.color as ChipProps["color"]) || "default"}
+                                                        />
+                                                    </Stack>
+                                                </ListItemButton>
+                                            </ListItem>
+                                        );
+                                    })}
+
+                                </List>
+                            </Paper>
+
+                            <Paper variant="outlined" sx={{ padding: 2, maxHeight: 428, overflow: 'auto' }}>
+                                <TicketList
+                                    tickets={selectedFullTickets}
+                                    heading="Selected Tickets"
+                                    defaultExpanded={true}
+                                />
+
+                            </Paper>
+                        </Stack>
+                    )
+
+
+                    :
+
+                    (<Stack spacing={2}>
+                        <TicketList
+                            tickets={pendingTicketsList}
+                            heading="Pending Tickets"
+                            defaultExpanded={true}
+                        />
+                        <TicketList
+                            tickets={resolvedTicketsList}
+                            heading="Completed Tickets"
+                            defaultExpanded={false}
+                        />
+                    </Stack>)}
 
             </Stack >
             <DialogBox

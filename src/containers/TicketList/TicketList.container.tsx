@@ -42,16 +42,16 @@ export const TicketList = ({
                     {tickets.length > 0 ? (
                         <Stack divider={<Divider />}>
                             {tickets.map((ticket) => {
-                                const statusInfo = TICKET_STATUS[ticket.status as keyof typeof TICKET_STATUS] || { label: 'Unknown', color: 'default' };
                                 const priorityInfo = TICKET_PRIORITY[ticket.priority as keyof typeof TICKET_PRIORITY] || { label: 'N/A', color: 'default' };
-                                const typeInfo = TICKET_TYPE[ticket.ticket_type as keyof typeof TICKET_TYPE] || { label: 'Task', color: 'default' };
+                                const statusInfo = TICKET_STATUS[ticket.status as keyof typeof TICKET_STATUS] || { label: 'Unknown', color: 'default' };
+                                const typeInfo = TICKET_TYPE[ticket.ticket_type as keyof typeof TICKET_TYPE] || { label: 'N/A', color: 'default' };
 
                                 const isActive = Number(ticket.id) === Number(activeTicketId);
 
                                 const resolvedData = resolvedTickets.find(
                                     (r) => Number(r.ticket_id) === Number(ticket.id)
                                 );
-
+                               
                                 return (
                                     <Box
                                         key={ticket.id}
@@ -71,14 +71,14 @@ export const TicketList = ({
 
                                                 <Stack direction="row" spacing={1} alignItems="center">
                                                     <Chip
-                                                        label={priorityInfo.label}
-                                                        size="small"
-                                                        color={priorityInfo.color as ChipProps['color']}
-                                                    />
-                                                    <Chip
                                                         label={typeInfo.label}
                                                         size="small"
                                                         color={typeInfo.color as ChipProps['color']}
+                                                    />
+                                                    <Chip
+                                                        label={priorityInfo.label}
+                                                        size="small"
+                                                        color={priorityInfo.color as ChipProps['color']}
                                                     />
                                                     <Chip
                                                         label={statusInfo.label}
@@ -99,11 +99,9 @@ export const TicketList = ({
                                                 <Button
                                                     size="small"
                                                     variant={isActive ? "outlined" : "contained"}
-                                                    // disabled={isActive || !!resolvedData || !!ticket.points}
                                                     disabled={isActive}
                                                     onClick={() => onActivate?.(ticket.id)}
                                                 >
-                                                    {/* {resolvedData || ticket.points ? "Resolved" : isActive ? "Active" : "Select"} */}
                                                     {isActive ? "Active" : "Select"}
                                                 </Button>
                                             )}

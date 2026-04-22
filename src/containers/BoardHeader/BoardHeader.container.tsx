@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 
-import { useNavigate } from "react-router-dom";
-
 import { AccessTimeFilled } from "@mui/icons-material";
 import { Box, Button, Stack, Typography } from "@mui/material";
 
@@ -13,10 +11,8 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { BoardHeaderProps } from "./BoardHeader.types";
 
-export const BoardHeader = ({projectKey, sendAction, onBack }: BoardHeaderProps) => {
-    const navigate = useNavigate();
+export const BoardHeader = ({ projectKey, sendAction, onBack }: BoardHeaderProps) => {
     const queryClient = useQueryClient();
-
     const session = useSessionStore((state) => state.currentSession);
 
     const user = useAuthStore((state) => state.user);
@@ -36,16 +32,22 @@ export const BoardHeader = ({projectKey, sendAction, onBack }: BoardHeaderProps)
 
     useEffect(() => {
         if (timeLeft !== null && timeLeft <= 0) {
-            void queryClient.invalidateQueries({
-                queryKey: ['session', session?.id],
-                refetchType: 'all',
-            });
-            void queryClient.invalidateQueries({
-                queryKey: ['session-tickets', session?.id],
-                refetchType: 'all',
-            });
-            // void navigate(`/projects/${projectKey}/sessions/${session?.id}`);
-            onBack(); 
+
+            setTimeout(() => {
+                void queryClient.invalidateQueries({
+                    queryKey: ['session', Number(session?.id)],
+                    refetchType: 'all',
+                });
+                void queryClient.invalidateQueries({
+                    queryKey: ['session-tickets', Number(session?.id)],
+                    refetchType: 'all',
+                });
+                void queryClient.invalidateQueries({
+                    queryKey: ['sessions', projectKey],
+                    refetchType: 'all'
+                });
+            }, 500);
+            if (onBack) onBack();
         }
 
         const interval = setInterval(() => {
@@ -60,30 +62,36 @@ export const BoardHeader = ({projectKey, sendAction, onBack }: BoardHeaderProps)
         if (seconds === null) {
             return "--/--";
         }
-        const mins = Math.floor(seconds / 60);
+
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);;
         const secs = seconds % 60;
-        return `${mins}:${secs.toString().padStart(2, "0")}`;
+
+        const paddedMins = minutes.toString().padStart(2, "0");
+        const paddedSecs = secs.toString().padStart(2, "0");
+
+        if (hours > 0) {
+            return `${hours}:${paddedMins}:${paddedSecs}`;
+        }
+        return `${minutes}:${paddedSecs}`;
     };
 
 
     const handleEndSession = () => {
         sendAction("END", {});
-        // void navigate(`/projects/${projectKey}/sessions/${session?.id}`);
-        onBack(); 
+        if (onBack) onBack();
         return;
     };
 
     const handleLeaveSession = () => {
-        // TODO: sendAction("LEAVE", {});
-        // void navigate(`/projects/${projectKey}/sessions/${session?.id}`);
-        onBack(); 
+        if (onBack) onBack();
         return;
     };
 
     return (
         <Stack direction="row" justifyContent="space-between" alignItems="center" padding={2}>
             <Box display={'flex'} gap={2} alignItems={'center'}>
-                <BackButton onClick={handleLeaveSession}/>
+                <BackButton onClick={handleLeaveSession} />
 
                 <Typography variant="h4" fontWeight="bold" color="primary">
                     Session: {session?.title}

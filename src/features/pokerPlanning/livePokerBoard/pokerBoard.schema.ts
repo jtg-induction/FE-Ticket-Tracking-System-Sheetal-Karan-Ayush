@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { boolean, z } from 'zod';
 
 
 export const ParticipantSchema = z.object({
@@ -24,14 +24,66 @@ export const PokerEventSchema = z.discriminatedUnion('event', [
     }),
 
     z.object({
-        event: z.literal('ACTIVE_TICKET'),
-        data: z.number().optional().nullable(),
+        event: z.literal('GET_ACTIVE_TICKET'),
+        data: z.object({}),
     }),
 
-    // z.object({
-    //     event: z.literal('LEAVE'),
-    //     data: z.object({}),
-    // }),
+    z.object({
+        event: z.literal('ACTIVE_TICKET'),
+        data: z.object({
+            ticket_id: z.number().optional().nullable(),
+            votes_revealed: z.boolean(),
+        })
+    }),
+
+    z.object({
+        event: z.literal('BROADCAST_SESSION_UPDATED'),
+        data: z.object({}),
+    }),
+
+    z.object({
+        event: z.literal('SESSION_UPDATED'),
+        data: z.object({}),
+    }),
+
+    z.object({
+        event: z.literal('BROADCAST_SESSION_DELETED'),
+        data: z.object({}),
+    }),
+
+    z.object({
+        event: z.literal('SESSION_DELETED'),
+        data: z.object({}),
+    }),
+
+    z.object({
+        event: z.literal('GET_VOTE_REVEALED_STATUS'),
+        data: z.object({}),
+    }),
+
+    z.object({
+        event: z.literal('VOTE_REVEALED_STATUS'),
+        data: z.object({
+            votes_revealed: z.boolean(),
+        })
+    }),
+
+    z.object({
+        event: z.literal('JOIN'),
+        dta: z.object({ role: z.number() }),
+    }),
+
+    z.object({
+        event: z.literal('JOINED_SUCCESSFULLY'),
+        data: z.object({
+            id: z.number(),
+            session_id: z.number(),
+            user_id: z.number(),
+            user_email: z.email(),
+            role: z.number(),
+            is_online: boolean(),
+        }),
+    }),
 
     z.object({
         event: z.literal('SUCCESSFULLY_VOTED'),
@@ -44,7 +96,7 @@ export const PokerEventSchema = z.discriminatedUnion('event', [
 
     z.object({
         event: z.literal('TICKET_SELECTED'),
-        data: z.object({ ticket_id: z.number() })
+        data: z.object({ ticket_id: z.number(), "votes_revealed": z.boolean(), })
     }),
 
     z.object({
@@ -54,7 +106,7 @@ export const PokerEventSchema = z.discriminatedUnion('event', [
 
     z.object({
         event: z.literal('TICKET_SKIPPED'),
-        data: z.object({ ticket_id: z.number() })
+        data: z.object({ ticket_id: z.number(), "votes_revealed": z.boolean(), })
     }),
 
     z.object({
@@ -67,6 +119,7 @@ export const PokerEventSchema = z.discriminatedUnion('event', [
         data: z.object({
             ticket_id: z.number(),
             results: z.array(VoteDetailSchema),
+            "votes_revealed": z.boolean(),
         })
     }),
 
