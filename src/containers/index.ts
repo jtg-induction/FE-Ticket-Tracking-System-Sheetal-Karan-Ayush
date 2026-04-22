@@ -8,3 +8,8 @@ export { RegisterForm } from './RegisterForm';
 export { CreateSessionForm } from './PokerSessionForm';
 export { ProjectSessionsList } from './ProjectSessions';
 export { SessionDetails } from './SessionDetails';
+export { ParticipantsTable } from './ParticipantsTable';
+export { EstimationDeck } from './EstimationDeck';
+export { AdminControls } from './AdminControls';
+export { BoardHeader } from './BoardHeader';
+export { TicketList } from './TicketList';

@@ -1,29 +1,28 @@
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-import { Box, Card, CardContent, Chip, CircularProgress, Divider, Grid2, Paper, Stack, Typography } from "@mui/material";
+import { Box, Card, CardContent, Chip, CircularProgress, Divider, Grid2, Paper, Stack, Tooltip, Typography } from "@mui/material";
 
-import { LocationState } from "@containers/PokerSessionForm/PokerSessionForm.types";
+import { BackButton } from "@components";
 import { useGetSessions } from "@features/pokerPlanning/getProjectSessions/useGetSessions";
 import { useSessionStore } from "@features/pokerPlanning/sessionDetails/useSessionStore";
+import { useGetProject } from "@features/project/useGetProjectMutation";
 import { StyledButton } from "@pages/Project/ProjectDashboardPage/ProjectDashboardPage.style";
 
 
 export const ProjectSessionsList = () => {
     const { projectKey } = useParams<{ projectKey: string }>();
-    const { data: sessions, isLoading, error: queryError } = useGetSessions(projectKey ?? "");
     const navigate = useNavigate();
 
-    const location = useLocation();
-    const state = location.state as LocationState | null;
-    const passedProjectId = state?.projectId ?? 0;
-    const passedProjectKey = state?.projectKey ?? "N/A";
-    const isDeveloper = state?.isDeveloper ?? false;
-
+    const { data: project, isLoading: isProjectLoading } = useGetProject(projectKey as string);
+    const { data: sessions, isLoading: isSessionLoading, error: queryError } = useGetSessions(projectKey || "");
     const { setActiveSessionId } = useSessionStore();
+
+    const isDeveloper = project?.role === 2;
+    if (isProjectLoading || isSessionLoading) return <CircularProgress />;
 
     const handleCardClick = (sessionId: number) => {
         setActiveSessionId(sessionId);
-        void navigate(`/sessions/${sessionId}`, { state: projectKey});
+        void navigate(`/projects/${projectKey}/sessions/${sessionId}`);
     };
 
     const getStatusChip = (status: number) => {
@@ -35,10 +34,8 @@ export const ProjectSessionsList = () => {
         }
     };
 
-    if (isLoading) return <CircularProgress />;
-
     if (queryError) {
-        return <Typography color="error" textAlign="center">
+        return <Typography color="error.contrastText" textAlign="center">
             {queryError instanceof Error ? queryError.message : "An unexpected error occurred"}
         </Typography>;
     }
@@ -46,27 +43,42 @@ export const ProjectSessionsList = () => {
     return (
         <Box padding={3} display={'flex'} flexDirection={'column'} gap={2}>
             <Box display={'flex'} justifyContent={'space-between'} alignItems={'center'}>
-                <Typography variant="h3">
-                    Project Key: {projectKey}
-                </Typography>
-                {!isDeveloper && (<StyledButton
-                    variant="contained"
-                    onClick={() => {
-                        void navigate("/sessions/create", {
-                            state: { projectId: passedProjectId, projectKey: passedProjectKey }
-                        });
-                    }}
-                >
-                    Create new Session
-                </StyledButton>)}
+
+                <Box display={'flex'} gap={2} alignItems={'center'} onClick={() => void navigate(`/project/${projectKey}`)} sx={{ cursor: 'pointer' }}>
+                    <BackButton onClick={() => void navigate(`/project/${projectKey}`)} />
+                    <Tooltip title="View Project Details">
+                        <Typography variant="h3">
+                            Project Key: {projectKey}
+                        </Typography>
+                    </Tooltip>
+                </Box>
+
+                {!isDeveloper && (
+                    <StyledButton
+                        variant="contained"
+                        onClick={() => {
+                            void navigate(`/projects/${projectKey}/sessions/create`);
+                        }}
+                    >
+                        Create new Session
+                    </StyledButton>
+                )}
+            </Box>
+            <Box padding={1}>
+                <Typography variant="h4">{project?.title}</Typography>
+                <Box maxHeight={84} overflow={'auto'}>
+                    <Typography variant="caption" color="text.secondary">{project?.description}</Typography>
+                </Box>
             </Box>
             <Divider />
 
-            {sessions?.length === 0 && (
-                <Paper sx={{ padding: 4, textAlign: 'center', borderRadius: 4 }}>
-                    <Typography color="text.secondary">No sessions found.</Typography>
-                </Paper>
-            )}
+            {
+                sessions?.length === 0 && (
+                    <Paper sx={{ padding: 4, textAlign: 'center', borderRadius: 4 }}>
+                        <Typography color="text.secondary">No sessions found.</Typography>
+                    </Paper>
+                )
+            }
 
 
             <Grid2 container spacing={3}>
@@ -87,7 +99,7 @@ export const ProjectSessionsList = () => {
                                     <Typography variant="subtitle1">
                                         {session.title}
                                     </Typography>
-                                    {getStatusChip(session.status)}
+                                    {getStatusChip(session.status || 0)}
                                 </Stack>
 
                                 <Typography variant="body2" color="text.secondary" sx={{

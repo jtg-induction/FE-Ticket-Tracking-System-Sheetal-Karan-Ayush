@@ -33,6 +33,7 @@ import {
 import { ChartCard } from '@components';
 import { UpgradeRoleDialog } from '@containers/UpgradeRoleDialogBox/UpgradeRoleDialogBox.container';
 import { useAuthStore } from '@features/auth';
+import { useLogout } from '@features/auth/useLogoutMutation';
 import { useUserReport } from '@features/user';
 import { useUserBasicDetails } from '@features/user/useUserBasicDetails';
 import { useUserReportPdf } from '@features/user/useUserPDFGenerate';
@@ -101,7 +102,7 @@ export const UserReportPage: React.FC = () => {
     const [cursor, setCursor] = useState<string | undefined>(undefined);
     const [page, setPage] = useState(0);
     const [isUpgradeDialogOpen, setIsUpgradeDialogOpen] = useState(false);
-    const { user, clearAuth } = useAuthStore();
+    const { user } = useAuthStore();
     const navigate = useNavigate();
     const [filterErrors, setFilterErrors] = useState<Record<string, string>>(
         {},
@@ -118,6 +119,8 @@ export const UserReportPage: React.FC = () => {
     } = useUserReport(email, filters, cursor, projectKey);
     const [isRoleButtonVisible, setIsRoleButtonVisible] = useState(null)
     const { downloadPdf, isLoading: isPdfLoading } = useUserReportPdf();
+    const { mutate: logoutMutation, isPending: isLoggingOut } = useLogout();
+
 
     useEffect(() => {
         setCursor(undefined);
@@ -240,10 +243,8 @@ export const UserReportPage: React.FC = () => {
     };
 
     const handleLogout = () => {
-        clearAuth();
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        void navigate('/login');
+        
+        logoutMutation();
     };
     const handleDateChange =
         (field: keyof UserReportFilters) =>
@@ -293,6 +294,7 @@ export const UserReportPage: React.FC = () => {
                         color="error"
                         startIcon={<LogoutIcon />}
                         onClick={handleLogout}
+                        disabled={isLoggingOut}
                     >
                         {!isSmallScreen && 'Logout'}
                     </Button>

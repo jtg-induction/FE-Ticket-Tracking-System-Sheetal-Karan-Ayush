@@ -22,7 +22,7 @@ import { config } from "../constants";
 
 export const loginUser = async (payload: LoginInput): Promise<AuthResponse> => {
     try {
-        const response = await api.post("/api/auth/login", payload, config);
+        const response = await api.post("/api/auth/login", payload, config);        
         const parsed = authResponseSchema.safeParse(response.data);
 
         if (!parsed.success) {

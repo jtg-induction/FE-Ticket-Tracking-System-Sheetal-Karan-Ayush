@@ -1,4 +1,4 @@
-import { SessionCreateType, SessionResponseSchema, SessionResponseType } from "@features/pokerPlanning/createSession/session.schemas";
+import { SessionCreateType, SessionResponseSchema, SessionResponseType } from "@features/pokerPlanning/pokerSession/session.schemas";
 
 import { api } from '../axios';
 

@@ -1,83 +1,168 @@
 import { useEffect, useState } from 'react';
 
 import { POSSIBLE_ESTIMATE_VALUES, SCALE_TYPE, SESSION_STATUS } from 'constant/sessionEnums';
-import { TICKET_PRIORITY, TICKET_STATUS, TICKET_TYPE } from 'constant/ticketEnums';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { TICKET_PRIORITY, TICKET_STATUS, TICKET_TYPE } from "constant/ticketEnums";
+import { useDebounce } from 'hooks/useDebounce';
+import { useNavigate, useParams } from 'react-router-dom';
 
+import { PlayArrow } from '@mui/icons-material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import {
-    Box, Button, Chip, ChipProps, CircularProgress, Divider, FormControl, Grid2,
+    Box, Button, Checkbox, Chip, ChipProps, CircularProgress, Divider, FormControl, Grid2,
     InputLabel,
+    List,
+    ListItem,
+    ListItemButton,
     MenuItem,
     Paper,
     Select,
-    Stack, TextField, Typography
+    Stack, TextField, Tooltip, Typography
 } from '@mui/material';
 
-import { deleteSessionApi } from '@api/pokerPlanning/deleteSessionApi';
-import { fetchSessionDetails } from '@api/pokerPlanning/getSessionDetailsApi';
-import { fetchSessionTickets } from '@api/pokerPlanning/getSessionTicketsApi';
-import { updateSessionApi } from '@api/pokerPlanning/updateSessionApi';
-import { DialogBox } from '@components';
+import { BackButton, DialogBox, ProjectTicketFilters } from '@components';
+import { Ticket } from '@containers/PokerSessionForm/PokerSessionForm.types';
 import { StyledErrorTextField } from '@containers/RegisterForm/RegisterForm.styles';
-import { SessionResponseType, SessionUpdateSchema, SessionUpdateType } from '@features/pokerPlanning/createSession/session.schemas';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { TicketList } from '@containers/TicketList';
+import { useAuthStore } from '@features/auth';
+import { usePokerWebSocket } from '@features/pokerPlanning/livePokerBoard/usePokerWebSocket';
+import { SessionResponseType, SessionUpdateSchema, TicketResponseType } from '@features/pokerPlanning/pokerSession/session.schemas';
+import { usePokerSessionMutations } from '@features/pokerPlanning/pokerSession/usePokerSessionMutation';
+import { usePokerSessionData, usePokerSessionTicketsData } from '@features/pokerPlanning/sessionDetails/usePokerSessionData';
+import { useGetProject } from '@features/project/useGetProjectMutation';
+import { QueryParams } from '@features/ticket/getAllTickets/getAllTickets.schema';
+import { useGetAllTickets } from '@features/ticket/getAllTickets/usegetAllTickets';
+import { PokerBoard } from '@pages/PokerBoardLive/PokerBoardLive.page';
+
 
 export const SessionDetails = () => {
-    const { sessionId } = useParams<{ sessionId: string }>();
+    const { projectKey, sessionId } = useParams<{ projectKey: string, sessionId: string }>();
+
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
-    const { state } = useLocation()
 
     const [isEditing, setIsEditing] = useState(false);
     const [editData, setEditData] = useState<SessionResponseType | undefined>();
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [customValueBuffer, setCustomValueBuffer] = useState("");
 
-    const { data: session, isLoading, error } = useQuery({
-        queryKey: ['session', sessionId],
-        queryFn: () => fetchSessionDetails(Number(sessionId)),
-        enabled: !!sessionId,
-    });
+    const [view, setView] = useState<'details' | 'live'>('details');
 
-    const { data: tickets, isLoading: ticketsLoading } = useQuery({
-        queryKey: ['session-tickets', sessionId],
-        queryFn: () => fetchSessionTickets(Number(sessionId)),
-        enabled: !!sessionId,
-    });
+    const { data: session, isLoading, error } = usePokerSessionData(Number(sessionId));
+    const { data: project, isLoading: isProjectLoading } = useGetProject(projectKey as string);
 
-    const updateMutation = useMutation({
-        mutationFn: (payload: SessionUpdateType) => updateSessionApi(Number(sessionId), payload),
-        onSuccess: () => {
-            void queryClient.invalidateQueries({ queryKey: ['session', sessionId] });
-            void queryClient.invalidateQueries({ queryKey: ['sessions', state] });
-            setIsEditing(false);
-        }
-    });
+    const user = useAuthStore((userState) => userState.user);
+    const isOrganizer = user?.id === session?.organizer_id;
+    const isSessionRunning = session?.status === 2;
+    const canEdit = isOrganizer && !isSessionRunning;
 
-    const deleteMutation = useMutation({
-        mutationFn: () => deleteSessionApi(Number(sessionId)),
-        onSuccess: () => {
-            void queryClient.invalidateQueries({ queryKey: ['sessions', state] });
-            void navigate(-1);
-        }
-    });
+    const { data: tickets } = usePokerSessionTicketsData(Number(sessionId));
+    const ticketsData = tickets || [];
+    const pendingTicketsList = ticketsData.filter(ticket => ticket.points === null);
+    const resolvedTicketsList = ticketsData.filter(ticket => ticket.points !== null);
+
+    const { sendAction, lastJsonMessage } = usePokerWebSocket(Number(sessionId), projectKey as string, (newView) => setView(newView));
+
+
+    const defaultFilters: QueryParams = {
+        title: "",
+        assignee: "",
+        status: undefined,
+        sort: "latest",
+        limit: 25,
+        deadline: undefined,
+    };
+
+    const [filters, setFilters] = useState<QueryParams>(defaultFilters);
+    const debouncedFilters = useDebounce(filters, 500);
+
+    const { data: availableTicketsData, isLoading: isFetchingTickets } = useGetAllTickets(
+        projectKey ?? "",
+        debouncedFilters,
+        { enabled: isEditing && !!projectKey }
+    );
+
+    const allAvailableTickets = availableTicketsData?.pages.flatMap((page) =>
+        (page.tickets as Ticket[]).filter(ticket => ticket.status !== 3)
+    ) ?? [];
+
+    const selectedFullTickets = editData?.tickets_list?.map(selected =>
+        ticketsData.find(t => t.id === selected.id) ||
+        allAvailableTickets.find(t => t.id === selected.id) ||
+        selected
+    ) || [];
+
+
+    const { updateMutation, deleteMutation } = usePokerSessionMutations(Number(sessionId), projectKey);
+
+    const toggleTicket = (ticket: TicketResponseType) => {
+        setEditData((prev) => {
+            if (!prev) return prev;
+            const currentList = prev.tickets_list || [];
+            const isSelected = currentList.some((t) => t.id === ticket.id);
+
+            const newList = isSelected
+                ? currentList.filter((t) => t.id !== ticket?.id)
+                : [...currentList, { id: ticket?.id, jira_ticket_key: ticket?.jira_ticket_key }];
+
+            return { ...prev, tickets_list: newList };
+        });
+    };
 
     const handleDelete = () => {
-        deleteMutation.mutate();
+        deleteMutation.mutate(undefined, {
+            onSuccess: () => {
+                sendAction("BROADCAST_SESSION_DELETED", {});
+            }
+        });
         setDeleteDialogOpen(false);
     };
 
     const handleSave = () => {
         if (!editData) return;
         const result = SessionUpdateSchema.safeParse(editData);
-
         if (!result.success) {
             return;
         }
+        updateMutation.mutate(result.data, {
+            onSuccess: () => {
+                sendAction("BROADCAST_SESSION_UPDATED", {});
+            }
+        });
+        setIsEditing(false);
+    };
 
-        updateMutation.mutate(result.data);
+    const handleStart = (customDuration?: number) => {
+        sendAction("START", {
+            duration: customDuration ?? session?.duration,
+        });
+        setView('live');
+    };
+
+    const handleRestart = () => {
+        sendAction("START", {
+            duration: session?.duration,
+        });
+        setView('live');
+    };
+
+    const handleJoinAsOrganizer = () => {
+        sendAction("JOIN", { role: 1 });
+        setView('live');
+    };
+
+    const handleJoinAsVoter = () => {
+        sendAction("JOIN", { role: 2 });
+        setView('live');
+    };
+
+    const handleJoinAsSpectator = () => {
+        sendAction("JOIN", { role: 3 });
+        setView('live');
+    };
+
+    const handleEnd = () => {
+        sendAction("END", {});
+        setView('details');
     };
 
     useEffect(() => {
@@ -86,18 +171,39 @@ export const SessionDetails = () => {
         }
     }, [isEditing]);
 
-    if (isLoading) return <Box textAlign="center" mt={10}><CircularProgress /></Box>;
-    if (error || !session) return <Typography color="error">Session not found.</Typography>;
+    if (isLoading || isProjectLoading || isFetchingTickets) return <Box textAlign="center" mt={10}><CircularProgress /></Box>;
+    if (error || !session) return <Typography variant='h2' color="error.contrastText" textAlign='center'>Session not found.</Typography>;
+
+    if (view === 'live') {
+        return <PokerBoard session={session} sendAction={sendAction} lastJsonMessage={lastJsonMessage} onBack={() => setView('details')} />;
+    }
 
     return (
         <>
-            <Box sx={{ maxWidth: 900, mx: 'auto', p: 4 }}>
-                <Box display="flex" justifyContent="space-between" mb={3}>
+            <Stack spacing={4} padding={4}>
 
+                <Box display={'flex'} gap={2} >
+                    <BackButton onClick={() => void navigate(`/projects/${projectKey}/sessions/`)} />
+                    <Box>
+                        <Tooltip title="View Project Details">
+                            <Box
+                                onClick={() => void navigate(`/project/${projectKey}`)}
+                                sx={{ cursor: 'pointer' }}
+                            >
+                                <Typography variant="h5" color="text.primary" fontWeight={700}>
+                                    {projectKey} : {project?.title}
+                                </Typography>
+                            </Box>
+                        </Tooltip>
+                        <Box maxHeight={60}>
+                            <Typography variant="caption" color="text.secondary">
+                                {project?.description}
+                            </Typography>
+                        </Box>
+                    </Box>
                 </Box>
 
-                {/* Session info */}
-                <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
+                <Paper sx={{ padding: 4 }}>
                     <Stack spacing={3} >
                         <Box display={'flex'} gap={2} justifyContent={'space-between'} alignItems={'start'}>
                             <Box flex={1}>
@@ -164,7 +270,9 @@ export const SessionDetails = () => {
                                     <Box display={'flex'} flexDirection={'column'} gap={2}>
                                         <Box>
                                             <Typography variant="h3" fontWeight={800} color="primary">{session.title.toUpperCase()}</Typography>
-                                            <Typography variant="body1" color="text.secondary">{session.description}</Typography>
+                                            <Box maxHeight={72} overflow={'auto'}>
+                                                <Typography variant="body1" color="text.secondary">{session.description}</Typography>
+                                            </Box>
                                         </Box>
                                         <Divider />
                                         <Box display={'flex'} flexDirection={'column'} gap={2}>
@@ -187,28 +295,37 @@ export const SessionDetails = () => {
                                 )}
                             </Box>
 
-                            <Stack direction="row" spacing={1}>
-                                {!isEditing ? (
-                                    <>
-                                        <Button startIcon={<EditIcon />} onClick={() => {
-                                            setEditData(session);
-                                            setIsEditing(true);
-                                        }}>Edit</Button>
-                                        <Button
-                                            startIcon={<DeleteIcon />}
-                                            sx={{ color: "error.contrastText" }}
-                                            onClick={() => setDeleteDialogOpen(true)}
-                                        >
-                                            Delete
-                                        </Button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Button variant="contained" onClick={handleSave} disabled={updateMutation.isPending}>Save</Button>
-                                        <Button onClick={() => setIsEditing(false)}>Cancel</Button>
-                                    </>
-                                )}
-                            </Stack>
+                            {canEdit && (
+                                <Stack direction="row" spacing={1}>
+                                    {!isEditing ? (
+                                        <>
+                                            <Button startIcon={<EditIcon />} onClick={() => {
+                                                const currentTickets = ticketsData.map(t => ({
+                                                    id: t.id,
+                                                    jira_ticket_key: t.jira_ticket_key
+                                                }));
+                                                setEditData({
+                                                    ...session,
+                                                    tickets_list: currentTickets
+                                                });
+                                                setIsEditing(true);
+                                            }}>Edit</Button>
+                                            <Button
+                                                startIcon={<DeleteIcon />}
+                                                sx={{ color: "error.contrastText" }}
+                                                onClick={() => setDeleteDialogOpen(true)}
+                                            >
+                                                Delete
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Button variant="contained" onClick={handleSave} disabled={updateMutation.isPending}>Save</Button>
+                                            <Button onClick={() => setIsEditing(false)}>Cancel</Button>
+                                        </>
+                                    )}
+                                </Stack>
+                            )}
                         </Box>
 
                         <Divider />
@@ -220,110 +337,201 @@ export const SessionDetails = () => {
                                     <TextField
                                         type="number"
                                         fullWidth
-                                        value={(editData?.duration || 0) / 60}
+                                        value={editData?.duration ? editData.duration / 60 : null}
                                         onChange={(e) => {
-                                            const minutes = Number(e.target.value);
+                                            const val = Number(e.target.value);
+                                            const minutes = val === null ? 0 : Number(val);
                                             setEditData((prev) => prev ? { ...prev, duration: minutes * 60 } : prev);
                                         }}
+                                        slotProps={{ htmlInput: { min: 1 } }}
                                     />
+
                                 ) : (
                                     <Typography variant="h6">{session.duration / 60} min</Typography>
                                 )}
                             </Grid2>
-                            <Grid2 size={{ xs: 12, sm: 6 }} sx={{ textAlign: 'right' }}>
-                                <Typography variant="caption" color="text.secondary">STATUS</Typography>
-                                <Box>
-                                    {(() => {
-                                        const statusConfig = SESSION_STATUS[session.status as keyof typeof SESSION_STATUS];
-                                        return (
-                                            <Chip
-                                                label={statusConfig?.label || 'Unknown'}
-                                                color={(statusConfig?.color as ChipProps['color']) || 'default'}
-                                                variant="filled"
-                                                sx={{ fontWeight: 'bold' }}
-                                            />
-                                        );
-                                    })()}
-                                </Box>
-                            </Grid2>
+
                         </Grid2>
+
+                        <Box sx={{ maxWidth: 900, }}>
+                            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+
+                                <Box display={'flex'} alignItems={'center'} gap={2}>
+                                    <Typography variant='caption' color='text.secondary'>STATUS:</Typography>
+                                    <Chip
+                                        label={SESSION_STATUS[session.status as keyof typeof SESSION_STATUS].label}
+                                        color={SESSION_STATUS[session.status as keyof typeof SESSION_STATUS].color as ChipProps['color']}
+                                        variant="filled"
+                                    />
+                                </Box>
+
+                                <Stack direction="row" spacing={2}>
+
+                                    {isOrganizer && !isEditing && (
+                                        <>
+                                            {session.status === 1 && (
+                                                <Button
+                                                    variant="contained"
+                                                    color="success"
+                                                    startIcon={<PlayArrow />}
+                                                    onClick={() => handleStart()}
+                                                >
+                                                    Start Session
+                                                </Button>
+                                            )}
+                                            {session.status === 2 && (
+                                                <Button
+                                                    variant="contained"
+                                                    color="error"
+                                                    onClick={() => handleEnd()}
+                                                >
+                                                    End Session
+                                                </Button>
+                                            )}
+                                            {session.status === 3 && (
+                                                <Button
+                                                    variant="outlined"
+                                                    color="primary"
+                                                    onClick={() => handleRestart()}
+                                                >
+                                                    Restart Session
+                                                </Button>
+                                            )}
+                                        </>
+                                    )}
+
+                                    {(session.status === 2) && (!isOrganizer) && (
+                                        <>
+                                            <Button
+                                                variant="contained"
+                                                color="info"
+                                                onClick={handleJoinAsVoter}
+                                            >
+                                                Join As Voter
+                                            </Button>
+                                            <Button
+                                                variant="contained"
+                                                color="info"
+                                                onClick={handleJoinAsSpectator}
+                                            >
+                                                Join As Spectator
+                                            </Button>
+                                        </>
+                                    )}
+                                    {(session.status === 2) &&
+                                        isOrganizer &&
+                                        <Button
+                                            variant="contained"
+                                            color="info"
+                                            onClick={handleJoinAsOrganizer}
+                                        >
+                                            Join
+                                        </Button>
+                                    }
+                                </Stack>
+                            </Box>
+                        </Box>
                     </Stack>
                 </Paper>
 
-                {/* Tickets list */}
-                <Box mt={6}>
-                    <Box display="flex" justifyContent="space-between" alignItems="center">
-                        <Typography variant="h6" fontWeight="bold">
-                            Tickets ({tickets?.length || 0})
-                        </Typography>
-                    </Box>
+                {isEditing ?
 
-                    <Paper sx={{ borderRadius: 2 }}>
-                        {ticketsLoading ? (
-                            <CircularProgress size={24} />
-                        ) : tickets && tickets.length > 0 ? (
-                            <Stack divider={<Divider />}>
-                                {tickets.map((ticket) => {
-                                    const statusInfo = TICKET_STATUS[ticket.status as keyof typeof TICKET_STATUS] || { label: 'Unknown', color: 'default' };
-                                    const priorityInfo = TICKET_PRIORITY[ticket.priority as keyof typeof TICKET_PRIORITY] || { label: 'N/A', color: 'default' };
-                                    const typeInfo = TICKET_TYPE[ticket.ticket_type as keyof typeof TICKET_TYPE] || { label: 'Task', color: 'default' };
+                    (
+                        <Stack spacing={3}>
 
-                                    return (
-                                        <Box
-                                            display={'flex'}
-                                            alignItems={'center'}
-                                            gap={2}
-                                            key={ticket.id}
-                                            padding={2}
-                                        >
+                            <Typography variant="h6">Edit Tickets</Typography>
 
-                                            <Box flex={1}>
-                                                <Typography variant="h5" color="text.secondary">
-                                                    {ticket.jira_ticket_key}
-                                                </Typography>
-                                                <Typography variant="body1" >
-                                                    {ticket.title}
-                                                </Typography>
-                                            </Box>
+                            <ProjectTicketFilters
+                                filters={filters}
+                                onChange={(field, val) => setFilters(prev => ({ ...prev, [field]: val }))}
+                                onReset={() => setFilters(defaultFilters)}
+                            />
+                            <Paper sx={{ padding: 2, maxHeight: 428, overflow: 'auto' }}>
+                                <Typography variant="subtitle2">Available Tickets</Typography>
+                                <List dense>
 
-                                            <Stack direction="row" spacing={1} alignItems="center">
-                                                <Chip
-                                                    label={priorityInfo.label}
-                                                    size="small"
-                                                    color={priorityInfo.color as ChipProps['color']}
-                                                />
-                                                <Chip
-                                                    label={typeInfo.label}
-                                                    size="small"
-                                                    color={typeInfo.color as ChipProps['color']}
-                                                />
-                                                <Chip
-                                                    label={statusInfo.label}
-                                                    size="small"
-                                                    color={statusInfo.color as ChipProps['color']}
-                                                />
-                                                {ticket.points !== null && (
-                                                    <Chip
-                                                        label={`${ticket.points} pts`}
-                                                        size="small"
-                                                        variant="outlined"
-                                                        sx={{ fontWeight: 'bold' }}
-                                                    />
-                                                )}
-                                            </Stack>
-                                        </Box>
-                                    );
-                                })}
-                            </Stack>
-                        ) : (
-                            <Box p={4} textAlign="center">
-                                <Typography color="text.secondary">No tickets found for this session.</Typography>
-                            </Box>
-                        )}
-                    </Paper>
-                </Box>
 
-            </Box >
+                                    {allAvailableTickets.map((ticket: Ticket) => {
+
+                                        const status = TICKET_STATUS[ticket.status as 1 | 2 | 3];
+                                        const priority = TICKET_PRIORITY[ticket.priority as 1 | 2 | 3];
+                                        const type = TICKET_TYPE[ticket.ticket_type as 1 | 2 | 3 | 4 | 5];
+
+                                        const isSelected = editData?.tickets_list.some(t => t.id === ticket.id);
+
+                                        return (
+                                            <ListItem key={ticket.id} divider disablePadding>
+                                                <ListItemButton onClick={() => toggleTicket(ticket)}>
+                                                    <Checkbox checked={isSelected} disableRipple />
+
+                                                    <Stack direction="row" spacing={2} alignItems="center" width="100%">
+                                                        <Typography variant="body2" sx={{ minWidth: 80 }}>
+                                                            {ticket.jira_ticket_key}
+                                                        </Typography>
+                                                        <Typography variant="body2" sx={{ flexGrow: 1 }}>
+                                                            {ticket.title}
+                                                        </Typography>
+
+                                                        {ticket.points &&
+                                                            (<Chip
+                                                                label={`${ticket.points} pts`}
+                                                                size="small"
+                                                                color="primary"
+                                                                variant="outlined"
+                                                            />)}
+
+                                                        <Chip
+                                                            label={type?.label || "Task"}
+                                                            size="small"
+                                                            color={(type?.color as ChipProps["color"]) || "default"}
+                                                        />
+                                                        <Chip
+                                                            label={priority?.label || "Low"}
+                                                            size="small"
+                                                            color={(priority?.color as ChipProps["color"]) || "default"}
+                                                        />
+                                                        <Chip
+                                                            label={status?.label || "Open"}
+                                                            size="small"
+                                                            color={(status?.color as ChipProps["color"]) || "default"}
+                                                        />
+                                                    </Stack>
+                                                </ListItemButton>
+                                            </ListItem>
+                                        );
+                                    })}
+
+                                </List>
+                            </Paper>
+
+                            <Paper variant="outlined" sx={{ padding: 2, maxHeight: 428, overflow: 'auto' }}>
+                                <TicketList
+                                    tickets={selectedFullTickets}
+                                    heading="Selected Tickets"
+                                    defaultExpanded={true}
+                                />
+
+                            </Paper>
+                        </Stack>
+                    )
+
+
+                    :
+
+                    (<Stack spacing={2}>
+                        <TicketList
+                            tickets={pendingTicketsList}
+                            heading="Pending Tickets"
+                            defaultExpanded={true}
+                        />
+                        <TicketList
+                            tickets={resolvedTicketsList}
+                            heading="Completed Tickets"
+                            defaultExpanded={false}
+                        />
+                    </Stack>)}
+
+            </Stack >
             <DialogBox
                 open={deleteDialogOpen}
                 title="Confirm Deletion"

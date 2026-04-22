@@ -53,7 +53,7 @@ export const CreateTicket = () => {
         };
 
         setCreateFormData({ [name]: value });
-        setErrors({...errors, [name]: ''})
+        setErrors({ ...errors, [name]: '' })
     };
 
     const handleCreateSubmit = () => {
@@ -62,6 +62,8 @@ export const CreateTicket = () => {
             project_key: projectKey,
             labels: labels,
             deadline: deadline?.toISOString() ?? null,
+            type: Number(ticketType),
+            priority: Number(ticketPriority),
         };
 
         const result = ticketCreateSchema.safeParse(payload);
@@ -158,7 +160,7 @@ export const CreateTicket = () => {
                         options={[]}
                         value={labels}
                         onChange={(_, newValue) => {
-                            setErrors({...errors, 'labels': ''})
+                            setErrors({ ...errors, 'labels': '' })
                             setLabels(newValue)
                         }}
 

@@ -4,8 +4,8 @@ import { AuthStore } from './authStore.types';
 
 export const useAuthStore = create<AuthStore>((set) => ({
     user: null,
-    accessToken: null,
-    refreshToken: null,
+    isAuthenticated: false,
+    isInitializing: true,
     setAuth: (data) =>
         set({
             user: {
@@ -13,8 +13,14 @@ export const useAuthStore = create<AuthStore>((set) => ({
                 name: data.name,
                 email: data.email,
             },
-            accessToken: data.access_token,
-            refreshToken: data.refresh_token,
+            isAuthenticated: true,
+            isInitializing: false,
         }),
-    clearAuth: () => set({ accessToken: null, user: null, refreshToken: null }),
+    clearAuth: () =>
+        set({
+            user: null,
+            isAuthenticated: false,
+            isInitializing: false,
+        }),
+    finishInitializing: () => set({ isInitializing: false }),
 }));

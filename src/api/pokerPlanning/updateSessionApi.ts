@@ -1,5 +1,5 @@
 import { api } from "@api/axios";
-import { SessionResponseSchema, SessionResponseType, SessionUpdateType } from "@features/pokerPlanning/createSession/session.schemas";
+import { SessionResponseSchema, SessionResponseType, SessionUpdateType } from "@features/pokerPlanning/pokerSession/session.schemas";
 
 export const updateSessionApi = async (
     sessionId: number, 

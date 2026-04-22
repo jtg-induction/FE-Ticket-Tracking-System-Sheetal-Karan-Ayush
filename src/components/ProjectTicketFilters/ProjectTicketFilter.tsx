@@ -2,8 +2,6 @@ import { MenuItem } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
-import 'dayjs/locale/en-in';
-
 import {
     FilterField,
     FiltersContainer,
@@ -13,6 +11,8 @@ import {
     StyledDatePicker,
 } from './ProjectTicketFilter.style';
 import { ProjectTicketFilterProps } from './ProjectTicketFilters.types';
+
+import 'dayjs/locale/en-in';
 
 export const ProjectTicketFilters = ({
     filters,
@@ -61,6 +61,32 @@ export const ProjectTicketFilters = ({
                     <MenuItem value={1}>Open</MenuItem>
                     <MenuItem value={2}>In Progress</MenuItem>
                     <MenuItem value={3}>Closed</MenuItem>
+                </SmallFilterField>
+
+                <SmallFilterField
+                    select
+                    label="Priority"
+                    size="small"
+                    value={filters.priority}
+                    onChange={(e) => onChange('priority', e.target.value)}
+                >
+                    <MenuItem value={undefined}>All</MenuItem>
+                    <MenuItem value={1}>High</MenuItem>
+                    <MenuItem value={2}>Medium</MenuItem>
+                    <MenuItem value={3}>Low</MenuItem>
+                </SmallFilterField>
+
+
+                <SmallFilterField
+                    select
+                    label="Show Resolved"
+                    size="small"
+                    value={filters.resolved}
+                    onChange={(e) => onChange('resolved', e.target.value)}
+                >
+                    <MenuItem value={undefined}>All</MenuItem>
+                    <MenuItem value='false' >No</MenuItem>
+                    <MenuItem value='true'>Yes</MenuItem>
                 </SmallFilterField>
 
                 <SmallFilterField

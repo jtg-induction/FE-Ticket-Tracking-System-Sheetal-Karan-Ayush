@@ -15,6 +15,8 @@ export const getAllTicketsRequestSchema = z.object({
 
     sort: z.string().optional().default('latest'),
 
+    showResolved: z.boolean().optional().nullable(),
+
     cursor: z.string().optional(),
 
     limit: z.number().int().min(1).max(100).default(20),
@@ -33,6 +35,7 @@ export const ticketsResponseSchema = z.object({
     deadline: z.string().nullable(),
     created_at: z.string(),
     labels: z.array(z.string()),
+    points: z.number().int().nullish(),
 });
 
 export const resultSchema = z.object({
@@ -61,6 +64,7 @@ export const getTicketResponseSchema = z.object({
     deadline: z.string().nullable(),
     created_at: z.string(),
     labels: z.array(z.string()),
+    points: z.number().int().nullish(),
     role: z.int(),
     is_archived: z.boolean(),
     is_subscribed: z.boolean(),
